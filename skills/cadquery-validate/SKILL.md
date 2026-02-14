@@ -1,161 +1,161 @@
-# SKILL: cadquery-validate — Validazione e Fix Automatico CadQuery
+# SKILL: cadquery-validate — CadQuery Validation and Automatic Fix
 
-## Identità
-Loop automatico di validazione, diagnosi e correzione del codice CadQuery.
-Esegue fino a 5 tentativi per produrre un modello BREP valido con export STEP+STL.
+## Identity
+Automatic validation, diagnosis, and correction loop for CadQuery code.
+Runs up to 5 attempts to produce a valid BREP model with STEP+STL export.
 
 ---
 
-## 1. Workflow — Loop Fix Automatico
+## 1. Workflow — Automatic Fix Loop
 
 ```
-per tentativo in 1..5:
-    risultato = esegui_python(codice)
+for attempt in 1..5:
+    result = run_python(code)
 
-    se risultato.successo:
-        bb = bounding_box(risultato)
-        vol = volume(risultato)
+    if result.success:
+        bb = bounding_box(result)
+        vol = volume(result)
 
-        se bb valido E vol > 0:
+        if bb valid AND vol > 0:
             export(STEP + STL)
-            stampa REPORT
-            return SUCCESSO
-        altrimenti:
-            codice = fix_geometry(codice, bb, vol)
-    altrimenti:
-        errore = analizza_traceback(risultato.stderr)
-        fix = cerca_in_catalogo(errore)
-        codice = applica_fix(codice, fix)
+            print REPORT
+            return SUCCESS
+        else:
+            code = fix_geometry(code, bb, vol)
+    else:
+        error = parse_traceback(result.stderr)
+        fix = search_catalog(error)
+        code = apply_fix(code, fix)
 
-return FALLIMENTO (dopo 5 tentativi)
+return FAILURE (after 5 attempts)
 ```
 
-### 1.1 Regole del Loop
+### 1.1 Loop Rules
 
-1. **Max 5 iterazioni** — se dopo 5 tentativi il codice non funziona, FERMA e riporta tutti gli errori
-2. **Un fix alla volta** — non applicare fix multipli nello stesso tentativo (confonde la diagnosi)
-3. **Preserva parametri** — non cambiare mai i parametri dell'utente a meno che siano la causa dell'errore
-4. **Log ogni tentativo** — traccia errore, fix applicato, risultato
-5. **Nessun try/except cieco** — non nascondere errori con `try: ... except: pass`
+1. **Max 5 iterations** — if the code doesn't work after 5 attempts, STOP and report all errors
+2. **One fix at a time** — don't apply multiple fixes in the same attempt (confuses diagnosis)
+3. **Preserve parameters** — never change user parameters unless they are the root cause
+4. **Log every attempt** — track error, applied fix, result
+5. **No blind try/except** — don't hide errors with `try: ... except: pass`
 
-### 1.2 Integrazione MCP
-
-```
-SE tool MCP cadquery_validate disponibile:
-    usa cadquery_validate(python_code) → { valid, errors, bounding_box, volume_mm3 }
-    usa cadquery_export(python_code, formats, output_dir) → { files, bounding_box }
-    usa cadquery_info(python_code) → { bounding_box, volume_mm3, surface_area_mm2 }
-ALTRIMENTI:
-    esegui `python3 script.py` via bash
-    analizza stdout per BB/volume, stderr per errori
-```
-
----
-
-## 2. Catalogo Errori CadQuery — Diagnosi e Fix
-
-### 2.1 Errori di Kernel (OpenCascade)
-
-| # | Errore (traceback) | Causa probabile | Fix automatico |
-|---|---|---|---|
-| 1 | `StdFail_NotDone` in fillet/chamfer | Raggio fillet > metà dello spessore minimo, oppure edge troppo corto dopo boolean | Riduci raggio a `min(raggio, spessore/2 - 0.1)`. Se fallisce ancora, usa `NearestToPointSelector` per edge specifici invece di selettori broad (`\|Z`, `\|Y`) |
-| 2 | `StdFail_NotDone` in boolean (cut/union) | Geometrie tangenti, coincidenti o con facce complanari | Offset una delle geometrie di 0.01mm su un asse. Esempio: `translate((0.01, 0, 0))` |
-| 3 | `BRep_API: not done` | Boolean tra solidi con intersezione degenere (edge-on-edge) | Scala leggermente un operando: `* 1.001` o offset 0.01mm |
-| 4 | `ShapeAnalysis_Wire: Wire is not closed` | Polyline/sketch non chiuso | Aggiungi `.close()` prima di `.extrude()` |
-| 5 | `Shape is null` / `TopoDS_Shape is null` | Operazione produce corpo vuoto (cut rimuove tutto, extrude di altezza 0) | Verifica che dimensioni > 0, che il cut non superi il corpo, che extrude abbia altezza positiva |
-
-### 2.2 Errori di API CadQuery
-
-| # | Errore (traceback) | Causa probabile | Fix automatico |
-|---|---|---|---|
-| 6 | `ValueError: No pending wires` | `.extrude()` senza sketch 2D precedente | Aggiungi `.rect()`, `.circle()` o altro sketch prima di `.extrude()` |
-| 7 | `ValueError: Cannot resolve selector` | Selettore ambiguo dopo boolean (es. `">Z"` con facce multiple alla stessa Z) | Usa `.faces(sel).first().workplane()` oppure `NearestToPointSelector((x,y,z))` |
-| 8 | `ValueError: negative or zero` in extrude | Valore di estrusione negativo passato a `.extrude()` | Usa `abs(valore)` o cambia a `.cutBlind(-valore)` se l'intento era una tasca |
-| 9 | `ValueError: Unknown color name` | Nome colore CSS non supportato da CadQuery | Sostituisci con `cq.Color(r, g, b)` usando float RGB 0.0-1.0 |
-| 10 | `ModuleNotFoundError: No module named 'cadquery'` | CadQuery non installato nell'ambiente Python | Esegui `pip install cadquery` o verifica il virtualenv |
-
-### 2.3 Errori Geometrici (post-esecuzione)
-
-| # | Condizione | Causa probabile | Fix automatico |
-|---|---|---|---|
-| 11 | Bounding box > 500mm su qualsiasi asse | Errore di scala (unità pollici o metri invece di mm) | Se BB ~25.4x troppo grande: dividi per 25.4 (pollici→mm). Se BB ~1000x: dividi per 1000 (m→mm) |
-| 12 | Bounding box < 0.1mm su qualsiasi asse | Pezzo degenere (piatto 2D) o errore di scala | Verifica che tutte le dimensioni siano in mm e > 0.5mm. Se un asse è 0: manca una estrusione |
-| 13 | Volume = 0 mm³ | Corpo completamente svuotato da cut, shell troppo sottile, o shape non solido | Verifica che `wall > 0`, che shell non svuoti tutto, che cut non rimuova il corpo intero |
-| 14 | Volume negativo o NaN | Shape BREP corrotto | Ricostruisci la geometria dall'inizio con operazioni più semplici |
-| 15 | Export fallito (file non creato) | `result` non è un oggetto CadQuery valido, o path non scrivibile | Verifica che `result` sia `cq.Workplane`, non un valore intermedio. Verifica che la directory esista |
-
-### 2.4 Errori di Pattern (codice strutturale)
-
-| # | Pattern rilevato | Problema | Fix automatico |
-|---|---|---|---|
-| 16 | `.edges("\|Z").fillet()` dopo `.union()` o `.cut()` | Selettore broad cattura edge piccoli creati da boolean | Sposta il fillet PRIMA delle boolean, oppure usa `NearestToPointSelector` |
-| 17 | `import numpy` / `from stl import` / `import trimesh` | Mesh diretta invece di modellazione BREP | Rimuovi e riscrivi con CadQuery puro |
-| 18 | Nessun `cq.exporters.export()` nel codice | Script non esporta nulla | Aggiungi export STEP+STL alla fine dello script |
-| 19 | `result` non definito a livello modulo | Il modello non è accessibile per validazione/export | Assicura che `result = make_assembly()` sia chiamato a livello modulo |
-| 20 | `try: ... except: pass` attorno a fillet/chamfer | Nasconde errori kernel | Rimuovi il try/except e applica il fix appropriato dal catalogo |
-
----
-
-## 3. Albero Decisionale — Fix Strategy
+### 1.2 MCP Integration
 
 ```
-ERRORE RICEVUTO
-│
-├─ Contiene "StdFail_NotDone"?
-│   ├─ Stack contiene "fillet" o "chamfer"?
-│   │   ├─ Selettore è "|Z", "|Y", "|X"? → Sposta fillet PRIMA di boolean (fix #16)
-│   │   ├─ Raggio > min_spessore / 2? → Riduci raggio (fix #1)
-│   │   └─ Altrimenti → Usa NearestToPointSelector (fix #1 alternativo)
-│   └─ Stack contiene "BRepAlgoAPI" / "boolean"?
-│       └─ Offset 0.01mm su un operando (fix #2)
-│
-├─ Contiene "Wire is not closed"?
-│   └─ Aggiungi .close() (fix #4)
-│
-├─ Contiene "No pending wires"?
-│   └─ Aggiungi sketch 2D prima di extrude (fix #6)
-│
-├─ Contiene "Cannot resolve selector"?
-│   └─ Aggiungi .first() o usa NearestToPointSelector (fix #7)
-│
-├─ Contiene "negative or zero"?
-│   └─ abs() o converti in cutBlind (fix #8)
-│
-├─ Contiene "Unknown color name"?
-│   └─ Sostituisci con cq.Color(r, g, b) float (fix #9)
-│
-├─ Contiene "Shape is null"?
-│   └─ Verifica dimensioni e operazioni (fix #5)
-│
-├─ Contiene "ModuleNotFoundError"?
-│   └─ pip install cadquery (fix #10)
-│
-└─ Nessun match nel catalogo?
-    └─ Analizza traceback manualmente, applica fix specifico
+IF MCP tool cadquery_validate is available:
+    use cadquery_validate(python_code) -> { valid, errors, bounding_box, volume_mm3 }
+    use cadquery_export(python_code, formats, output_dir) -> { files, bounding_box }
+    use cadquery_info(python_code) -> { bounding_box, volume_mm3, surface_area_mm2 }
+OTHERWISE:
+    run `python3 script.py` via bash
+    parse stdout for BB/volume, stderr for errors
 ```
 
 ---
 
-## 4. Post-Validazione — Report Formattato
+## 2. CadQuery Error Catalog — Diagnosis and Fix
 
-Dopo una validazione riuscita, genera SEMPRE questo report:
+### 2.1 Kernel Errors (OpenCascade)
+
+| # | Error (traceback) | Probable cause | Automatic fix |
+|---|---|---|---|
+| 1 | `StdFail_NotDone` in fillet/chamfer | Fillet radius > half of minimum thickness, or edge too short after boolean | Reduce radius to `min(radius, thickness/2 - 0.1)`. If still fails, use `NearestToPointSelector` for specific edges instead of broad selectors (`\|Z`, `\|Y`) |
+| 2 | `StdFail_NotDone` in boolean (cut/union) | Tangent, coincident, or coplanar geometries | Offset one geometry by 0.01mm on an axis. Example: `translate((0.01, 0, 0))` |
+| 3 | `BRep_API: not done` | Boolean between solids with degenerate intersection (edge-on-edge) | Slightly scale one operand: `* 1.001` or 0.01mm offset |
+| 4 | `ShapeAnalysis_Wire: Wire is not closed` | Polyline/sketch not closed | Add `.close()` before `.extrude()` |
+| 5 | `Shape is null` / `TopoDS_Shape is null` | Operation produces empty body (cut removes everything, extrude with height 0) | Verify that dimensions > 0, that cut doesn't exceed the body, that extrude has positive height |
+
+### 2.2 CadQuery API Errors
+
+| # | Error (traceback) | Probable cause | Automatic fix |
+|---|---|---|---|
+| 6 | `ValueError: No pending wires` | `.extrude()` without preceding 2D sketch | Add `.rect()`, `.circle()` or other sketch before `.extrude()` |
+| 7 | `ValueError: Cannot resolve selector` | Ambiguous selector after boolean (e.g. `">Z"` with multiple faces at the same Z) | Use `.faces(sel).first().workplane()` or `NearestToPointSelector((x,y,z))` |
+| 8 | `ValueError: negative or zero` in extrude | Negative extrusion value passed to `.extrude()` | Use `abs(value)` or switch to `.cutBlind(-value)` if intent was a pocket |
+| 9 | `ValueError: Unknown color name` | CSS color name not supported by CadQuery | Replace with `cq.Color(r, g, b)` using float RGB 0.0-1.0 |
+| 10 | `ModuleNotFoundError: No module named 'cadquery'` | CadQuery not installed in Python environment | Run `pip install cadquery` or check virtualenv |
+
+### 2.3 Geometric Errors (post-execution)
+
+| # | Condition | Probable cause | Automatic fix |
+|---|---|---|---|
+| 11 | Bounding box > 500mm on any axis | Scale error (units in inches or meters instead of mm) | If BB ~25.4x too large: divide by 25.4 (inches->mm). If BB ~1000x: divide by 1000 (m->mm) |
+| 12 | Bounding box < 0.1mm on any axis | Degenerate part (flat 2D) or scale error | Verify all dimensions are in mm and > 0.5mm. If one axis is 0: missing extrusion |
+| 13 | Volume = 0 mm3 | Body completely hollowed by cut, shell too thin, or non-solid shape | Verify that `wall > 0`, that shell doesn't hollow everything, that cut doesn't remove the entire body |
+| 14 | Negative or NaN volume | Corrupted BREP shape | Rebuild geometry from scratch with simpler operations |
+| 15 | Export failed (file not created) | `result` is not a valid CadQuery object, or path not writable | Verify that `result` is `cq.Workplane`, not an intermediate value. Verify the directory exists |
+
+### 2.4 Pattern Errors (structural code)
+
+| # | Detected pattern | Problem | Automatic fix |
+|---|---|---|---|
+| 16 | `.edges("\|Z").fillet()` after `.union()` or `.cut()` | Broad selector catches small edges created by boolean | Move fillet BEFORE booleans, or use `NearestToPointSelector` |
+| 17 | `import numpy` / `from stl import` / `import trimesh` | Direct mesh instead of BREP modeling | Remove and rewrite with pure CadQuery |
+| 18 | No `cq.exporters.export()` in code | Script exports nothing | Add STEP+STL export at the end of the script |
+| 19 | `result` not defined at module level | Model not accessible for validation/export | Ensure `result = make_assembly()` is called at module level |
+| 20 | `try: ... except: pass` around fillet/chamfer | Hides kernel errors | Remove try/except and apply the appropriate fix from the catalog |
+
+---
+
+## 3. Decision Tree — Fix Strategy
 
 ```
-✅ Esecuzione Python: OK (tentativo N/5)
-✅ Shape BREP: Valido
-✅ Bounding box: {X:.1f} × {Y:.1f} × {Z:.1f} mm
-📊 Volume: {vol:,.0f} mm³ ({vol/1000:.1f} cm³)
-📐 Area superficiale: {area:,.0f} mm²
-⚖️ Peso stimato: {peso:.1f}g ({materiale}, {infill}% infill)
-⏱️ Tempo stampa stimato: ~{ore}h {min}min
-📁 Export: {nome}.step + {nome}.stl
+ERROR RECEIVED
+|
++-- Contains "StdFail_NotDone"?
+|   +-- Stack contains "fillet" or "chamfer"?
+|   |   +-- Selector is "|Z", "|Y", "|X"? -> Move fillet BEFORE booleans (fix #16)
+|   |   +-- Radius > min_thickness / 2? -> Reduce radius (fix #1)
+|   |   +-- Otherwise -> Use NearestToPointSelector (fix #1 alternative)
+|   +-- Stack contains "BRepAlgoAPI" / "boolean"?
+|       +-- Offset 0.01mm on one operand (fix #2)
+|
++-- Contains "Wire is not closed"?
+|   +-- Add .close() (fix #4)
+|
++-- Contains "No pending wires"?
+|   +-- Add 2D sketch before extrude (fix #6)
+|
++-- Contains "Cannot resolve selector"?
+|   +-- Add .first() or use NearestToPointSelector (fix #7)
+|
++-- Contains "negative or zero"?
+|   +-- abs() or convert to cutBlind (fix #8)
+|
++-- Contains "Unknown color name"?
+|   +-- Replace with cq.Color(r, g, b) float (fix #9)
+|
++-- Contains "Shape is null"?
+|   +-- Verify dimensions and operations (fix #5)
+|
++-- Contains "ModuleNotFoundError"?
+|   +-- pip install cadquery (fix #10)
+|
++-- No catalog match?
+    +-- Manually analyze traceback, apply specific fix
 ```
 
-### 4.1 Calcolo Peso Stimato
+---
+
+## 4. Post-Validation — Formatted Report
+
+After a successful validation, ALWAYS generate this report:
+
+```
+OK Python execution: OK (attempt N/5)
+OK BREP Shape: Valid
+OK Bounding box: {X:.1f} x {Y:.1f} x {Z:.1f} mm
+Volume: {vol:,.0f} mm3 ({vol/1000:.1f} cm3)
+Surface area: {area:,.0f} mm2
+Estimated weight: {weight:.1f}g ({material}, {infill}% infill)
+Estimated print time: ~{hours}h {min}min
+Export: {name}.step + {name}.stl
+```
+
+### 4.1 Estimated Weight Calculation
 
 ```python
-# Densità materiali [g/cm³]
-DENSITA = {
+# Material densities [g/cm3]
+DENSITY = {
     "PLA":  1.24,
     "PETG": 1.27,
     "ABS":  1.04,
@@ -165,97 +165,97 @@ DENSITA = {
     "Nylon": 1.14,
 }
 
-# Peso = volume_cm3 * densità * fattore_infill
-# fattore_infill tiene conto di shell (2-3 perimetri ~0.8-1.2mm) + infill interno
-# Approssimazione: shell 100% + core a % infill
-# Per pezzi piccoli (< 30mm): quasi tutto shell → fattore ~0.8-0.9
-# Per pezzi grandi (> 100mm): più infill → fattore = shell_fraction + (1-shell_fraction) * infill%
+# Weight = volume_cm3 * density * infill_factor
+# infill_factor accounts for shell (2-3 perimeters ~0.8-1.2mm) + internal infill
+# Approximation: shell 100% + core at infill %
+# For small parts (< 30mm): almost all shell -> factor ~0.8-0.9
+# For large parts (> 100mm): more infill -> factor = shell_fraction + (1-shell_fraction) * infill%
 
-def peso_stimato(vol_mm3, materiale="PLA", infill_pct=20):
+def estimated_weight(vol_mm3, material="PLA", infill_pct=20):
     vol_cm3 = vol_mm3 / 1000
-    densita = DENSITA.get(materiale, 1.24)
-    fattore = 0.3 + 0.7 * (infill_pct / 100)  # approssimazione semplice
-    return vol_cm3 * densita * fattore
+    density = DENSITY.get(material, 1.24)
+    factor = 0.3 + 0.7 * (infill_pct / 100)  # simple approximation
+    return vol_cm3 * density * factor
 ```
 
-### 4.2 Calcolo Tempo Stampa Stimato
+### 4.2 Estimated Print Time Calculation
 
 ```python
-# Approssimazione basata su volume e altezza
-# Velocità media effettiva: ~15-25 cm³/h per FDM standard
-# Fattore layer_height: 0.2mm standard, 0.1mm lento, 0.3mm veloce
+# Approximation based on volume and height
+# Average effective speed: ~15-25 cm3/h for standard FDM
+# Layer height factor: 0.2mm standard, 0.1mm slow, 0.3mm fast
 
-def tempo_stampa_stimato(vol_mm3, altezza_mm, layer_h=0.2, velocita_cm3h=20):
+def estimated_print_time(vol_mm3, height_mm, layer_h=0.2, speed_cm3h=20):
     vol_cm3 = vol_mm3 / 1000
-    n_layer = altezza_mm / layer_h
-    tempo_h = vol_cm3 / velocita_cm3h
-    # Aggiungi overhead per movimenti, riscaldamento, retrazioni
-    tempo_h *= 1.3
-    ore = int(tempo_h)
-    minuti = int((tempo_h - ore) * 60)
-    return ore, minuti
+    n_layers = height_mm / layer_h
+    time_h = vol_cm3 / speed_cm3h
+    # Add overhead for moves, heating, retractions
+    time_h *= 1.3
+    hours = int(time_h)
+    minutes = int((time_h - hours) * 60)
+    return hours, minutes
 ```
 
 ---
 
-## 5. Validazioni Geometriche
+## 5. Geometric Validations
 
-### 5.1 Check Bounding Box
+### 5.1 Bounding Box Check
 
 ```python
 bb = result.val().BoundingBox()
 
-# Dimensioni ragionevoli per stampa FDM
-assert bb.xlen > 0.1, "Asse X degenere (< 0.1mm)"
-assert bb.ylen > 0.1, "Asse Y degenere (< 0.1mm)"
-assert bb.zlen > 0.1, "Asse Z degenere (< 0.1mm)"
-assert bb.xlen < 500, f"Asse X troppo grande ({bb.xlen:.0f}mm > 500mm)"
-assert bb.ylen < 500, f"Asse Y troppo grande ({bb.ylen:.0f}mm > 500mm)"
-assert bb.zlen < 500, f"Asse Z troppo grande ({bb.zlen:.0f}mm > 500mm)"
+# Reasonable dimensions for FDM printing
+assert bb.xlen > 0.1, "X axis degenerate (< 0.1mm)"
+assert bb.ylen > 0.1, "Y axis degenerate (< 0.1mm)"
+assert bb.zlen > 0.1, "Z axis degenerate (< 0.1mm)"
+assert bb.xlen < 500, f"X axis too large ({bb.xlen:.0f}mm > 500mm)"
+assert bb.ylen < 500, f"Y axis too large ({bb.ylen:.0f}mm > 500mm)"
+assert bb.zlen < 500, f"Z axis too large ({bb.zlen:.0f}mm > 500mm)"
 ```
 
-### 5.2 Check Volume
+### 5.2 Volume Check
 
 ```python
 vol = result.val().Volume()
 
-assert vol > 0, "Volume = 0 (corpo vuoto o non solido)"
-assert vol < 1e9, f"Volume irrealistico ({vol:.0f}mm³ = {vol/1e6:.0f}L)"
+assert vol > 0, "Volume = 0 (empty body or non-solid)"
+assert vol < 1e9, f"Unrealistic volume ({vol:.0f}mm3 = {vol/1e6:.0f}L)"
 
-# Check proporzione (volume vs bounding box)
+# Check proportion (volume vs bounding box)
 bb_vol = bb.xlen * bb.ylen * bb.zlen
 fill_ratio = vol / bb_vol if bb_vol > 0 else 0
-assert fill_ratio > 0.001, f"Fill ratio troppo basso ({fill_ratio:.4f}) — possibile shape degenere"
+assert fill_ratio > 0.001, f"Fill ratio too low ({fill_ratio:.4f}) — possible degenerate shape"
 ```
 
-### 5.3 Check Printability
+### 5.3 Printability Check
 
 ```python
-# Spessori minimi per FDM
-MIN_WALL = 0.8  # [mm] — sotto questo la stampante non riesce
+# Minimum thicknesses for FDM
+MIN_WALL = 0.8  # [mm] — below this the printer can't handle it
 
-# Altezza massima senza supporti
+# Maximum height without supports
 MAX_UNSUPPORTED = 300  # [mm]
 
-# Warning (non errore) se troppo alto
+# Warning (not error) if too tall
 if bb.zlen > MAX_UNSUPPORTED:
-    print(f"⚠️ Altezza {bb.zlen:.0f}mm — potrebbe richiedere supporti o suddivisione")
+    print(f"Warning: Height {bb.zlen:.0f}mm — may require supports or splitting")
 ```
 
 ---
 
-## 6. Esempio Completo — Fix Loop in Azione
+## 6. Full Example — Fix Loop in Action
 
-### Input: script con fillet troppo grande
+### Input: script with fillet too large
 
 ```python
-"""Box con fillet — intenzionalmente rotto"""
+"""Box with fillet — intentionally broken"""
 import cadquery as cq
 
 width  = 40.0   # [mm]
 depth  = 30.0   # [mm]
-height = 5.0    # [mm] — molto sottile!
-fillet = 4.0    # [mm] — TROPPO: > height/2
+height = 5.0    # [mm] — very thin!
+fillet = 4.0    # [mm] — TOO LARGE: > height/2
 
 result = (
     cq.Workplane("XY")
@@ -265,40 +265,40 @@ result = (
 )
 ```
 
-### Tentativo 1: ERRORE
+### Attempt 1: ERROR
 ```
 StdFail_NotDone: fillet radius (4.0) > half minimum dimension (2.5)
 ```
 
-### Fix applicato (catalogo #1):
+### Fix applied (catalog #1):
 ```python
-# fillet ridotto: min(4.0, 5.0/2 - 0.1) = 2.4
-fillet = 2.4    # [mm] — ridotto da 4.0 (era > height/2)
+# fillet reduced: min(4.0, 5.0/2 - 0.1) = 2.4
+fillet = 2.4    # [mm] — reduced from 4.0 (was > height/2)
 ```
 
-### Tentativo 2: SUCCESSO
+### Attempt 2: SUCCESS
 ```
-✅ Esecuzione Python: OK (tentativo 2/5)
-✅ Shape BREP: Valido
-✅ Bounding box: 40.0 × 30.0 × 5.0 mm
-📊 Volume: 5,544 mm³ (5.5 cm³)
-📁 Export: box.step + box.stl
+OK Python execution: OK (attempt 2/5)
+OK BREP Shape: Valid
+OK Bounding box: 40.0 x 30.0 x 5.0 mm
+Volume: 5,544 mm3 (5.5 cm3)
+Export: box.step + box.stl
 ```
 
 ---
 
-## 7. Checklist Pre-Consegna
+## 7. Pre-Delivery Checklist
 
-Prima di dichiarare il modello valido e consegnare all'utente:
+Before declaring the model valid and delivering to the user:
 
-- [ ] Script Python esegue senza errori
-- [ ] Bounding box ha dimensioni > 0.1mm su tutti gli assi
-- [ ] Bounding box ha dimensioni < 500mm su tutti gli assi
-- [ ] Volume > 0 mm³
+- [ ] Python script runs without errors
+- [ ] Bounding box dimensions > 0.1mm on all axes
+- [ ] Bounding box dimensions < 500mm on all axes
+- [ ] Volume > 0 mm3
 - [ ] Fill ratio > 0.001 (volume / bb_volume)
-- [ ] File .step esportato e verificato esistente
-- [ ] File .stl esportato e verificato esistente
-- [ ] Nessun `try: except: pass` nel codice finale
-- [ ] Tutti i parametri con commento `[mm]` o `[deg]`
-- [ ] Nessun magic number nel codice
-- [ ] Report post-validazione stampato
+- [ ] .step file exported and verified to exist
+- [ ] .stl file exported and verified to exist
+- [ ] No `try: except: pass` in final code
+- [ ] All parameters with `[mm]` or `[deg]` comment
+- [ ] No magic numbers in code
+- [ ] Post-validation report printed
