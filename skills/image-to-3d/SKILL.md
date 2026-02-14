@@ -1,569 +1,569 @@
-# SKILL: image-to-3d — Analisi Immagini e Specifiche Strutturate per CadQuery
+# SKILL: image-to-3d — Image Analysis and Structured Specifications for CadQuery
 
-## Identità
-Analizzatore visuale specializzato in reverse-engineering da immagini a specifiche 3D strutturate.
-Riceve un'immagine (sketch, foto, disegno tecnico, screenshot CAD), la analizza, e produce
-un output strutturato che alimenta la skill spatial-reasoning per la modellazione CadQuery.
+## Identity
+Specialized visual analyzer for reverse-engineering from images to structured 3D specifications.
+Receives an image (sketch, photo, technical drawing, CAD screenshot), analyzes it, and produces
+structured output that feeds the spatial-reasoning skill for CadQuery modeling.
 
 ---
 
-## 1. Classificazione Input
+## 1. Input Classification
 
-Prima di analizzare l'immagine, classifica il tipo di input. La classificazione determina
-il protocollo di analisi, il livello di confidenza e le domande da porre all'utente.
+Before analyzing the image, classify the input type. The classification determines
+the analysis protocol, confidence level, and questions to ask the user.
 
-### 1.1 Tipi di Input
+### 1.1 Input Types
 
-| Tipo | Caratteristiche | Confidenza dimensionale | Azione richiesta |
+| Type | Characteristics | Dimensional confidence | Required action |
 |---|---|---|---|
-| **A. Sketch a mano** | Tratti imprecisi, proporzioni approssimative, possibili annotazioni | BASSA — chiedi dimensioni | Estrai forme e topologia, chiedi TUTTE le quote |
-| **B. Foto oggetto** | Prospettiva, distorsione, possibili riferimenti dimensionali | MEDIA — stima da riferimenti | Identifica riferimenti noti, stima rapporti dimensionali |
-| **C. Disegno tecnico** | Viste ortogonali, quote, tolleranze, sezioni | ALTA — leggi direttamente | Estrai quote, sezioni, viste; verifica coerenza tra viste |
-| **D. Screenshot CAD** | Modello 3D renderizzato, possibili quote overlay | ALTA — leggi se presenti | Identifica features, estrai quote se visibili |
-| **E. Immagine prodotto** | Foto catalogo/ecommerce, sfondo pulito, angoli noti | MEDIA — stima da categoria | Identifica categoria prodotto, stima da standard |
+| **A. Hand sketch** | Imprecise strokes, approximate proportions, possible annotations | LOW — ask for dimensions | Extract shapes and topology, ask for ALL dimensions |
+| **B. Object photo** | Perspective, distortion, possible dimensional references | MEDIUM — estimate from references | Identify known references, estimate dimensional ratios |
+| **C. Technical drawing** | Orthogonal views, dimensions, tolerances, cross-sections | HIGH — read directly | Extract dimensions, sections, views; verify consistency between views |
+| **D. CAD screenshot** | Rendered 3D model, possible dimension overlays | HIGH — read if present | Identify features, extract dimensions if visible |
+| **E. Product image** | Catalog/ecommerce photo, clean background, known angles | MEDIUM — estimate from category | Identify product category, estimate from standards |
 
-### 1.2 Albero Decisionale Classificazione
+### 1.2 Classification Decision Tree
 
 ```
-IMMAGINE RICEVUTA
-│
-├─ Ha quote/misure numeriche scritte?
-│   ├─ Viste ortogonali (fronte, lato, pianta)? → TIPO C: Disegno tecnico
-│   └─ Singola vista con annotazioni? → TIPO D: Screenshot CAD (o TIPO A se sketch)
-│
-├─ Tratti a mano/disegnati?
-│   └─ → TIPO A: Sketch a mano
-│
-├─ Foto reale (texture, ombre, sfondo)?
-│   ├─ Sfondo bianco/catalogo? → TIPO E: Immagine prodotto
-│   └─ Sfondo reale/ambiente? → TIPO B: Foto oggetto
-│
-└─ Rendering 3D / wireframe?
-    └─ → TIPO D: Screenshot CAD
+IMAGE RECEIVED
+|
++-- Has numeric dimensions/measurements written?
+|   +-- Orthogonal views (front, side, top)? -> TYPE C: Technical drawing
+|   +-- Single view with annotations? -> TYPE D: CAD screenshot (or TYPE A if sketch)
+|
++-- Hand-drawn strokes?
+|   +-- -> TYPE A: Hand sketch
+|
++-- Real photo (texture, shadows, background)?
+|   +-- White/catalog background? -> TYPE E: Product image
+|   +-- Real environment background? -> TYPE B: Object photo
+|
++-- 3D rendering / wireframe?
+    +-- -> TYPE D: CAD screenshot
 ```
 
 ---
 
-## 2. Protocollo di Analisi
+## 2. Analysis Protocol
 
-### 2.1 Prompt di Analisi Strutturato
+### 2.1 Structured Analysis Prompt
 
-Per ogni immagine, esegui questa analisi in sequenza:
+For each image, perform this analysis in sequence:
 
 ```
-ANALISI IMMAGINE
-================
+IMAGE ANALYSIS
+==============
 
-TIPO INPUT: [A/B/C/D/E] — [nome tipo]
-CONFIDENZA DIMENSIONALE: [BASSA/MEDIA/ALTA]
+INPUT TYPE: [A/B/C/D/E] — [type name]
+DIMENSIONAL CONFIDENCE: [LOW/MEDIUM/HIGH]
 
-STEP 1 — IDENTIFICAZIONE FORME PRIMITIVE
-  Forme rilevate:
-    1. [nome] — [primitiva: box/cilindro/tubo/lastra/cono/sfera/profilo L/profilo U/...]
-       Posizione: [dove nel pezzo — base, top, lato, centro]
-       Dimensioni stimate: [L x W x H mm] (confidenza: [alta/media/bassa])
+STEP 1 — PRIMITIVE SHAPE IDENTIFICATION
+  Detected shapes:
+    1. [name] — [primitive: box/cylinder/tube/plate/cone/sphere/L-profile/U-profile/...]
+       Position: [where in the part — base, top, side, center]
+       Estimated dimensions: [L x W x H mm] (confidence: [high/medium/low])
     2. [...]
 
-STEP 2 — OPERAZIONI RILEVATE
-  Operazioni booleane e features:
-    1. [tipo: foro/tasca/slot/raccordo/smusso/nervatura/boss/snap-fit/...]
-       Posizione: [su quale forma, dove]
-       Dimensioni stimate: [Ø, profondità, raggio, ...]
+STEP 2 — DETECTED OPERATIONS
+  Boolean operations and features:
+    1. [type: hole/pocket/slot/fillet/chamfer/rib/boss/snap-fit/...]
+       Position: [on which shape, where]
+       Estimated dimensions: [dia, depth, radius, ...]
     2. [...]
 
-STEP 3 — SIMMETRIE E PATTERN
-  Simmetrie:
-    □ Simmetria assiale (rivoluzione): [sì/no] — asse: [X/Y/Z]
-    □ Simmetria speculare: [sì/no] — piano: [XY/XZ/YZ]
-    □ Pattern circolare: [sì/no] — N elementi, raggio
-    □ Pattern lineare: [sì/no] — N elementi, passo
+STEP 3 — SYMMETRIES AND PATTERNS
+  Symmetries:
+    [] Axial symmetry (revolution): [yes/no] — axis: [X/Y/Z]
+    [] Mirror symmetry: [yes/no] — plane: [XY/XZ/YZ]
+    [] Circular pattern: [yes/no] — N elements, radius
+    [] Linear pattern: [yes/no] — N elements, pitch
 
-STEP 4 — RAPPORTI DIMENSIONALI
-  Se le dimensioni assolute non sono note:
-    - Rapporto L:W:H ≈ [a : b : c]
-    - Dimensione di riferimento: [elemento noto] = [valore] mm
-    - Scala derivata: 1 unità immagine ≈ [X] mm
+STEP 4 — DIMENSIONAL RATIOS
+  If absolute dimensions are unknown:
+    - L:W:H ratio ~ [a : b : c]
+    - Reference dimension: [known element] = [value] mm
+    - Derived scale: 1 image unit ~ [X] mm
 
-STEP 5 — FEATURES FUNZIONALI
-  Scopo probabile: [cosa fa il pezzo — supporto, contenitore, adattatore, ...]
-  Interfacce esterne:
-    1. [dove si collega] — [tipo: vite, snap, incastro, appoggio]
+STEP 5 — FUNCTIONAL FEATURES
+  Probable purpose: [what the part does — support, enclosure, adapter, ...]
+  External interfaces:
+    1. [where it connects] — [type: screw, snap, press-fit, rest]
     2. [...]
-  Vincoli funzionali:
-    - [es. deve resistere a carico, deve essere impermeabile, deve condurre calore, ...]
+  Functional constraints:
+    - [e.g. must withstand load, must be waterproof, must conduct heat, ...]
 ```
 
-### 2.2 Domande Obbligatorie per Tipo
+### 2.2 Mandatory Questions by Type
 
-#### Tipo A — Sketch a mano
+#### Type A — Hand sketch
 
-Chiedi SEMPRE:
-1. Dimensioni complessive (L x W x H)
-2. Spessore pareti (se contenitore o guscio)
-3. Diametro fori e tipo (passante/cieco, filettato/liscio)
-4. Materiale e uso previsto
-5. Tolleranze critiche (accoppiamenti)
+ALWAYS ask:
+1. Overall dimensions (L x W x H)
+2. Wall thickness (if enclosure or shell)
+3. Hole diameters and type (through/blind, threaded/smooth)
+4. Material and intended use
+5. Critical tolerances (fits)
 
-#### Tipo B — Foto oggetto
+#### Type B — Object photo
 
-Chiedi SE MANCANO riferimenti:
-1. C'e un oggetto noto nell'immagine per scala? (moneta, USB, dito, ...)
-2. Dimensione di almeno un elemento noto
-3. Materiale del pezzo originale
-4. Funzione e accoppiamenti
+Ask IF references are missing:
+1. Is there a known object in the image for scale? (coin, USB, finger, ...)
+2. Dimension of at least one known element
+3. Material of the original part
+4. Function and fits
 
-#### Tipo C — Disegno tecnico
+#### Type C — Technical drawing
 
-Chiedi SOLO SE ambiguo:
-1. Scala del disegno (se non indicata)
-2. Tolleranze generali (se non a norma)
-3. Materiale (se non indicato nel cartiglio)
+Ask ONLY IF ambiguous:
+1. Drawing scale (if not indicated)
+2. General tolerances (if not per standard)
+3. Material (if not indicated in the title block)
 
-#### Tipo D — Screenshot CAD
+#### Type D — CAD screenshot
 
-Chiedi SOLO SE mancanti:
-1. Quote non visibili nello screenshot
-2. Features nascoste (fori ciechi, cavita interne)
+Ask ONLY IF missing:
+1. Dimensions not visible in the screenshot
+2. Hidden features (blind holes, internal cavities)
 
-#### Tipo E — Immagine prodotto
+#### Type E — Product image
 
-Chiedi SE non determinabile:
-1. Categoria precisa del prodotto
-2. Dimensione di un elemento noto
-3. Funzione e contesto d'uso
+Ask IF not determinable:
+1. Exact product category
+2. Dimension of a known element
+3. Function and usage context
 
 ---
 
-## 3. Tabella Riferimenti Dimensionali
+## 3. Dimensional Reference Table
 
-### 3.1 Oggetti Comuni per Scala
+### 3.1 Common Objects for Scale
 
-| Riferimento | Dimensione | Uso |
+| Reference | Dimension | Use |
 |---|---|---|
-| Moneta 1 cent EUR | Ø 16.25 mm | Piccoli oggetti |
-| Moneta 10 cent EUR | Ø 19.75 mm | Piccoli oggetti |
-| Moneta 50 cent EUR | Ø 24.25 mm | Oggetti medi |
-| Moneta 1 EUR | Ø 23.25 mm | Oggetti medi |
-| Moneta 2 EUR | Ø 25.75 mm | Oggetti medi |
-| Carta di credito | 85.6 x 53.98 mm | Oggetti piatti |
-| Foglio A4 | 210 x 297 mm | Oggetti grandi |
-| Penna Bic standard | Ø 7 mm, L 150 mm | Scala lineare |
-| Dito indice adulto | ~18 mm larghezza, ~75 mm lunghezza | Stima rapida |
-| Dito mignolo adulto | ~14 mm larghezza | Dettagli piccoli |
-| Palmo mano adulto | ~85 mm larghezza | Oggetti medi |
+| 1 cent EUR coin | dia 16.25 mm | Small objects |
+| 10 cent EUR coin | dia 19.75 mm | Small objects |
+| 50 cent EUR coin | dia 24.25 mm | Medium objects |
+| 1 EUR coin | dia 23.25 mm | Medium objects |
+| 2 EUR coin | dia 25.75 mm | Medium objects |
+| Credit card | 85.6 x 53.98 mm | Flat objects |
+| A4 sheet | 210 x 297 mm | Large objects |
+| Standard Bic pen | dia 7 mm, L 150 mm | Linear scale |
+| Adult index finger | ~18 mm width, ~75 mm length | Quick estimate |
+| Adult pinky finger | ~14 mm width | Small details |
+| Adult palm | ~85 mm width | Medium objects |
 
-### 3.2 Connettori Standard
+### 3.2 Standard Connectors
 
-| Connettore | Dimensioni apertura | Note |
+| Connector | Opening dimensions | Notes |
 |---|---|---|
-| USB-A | 12.0 x 4.5 mm | Connettore rettangolare classico |
-| USB-C | 8.34 x 2.56 mm | Ovale, simmetrico |
-| USB-B | 12.0 x 10.9 mm | Quasi quadrato, rastremato |
-| USB Micro-B | 6.85 x 1.80 mm | Trapezoidale sottile |
-| USB Mini-B | 6.8 x 3.0 mm | Trapezoidale |
-| HDMI standard | 14.0 x 4.55 mm | Trapezoidale |
-| HDMI mini | 10.42 x 2.42 mm | Trapezoidale piccolo |
-| HDMI micro | 6.4 x 2.8 mm | Simile a micro-USB |
-| Ethernet RJ45 | 11.68 x 13.54 mm | Quadrato con clip |
-| Jack audio 3.5mm | Ø 3.5 mm | Foro tondo |
-| Barrel jack 5.5/2.1 | Ø 5.5 mm esterno | Alimentazione DC |
-| SD card | 24.0 x 32.0 x 2.1 mm | Slot con guida |
-| MicroSD | 11.0 x 15.0 x 1.0 mm | Slot piccolo |
+| USB-A | 12.0 x 4.5 mm | Classic rectangular connector |
+| USB-C | 8.34 x 2.56 mm | Oval, symmetrical |
+| USB-B | 12.0 x 10.9 mm | Nearly square, tapered |
+| USB Micro-B | 6.85 x 1.80 mm | Thin trapezoidal |
+| USB Mini-B | 6.8 x 3.0 mm | Trapezoidal |
+| HDMI standard | 14.0 x 4.55 mm | Trapezoidal |
+| HDMI mini | 10.42 x 2.42 mm | Small trapezoidal |
+| HDMI micro | 6.4 x 2.8 mm | Similar to micro-USB |
+| Ethernet RJ45 | 11.68 x 13.54 mm | Square with clip |
+| 3.5mm audio jack | dia 3.5 mm | Round hole |
+| Barrel jack 5.5/2.1 | dia 5.5 mm outer | DC power |
+| SD card | 24.0 x 32.0 x 2.1 mm | Guided slot |
+| MicroSD | 11.0 x 15.0 x 1.0 mm | Small slot |
 
-### 3.3 Schede Elettroniche
+### 3.3 Electronic Boards
 
-| Scheda | Dimensioni PCB | Fori montaggio | Note |
+| Board | PCB dimensions | Mounting holes | Notes |
 |---|---|---|---|
-| Arduino Uno R3 | 68.6 x 53.4 mm | 4x Ø3.2, posizioni non regolari | USB-B + barrel jack |
-| Arduino Nano | 18.0 x 45.0 mm | 2x Ø1.6 (o nessuno) | Mini-USB o USB-C |
-| Arduino Mega 2560 | 101.6 x 53.3 mm | 4x Ø3.2 | USB-B + barrel jack |
+| Arduino Uno R3 | 68.6 x 53.4 mm | 4x dia 3.2, irregular positions | USB-B + barrel jack |
+| Arduino Nano | 18.0 x 45.0 mm | 2x dia 1.6 (or none) | Mini-USB or USB-C |
+| Arduino Mega 2560 | 101.6 x 53.3 mm | 4x dia 3.2 | USB-B + barrel jack |
 | Raspberry Pi 4B | 85.0 x 56.0 mm | 4x M2.5, 58x49mm pattern | 2x USB-A + 2x micro-HDMI + USB-C |
-| Raspberry Pi Zero 2W | 65.0 x 30.0 mm | 4x Ø2.75 | Mini-HDMI + micro-USB |
-| Raspberry Pi Pico | 21.0 x 51.0 mm | 4x Ø2.1, 11.4x47mm pattern | Micro-USB o USB-C |
-| ESP32 DevKit V1 | 51.0 x 28.0 mm | nessuno (breadboard pin) | Micro-USB, antenne ai lati |
-| ESP32-S3 DevKit | 69.0 x 26.0 mm | nessuno | USB-C |
-| ESP8266 NodeMCU | 49.0 x 26.0 mm | nessuno (breadboard pin) | Micro-USB |
-| STM32 Blue Pill | 53.0 x 23.0 mm | nessuno (breadboard pin) | Micro-USB |
+| Raspberry Pi Zero 2W | 65.0 x 30.0 mm | 4x dia 2.75 | Mini-HDMI + micro-USB |
+| Raspberry Pi Pico | 21.0 x 51.0 mm | 4x dia 2.1, 11.4x47mm pattern | Micro-USB or USB-C |
+| ESP32 DevKit V1 | 51.0 x 28.0 mm | none (breadboard pins) | Micro-USB, antennas on sides |
+| ESP32-S3 DevKit | 69.0 x 26.0 mm | none | USB-C |
+| ESP8266 NodeMCU | 49.0 x 26.0 mm | none (breadboard pins) | Micro-USB |
+| STM32 Blue Pill | 53.0 x 23.0 mm | none (breadboard pins) | Micro-USB |
 
-### 3.4 Viteria Standard
+### 3.4 Standard Hardware
 
-| Elemento | Dimensione | Uso nella stima |
+| Element | Dimension | Use in estimation |
 |---|---|---|
-| Vite M2 testa cilindrica | Ø testa 3.8 mm | Elettronica piccola |
-| Vite M2.5 testa cilindrica | Ø testa 4.5 mm | RPi, elettronica |
-| Vite M3 testa cilindrica | Ø testa 5.5 mm | Uso generico |
-| Vite M3 testa svasata | Ø testa 6.0 mm | Superfici piatte |
-| Vite M4 testa cilindrica | Ø testa 7.0 mm | Strutturale |
-| Vite M5 testa cilindrica | Ø testa 8.5 mm | Strutturale pesante |
-| Dado M3 | 5.5 mm chiave, 2.4 mm alto | Estremamente comune |
-| Dado M4 | 7.0 mm chiave, 3.2 mm alto | Strutturale |
-| Dado M5 | 8.0 mm chiave, 4.0 mm alto | Strutturale pesante |
-| Rondella M3 | Ø est 7.0, Ø int 3.2, sp 0.5 mm | Distribuzione carico |
-| Rondella M4 | Ø est 9.0, Ø int 4.3, sp 0.8 mm | Distribuzione carico |
-| Inserto caldo M3 | Ø 4.0-4.2 mm sede | Filettatura in plastica |
-| Inserto caldo M4 | Ø 5.6-6.0 mm sede | Filettatura in plastica |
+| M2 socket head screw | head dia 3.8 mm | Small electronics |
+| M2.5 socket head screw | head dia 4.5 mm | RPi, electronics |
+| M3 socket head screw | head dia 5.5 mm | General purpose |
+| M3 countersunk screw | head dia 6.0 mm | Flat surfaces |
+| M4 socket head screw | head dia 7.0 mm | Structural |
+| M5 socket head screw | head dia 8.5 mm | Heavy structural |
+| M3 nut | 5.5 mm wrench, 2.4 mm tall | Extremely common |
+| M4 nut | 7.0 mm wrench, 3.2 mm tall | Structural |
+| M5 nut | 8.0 mm wrench, 4.0 mm tall | Heavy structural |
+| M3 washer | OD 7.0, ID 3.2, t 0.5 mm | Load distribution |
+| M4 washer | OD 9.0, ID 4.3, t 0.8 mm | Load distribution |
+| M3 heat insert | dia 4.0-4.2 mm seat | Threading into plastic |
+| M4 heat insert | dia 5.6-6.0 mm seat | Threading into plastic |
 
-### 3.5 Profili e Tubi Standard
+### 3.5 Standard Profiles and Tubes
 
-| Elemento | Dimensioni | Note |
+| Element | Dimensions | Notes |
 |---|---|---|
-| Tubo tondo 15mm | Ø est 15, sp 1.0 mm | Aste piccole |
-| Tubo tondo 20mm | Ø est 20, sp 1.5 mm | Tende, strutture leggere |
-| Tubo tondo 25mm | Ø est 25, sp 1.5 mm | Appendiabiti |
-| Tubo tondo 32mm | Ø est 32, sp 2.0 mm | Idraulica, strutture |
-| Profilo alluminio 2020 | 20 x 20 mm | Slot 6mm, V-slot o T-slot |
-| Profilo alluminio 3030 | 30 x 30 mm | Slot 8mm |
-| Profilo alluminio 4040 | 40 x 40 mm | Slot 8mm, strutture pesanti |
-| Barra tonda 8mm | Ø 8 mm | Guide lineari, perni |
-| Barra tonda 10mm | Ø 10 mm | Guide, alberi |
+| Round tube 15mm | OD 15, wall 1.0 mm | Small rods |
+| Round tube 20mm | OD 20, wall 1.5 mm | Curtain rods, light structures |
+| Round tube 25mm | OD 25, wall 1.5 mm | Clothes hangers |
+| Round tube 32mm | OD 32, wall 2.0 mm | Plumbing, structures |
+| Aluminum extrusion 2020 | 20 x 20 mm | 6mm slot, V-slot or T-slot |
+| Aluminum extrusion 3030 | 30 x 30 mm | 8mm slot |
+| Aluminum extrusion 4040 | 40 x 40 mm | 8mm slot, heavy structures |
+| Round bar 8mm | dia 8 mm | Linear guides, pins |
+| Round bar 10mm | dia 10 mm | Guides, shafts |
 
 ---
 
-## 4. Output Strutturato
+## 4. Structured Output
 
-L'output dell'analisi immagine alimenta direttamente la Fase 1 (Decomposizione Funzionale)
-della skill spatial-reasoning. Formato:
+The image analysis output feeds directly into Phase 1 (Functional Decomposition)
+of the spatial-reasoning skill. Format:
 
 ```
 IMAGE-TO-3D OUTPUT
 ==================
 
-TIPO INPUT: [A/B/C/D/E] — [nome tipo]
-CONFIDENZA: [BASSA/MEDIA/ALTA]
-RIFERIMENTO SCALA: [oggetto usato] = [dimensione] mm
+INPUT TYPE: [A/B/C/D/E] — [type name]
+CONFIDENCE: [LOW/MEDIUM/HIGH]
+SCALE REFERENCE: [object used] = [dimension] mm
 
-OBIETTIVO: [funzione del pezzo — cosa fa, dove si monta, perche serve]
+OBJECTIVE: [part function — what it does, where it mounts, why it's needed]
 
-VINCOLI:
-  Materiale suggerito: [PLA/PETG/ABS/ASA/PC/TPU] — [motivazione]
-  Temperatura servizio: [°C]
-  Carichi: [tipo e direzione]
-  Accoppiamenti: [elenco interfacce]
-  Dimensioni massime: [vincolo stampante o spazio]
+CONSTRAINTS:
+  Suggested material: [PLA/PETG/ABS/ASA/PC/TPU] — [rationale]
+  Service temperature: [°C]
+  Loads: [type and direction]
+  Fits: [list of interfaces]
+  Maximum dimensions: [printer or space constraint]
 
-COMPONENTI:
-  1. [nome] — [primitiva CadQuery: box/cylinder/polyline+extrude/revolve/loft]
-     Dimensioni: [L x W x H mm] (confidenza: [alta/media/bassa])
-     Funzione: [perche esiste]
-     CadQuery: [hint operazione — es. "cq.Workplane('XY').box(40, 30, 5)"]
+COMPONENTS:
+  1. [name] — [CadQuery primitive: box/cylinder/polyline+extrude/revolve/loft]
+     Dimensions: [L x W x H mm] (confidence: [high/medium/low])
+     Function: [why it exists]
+     CadQuery: [operation hint — e.g. "cq.Workplane('XY').box(40, 30, 5)"]
   2. [...]
 
 FEATURES:
-  1. [tipo: hole/pocket/slot/fillet/chamfer/shell/boss/rib/snap_clip]
-     Su: [componente N]
-     Dimensioni: [Ø, profondita, raggio, ...]
-     CadQuery: [hint — es. ".faces('>Z').workplane().hole(3.4)"]
+  1. [type: hole/pocket/slot/fillet/chamfer/shell/boss/rib/snap_clip]
+     On: [component N]
+     Dimensions: [dia, depth, radius, ...]
+     CadQuery: [hint — e.g. ".faces('>Z').workplane().hole(3.4)"]
   2. [...]
 
-SIMMETRIE SFRUTTABILI:
-  - [tipo simmetria] → [operazione CadQuery: .mirror() / .polarArray() / .rarray()]
+EXPLOITABLE SYMMETRIES:
+  - [symmetry type] -> [CadQuery operation: .mirror() / .polarArray() / .rarray()]
 
-OPERAZIONI BOOLEANE:
-  Ordine suggerito:
-    1. [componente base]
-    2. + [addizione]: [componente N]
-    3. - [sottrazione]: [feature N]
-    4. fillet/chamfer: [dove, raggio] — PRIMA delle boolean se broad selector
+BOOLEAN OPERATIONS:
+  Suggested order:
+    1. [base component]
+    2. + [addition]: [component N]
+    3. - [subtraction]: [feature N]
+    4. fillet/chamfer: [where, radius] — BEFORE booleans if using broad selector
 
-ORIENTAMENTO STAMPA SUGGERITO:
-  Piano XY: [quale faccia sul piatto]
-  Motivazione: [perche]
-  Supporti: [si/no — dove se si]
+SUGGESTED PRINT ORIENTATION:
+  XY plane: [which face on the bed]
+  Rationale: [why]
+  Supports: [yes/no — where if yes]
 
-DOMANDE PER L'UTENTE (se confidenza < ALTA):
-  1. [domanda specifica con opzioni se possibile]
+QUESTIONS FOR THE USER (if confidence < HIGH):
+  1. [specific question with options if possible]
   2. [...]
 ```
 
-### 4.1 Mapping Forme Visive → Primitive CadQuery
+### 4.1 Visual Shapes to CadQuery Primitives Mapping
 
-| Forma vista nell'immagine | Primitiva CadQuery | Note |
+| Shape seen in image | CadQuery primitive | Notes |
 |---|---|---|
-| Rettangolo / blocco | `cq.Workplane("XY").box(w, d, h)` | Forma piu comune |
-| Cilindro / tubo | `cq.Workplane("XY").cylinder(h, r)` | Se cavo: `.circle(r_ext).circle(r_int).extrude(h)` |
-| Sfera | `cq.Workplane("XY").sphere(r)` | Rara in FDM |
-| Profilo a L / T / U | `cq.Workplane("XZ").polyline(pts).close().extrude(d)` | Sketch 2D + estrusione |
-| Pezzo assial-simmetrico | `cq.Workplane("XZ").polyline(pts).close().revolve()` | Boccole, adattatori, pomelli |
-| Transizione tra sezioni | `loft()` tra sketch su workplane diversi | Transizioni di forma |
-| Guscio / contenitore | `.box().shell(-wall)` o `box.cut(cavity)` | Shell piu pulito se uniforme |
-| Forma organica curva | NON gestibile — segnala come limitazione | Suggerisci sculpting |
+| Rectangle / block | `cq.Workplane("XY").box(w, d, h)` | Most common shape |
+| Cylinder / tube | `cq.Workplane("XY").cylinder(h, r)` | If hollow: `.circle(r_ext).circle(r_int).extrude(h)` |
+| Sphere | `cq.Workplane("XY").sphere(r)` | Rare in FDM |
+| L / T / U profile | `cq.Workplane("XZ").polyline(pts).close().extrude(d)` | 2D sketch + extrusion |
+| Axisymmetric part | `cq.Workplane("XZ").polyline(pts).close().revolve()` | Bushings, adapters, knobs |
+| Transition between sections | `loft()` between sketches on different workplanes | Shape transitions |
+| Shell / enclosure | `.box().shell(-wall)` or `box.cut(cavity)` | Shell is cleaner if uniform |
+| Organic curved shape | NOT supported — flag as limitation | Suggest sculpting |
 
-### 4.2 Mapping Features Visive → Operazioni CadQuery
+### 4.2 Visual Features to CadQuery Operations Mapping
 
-| Feature vista | Operazione CadQuery | Note |
+| Feature seen | CadQuery operation | Notes |
 |---|---|---|
-| Foro passante tondo | `.faces(sel).workplane().hole(d)` | Seleziona faccia corretta |
-| Foro cieco | `.faces(sel).workplane().circle(r).cutBlind(-depth)` | Profondita negativa |
-| Foro oblungo / slot | `.faces(sel).workplane().slot2D(length, d).cutBlind(-depth)` | O polyline+cutBlind |
-| Tasca rettangolare | `.faces(sel).workplane().rect(w, l).cutBlind(-depth)` | Tasca quadrata |
-| Raccordo (raggio costante) | `.edges(sel).fillet(r)` | ATTENZIONE: prima delle boolean! |
-| Smusso | `.edges(sel).chamfer(c)` | Su spigoli di ingresso/assemblaggio |
-| Nervatura / rib | `.union(rib_body)` con polyline triangolare | Rinforzo strutturale |
-| Boss cilindrico | `.union(cylinder)` | Per viti, standoff |
-| Clip snap-fit | Cantilever con lip — sketch + extrude + cut | Vedi template snap_fit |
-| Pattern di fori | `.pushPoints(pts).hole(d)` | O `.rarray()` / `.polarArray()` |
-| Grigliatura / ventilazione | Pattern di tagli rettangolari | `.pushPoints().rect().cutThruAll()` |
-| Testo in rilievo/inciso | `.text("...", fontsize, depth)` | Rilievo meglio di incisione in FDM |
+| Round through hole | `.faces(sel).workplane().hole(d)` | Select correct face |
+| Blind hole | `.faces(sel).workplane().circle(r).cutBlind(-depth)` | Negative depth |
+| Oblong hole / slot | `.faces(sel).workplane().slot2D(length, d).cutBlind(-depth)` | Or polyline+cutBlind |
+| Rectangular pocket | `.faces(sel).workplane().rect(w, l).cutBlind(-depth)` | Square pocket |
+| Fillet (constant radius) | `.edges(sel).fillet(r)` | WARNING: before booleans! |
+| Chamfer | `.edges(sel).chamfer(c)` | On entry/assembly edges |
+| Rib | `.union(rib_body)` with triangular polyline | Structural reinforcement |
+| Cylindrical boss | `.union(cylinder)` | For screws, standoffs |
+| Snap-fit clip | Cantilever with lip — sketch + extrude + cut | See snap_fit template |
+| Hole pattern | `.pushPoints(pts).hole(d)` | Or `.rarray()` / `.polarArray()` |
+| Grille / ventilation | Pattern of rectangular cuts | `.pushPoints().rect().cutThruAll()` |
+| Embossed/engraved text | `.text("...", fontsize, depth)` | Relief better than engraving in FDM |
 
 ---
 
-## 5. Vantaggi CadQuery per Reverse Engineering
+## 5. CadQuery Advantages for Reverse Engineering
 
-### 5.1 Mapping Diretto Immagine → CadQuery
+### 5.1 Direct Image to CadQuery Mapping
 
-| Se nell'immagine vedi... | In CadQuery usa... | Perche meglio di OpenSCAD |
+| If you see in the image... | In CadQuery use... | Why better than OpenSCAD |
 |---|---|---|
-| Raccordi/arrotondamenti | `.fillet(r)` nativo | OpenSCAD richiede `minkowski()` lento o geometria esplicita |
-| Transizione tra diametri | `.loft()` tra sezioni | OpenSCAD: `hull()` solo convesso, nessun vero loft |
-| Profilo che segue un percorso | `.sweep(path)` | Non esiste in OpenSCAD |
-| Parti multiple assemblate | `cq.Assembly()` | OpenSCAD: nessun assembly nativo |
-| Guscio con spessore uniforme | `.shell(-wall)` | OpenSCAD: `offset()` 2D o differenza manuale |
-| Selezione feature su facce | `.faces(">Z").workplane()` | OpenSCAD: calcolo manuale coordinate |
-| Fori su facce inclinate | `.faces(sel).workplane().hole(d)` | OpenSCAD: `rotate()` + `translate()` manuale |
-| Foratura su pattern irregolare | `.pushPoints(pts).hole(d)` | OpenSCAD: loop con translate individuali |
+| Fillets/rounds | `.fillet(r)` native | OpenSCAD requires slow `minkowski()` or explicit geometry |
+| Transition between diameters | `.loft()` between sections | OpenSCAD: `hull()` convex only, no true loft |
+| Profile following a path | `.sweep(path)` | Does not exist in OpenSCAD |
+| Multiple assembled parts | `cq.Assembly()` | OpenSCAD: no native assembly |
+| Shell with uniform thickness | `.shell(-wall)` | OpenSCAD: 2D `offset()` or manual difference |
+| Feature selection on faces | `.faces(">Z").workplane()` | OpenSCAD: manual coordinate calculation |
+| Holes on angled faces | `.faces(sel).workplane().hole(d)` | OpenSCAD: manual `rotate()` + `translate()` |
+| Holes on irregular pattern | `.pushPoints(pts).hole(d)` | OpenSCAD: loop with individual translates |
 
-### 5.2 Strategia per Tipo di Pezzo
+### 5.2 Strategy by Part Type
 
-| Tipo di pezzo | Strategia CadQuery | Approccio |
+| Part type | CadQuery strategy | Approach |
 |---|---|---|
-| **Box / enclosure** | `box` + `shell` + features | Modella esterno, svuota, aggiungi dettagli |
-| **Staffa / bracket** | `polyline` + `extrude` + fori | Profilo 2D a L/T/U, estrudi, fora |
-| **Adattatore cilindrico** | `revolve` di profilo sezione | Un unico profilo 2D ruotato = pezzo intero |
-| **Coperchio / piastra** | `box` sottile + features | Base piatta, aggiungi lip, fori, testo |
-| **Supporto / mount** | `box` + `cut` + nervature | Forma base, ritaglia dove serve, rinforza |
-| **Connettore / giunto** | `cylinder` + boolean | Cilindri concentrici con tagli |
-| **Clip / snap-fit** | `box` + cantilever sketch | Corpo base + linguetta flessibile |
-| **Ingranaggio / gear** | NON CadQuery puro | Suggerisci libreria `cq_gears` o import STEP |
+| **Box / enclosure** | `box` + `shell` + features | Model exterior, hollow out, add details |
+| **Bracket** | `polyline` + `extrude` + holes | 2D L/T/U profile, extrude, drill |
+| **Cylindrical adapter** | `revolve` with cross-section profile | Single 2D profile revolved = entire part |
+| **Lid / plate** | thin `box` + features | Flat base, add lip, holes, text |
+| **Mount / support** | `box` + `cut` + ribs | Base shape, cut where needed, reinforce |
+| **Connector / joint** | `cylinder` + booleans | Concentric cylinders with cuts |
+| **Clip / snap-fit** | `box` + cantilever sketch | Base body + flexible tab |
+| **Gear** | NOT pure CadQuery | Suggest `cq_gears` library or STEP import |
 
 ---
 
-## 6. Procedura Stima Dimensionale da Foto
+## 6. Dimensional Estimation from Photos
 
-### 6.1 Con Riferimento Noto
+### 6.1 With Known Reference
 
 ```
-PROCEDURA STIMA CON RIFERIMENTO:
+ESTIMATION PROCEDURE WITH REFERENCE:
 
-1. IDENTIFICA riferimento nell'immagine
-   - Oggetto noto: [nome] = [dimensione reale] mm
-   - Misura in pixel nell'immagine: [N] px
+1. IDENTIFY reference in the image
+   - Known object: [name] = [real dimension] mm
+   - Measurement in image pixels: [N] px
 
-2. CALCOLA scala
-   - Scala = dimensione_reale / pixel_riferimento
-   - Es: moneta 1 EUR (23.25mm) = 150px → scala = 0.155 mm/px
+2. CALCULATE scale
+   - Scale = real_dimension / reference_pixels
+   - E.g.: 1 EUR coin (23.25mm) = 150px -> scale = 0.155 mm/px
 
-3. MISURA target in pixel
-   - [dimensione 1] = [N] px → [N * scala] mm
-   - [dimensione 2] = [N] px → [N * scala] mm
+3. MEASURE target in pixels
+   - [dimension 1] = [N] px -> [N * scale] mm
+   - [dimension 2] = [N] px -> [N * scale] mm
    - [...]
 
-4. CORREGGI per prospettiva
-   - Se oggetto e riferimento sullo stesso piano: nessuna correzione
-   - Se piani diversi: SEGNALA incertezza, aggiungi ±15%
-   - Se angolo di vista obliquo: SEGNALA, dimensioni perpendiculari all'asse ottico piu affidabili
+4. CORRECT for perspective
+   - If object and reference on the same plane: no correction
+   - If different planes: FLAG uncertainty, add +/-15%
+   - If oblique viewing angle: FLAG, dimensions perpendicular to optical axis are more reliable
 
-5. ARROTONDA a valori sensati
-   - Dimensioni < 10mm: arrotonda a 0.5mm
-   - Dimensioni 10-50mm: arrotonda a 1mm
-   - Dimensioni > 50mm: arrotonda a 5mm
-   - Se vicino a valore standard (Ø20, Ø25, Ø32, ...): usa valore standard
+5. ROUND to sensible values
+   - Dimensions < 10mm: round to 0.5mm
+   - Dimensions 10-50mm: round to 1mm
+   - Dimensions > 50mm: round to 5mm
+   - If close to a standard value (dia 20, dia 25, dia 32, ...): use standard value
 
-CONFIDENZA RISULTANTE:
-  - Riferimento stesso piano, buona illuminazione: ±5%
-  - Riferimento piano diverso: ±15%
-  - Nessun riferimento (stima da categoria): ±30%
+RESULTING CONFIDENCE:
+  - Reference on same plane, good lighting: +/-5%
+  - Reference on different plane: +/-15%
+  - No reference (estimate from category): +/-30%
 ```
 
-### 6.2 Senza Riferimento — Stima da Categoria
+### 6.2 Without Reference — Estimation from Category
 
-| Categoria oggetto | Range dimensionale tipico | Base di stima |
+| Object category | Typical size range | Estimation basis |
 |---|---|---|
-| Clip / fermaglio | 15-40 mm | Dimensione dito |
-| Supporto smartphone | 60-100 mm larghezza | Larghezza telefono ~75mm |
-| Enclosure elettronica | 30-120 mm | Dimensione PCB (vedi 3.3) |
-| Staffa / bracket | 30-80 mm | Fori montaggio visibili |
-| Adattatore tubo | 15-50 mm Ø | Diametro tubo standard |
-| Pomello / maniglia | 20-50 mm | Dimensione mano |
-| Vaso / contenitore | 50-150 mm | Proporzione con mano/tavolo |
-| Modello architettonico | 100-300 mm | Scala 1:100 o 1:200 |
+| Clip / clamp | 15-40 mm | Finger size |
+| Smartphone mount | 60-100 mm width | Phone width ~75mm |
+| Electronic enclosure | 30-120 mm | PCB size (see 3.3) |
+| Bracket | 30-80 mm | Visible mounting holes |
+| Tube adapter | 15-50 mm dia | Standard tube diameter |
+| Knob / handle | 20-50 mm | Hand size |
+| Vase / container | 50-150 mm | Proportion with hand/table |
+| Architectural model | 100-300 mm | Scale 1:100 or 1:200 |
 
 ---
 
-## 7. Limitazioni e Fallback
+## 7. Limitations and Fallback
 
-### 7.1 Casi NON Gestibili
+### 7.1 Cases NOT Supported
 
-| Caso | Problema | Suggerimento |
+| Case | Problem | Suggestion |
 |---|---|---|
-| Forme organiche (scultura, anatomia) | CadQuery e BREP parametrico, non mesh sculpting | Usa Blender/ZBrush → export STL, importa come mesh |
-| Superfici NURBS complesse (carrozzeria auto) | Troppo complesse per modellazione procedurale | Usa Fusion360/Onshape per modellazione diretta |
-| Immagine troppo sfocata/buia | Non si distinguono forme e dimensioni | Chiedi foto migliore o sketch quotato |
-| Troppo poco dettaglio | Impossibile determinare features interne | Chiedi foto aggiuntive (altri angoli, sezione) |
-| Pezzo con filettature visibili | CadQuery non ha thread nativi | Usa inserto caldo (foro Ø4.0 per M3) o libreria `cq_bolts` |
-| Pezzo con texture/pattern decorativi | Impossibile da riprodurre in BREP | Semplifica: liscia la superficie, ignora texture |
-| Pezzo molto grande (>300mm) | Fuori volume stampa tipico | Suggerisci suddivisione in parti con giunzioni |
+| Organic shapes (sculpture, anatomy) | CadQuery is parametric BREP, not mesh sculpting | Use Blender/ZBrush -> export STL, import as mesh |
+| Complex NURBS surfaces (car body) | Too complex for procedural modeling | Use Fusion360/Onshape for direct modeling |
+| Image too blurry/dark | Cannot distinguish shapes and dimensions | Ask for better photo or dimensioned sketch |
+| Too little detail | Cannot determine internal features | Ask for additional photos (other angles, cross-section) |
+| Part with visible threads | CadQuery has no native threads | Use heat insert (dia 4.0 hole for M3) or `cq_bolts` library |
+| Part with decorative texture/pattern | Cannot reproduce in BREP | Simplify: smooth the surface, ignore texture |
+| Very large part (>300mm) | Exceeds typical print volume | Suggest splitting into parts with joints |
 
-### 7.2 Quando Chiedere Aiuto all'Utente
-
-```
-CHIEDI SEMPRE SE:
-  - Confidenza dimensionale < MEDIA e nessun riferimento nell'immagine
-  - Pezzo ha features interne non visibili (cavita, canali, sottosquadri)
-  - Immagine ambigua (potrebbe essere 2+ interpretazioni geometriche)
-  - Funzione del pezzo non chiara (influenza materiale e tolleranze)
-  - Accoppiamenti critici (press-fit, snap-fit) senza quote
-
-NON PROCEDERE MAI senza conferma su:
-  - Dimensioni assolute (almeno una quota nota)
-  - Materiale (influenza spessori minimi e raccordi)
-  - Funzione (influenza carichi e tolleranze)
-```
-
-### 7.3 Richiesta Foto Aggiuntive
-
-Se una singola immagine non basta, chiedi specificamente:
+### 7.2 When to Ask the User for Help
 
 ```
-RICHIESTA FOTO AGGIUNTIVE:
+ALWAYS ASK IF:
+  - Dimensional confidence < MEDIUM and no reference in image
+  - Part has non-visible internal features (cavities, channels, undercuts)
+  - Image is ambiguous (could be 2+ geometric interpretations)
+  - Part function unclear (affects material and tolerances)
+  - Critical fits (press-fit, snap-fit) without dimensions
 
-Per completare il modello 3D ho bisogno di:
+NEVER PROCEED without confirmation on:
+  - Absolute dimensions (at least one known measurement)
+  - Material (affects minimum thicknesses and fillets)
+  - Function (affects loads and tolerances)
+```
 
-□ Foto frontale (se manca vista principale)
-□ Foto laterale (per profondita/spessori)
-□ Foto dall'alto (per forma in pianta)
-□ Foto dal basso (per features nascoste — fori, cavita)
-□ Foto dettaglio di: [feature specifica]
-□ Foto con riferimento dimensionale (moneta, righello, USB)
-□ Sketch quotato (anche a mano) con le dimensioni critiche
+### 7.3 Additional Photo Request
+
+If a single image is not enough, ask specifically:
+
+```
+ADDITIONAL PHOTO REQUEST:
+
+To complete the 3D model I need:
+
+[] Front photo (if main view is missing)
+[] Side photo (for depth/thicknesses)
+[] Top photo (for plan shape)
+[] Bottom photo (for hidden features — holes, cavities)
+[] Detail photo of: [specific feature]
+[] Photo with dimensional reference (coin, ruler, USB)
+[] Dimensioned sketch (even hand-drawn) with critical measurements
 ```
 
 ---
 
-## 8. Esempio Completo — Foto Staffa con Moneta
+## 8. Full Example — Bracket Photo with Coin
 
 ### Input
-Foto di una staffa metallica a L con fori, accanto a una moneta da 1 EUR.
+Photo of a metal L-bracket with holes, next to a 1 EUR coin.
 
-### Analisi
+### Analysis
 
 ```
-ANALISI IMMAGINE
-================
+IMAGE ANALYSIS
+==============
 
-TIPO INPUT: B — Foto oggetto
-CONFIDENZA DIMENSIONALE: MEDIA (moneta 1 EUR come riferimento)
+INPUT TYPE: B — Object photo
+DIMENSIONAL CONFIDENCE: MEDIUM (1 EUR coin as reference)
 
-STEP 1 — IDENTIFICAZIONE FORME PRIMITIVE
-  Forme rilevate:
-    1. Piastra verticale — box — posizione: braccio sinistro
-       Dimensioni stimate: 45 x 25 x 3 mm (confidenza: media)
-    2. Piastra orizzontale — box — posizione: braccio destro/basso
-       Dimensioni stimate: 35 x 25 x 3 mm (confidenza: media)
-    3. Nervatura triangolare — profilo triangolare — angolo interno
-       Dimensioni stimate: base 15mm, altezza 15mm, spessore 3mm (confidenza: bassa)
+STEP 1 — PRIMITIVE SHAPE IDENTIFICATION
+  Detected shapes:
+    1. Vertical plate — box — position: left arm
+       Estimated dimensions: 45 x 25 x 3 mm (confidence: medium)
+    2. Horizontal plate — box — position: right/bottom arm
+       Estimated dimensions: 35 x 25 x 3 mm (confidence: medium)
+    3. Triangular rib — triangular profile — internal corner
+       Estimated dimensions: base 15mm, height 15mm, thickness 3mm (confidence: low)
 
-STEP 2 — OPERAZIONI RILEVATE
-  1. Foro passante tondo — su piastra verticale, centro
-     Dimensioni stimate: Ø 4-5mm (probabilmente M4)
-  2. Foro passante tondo — su piastra verticale, centro basso
-     Dimensioni stimate: Ø 4-5mm (probabilmente M4)
-  3. Foro passante oblungo — su piastra orizzontale
-     Dimensioni stimate: 5 x 8mm (slot per regolazione)
-  4. Raccordo — angolo esterno L
-     Raggio stimato: ~2mm
+STEP 2 — DETECTED OPERATIONS
+  1. Round through hole — on vertical plate, center
+     Estimated dimensions: dia 4-5mm (probably M4)
+  2. Round through hole — on vertical plate, lower center
+     Estimated dimensions: dia 4-5mm (probably M4)
+  3. Oblong through hole — on horizontal plate
+     Estimated dimensions: 5 x 8mm (adjustment slot)
+  4. Fillet — external L corner
+     Estimated radius: ~2mm
 
-STEP 3 — SIMMETRIE E PATTERN
-  □ Simmetria assiale: no
-  □ Simmetria speculare: si — piano YZ (la L e simmetrica in profondita)
-  □ Pattern circolare: no
-  □ Pattern lineare: no (fori non equidistanti)
+STEP 3 — SYMMETRIES AND PATTERNS
+  [] Axial symmetry: no
+  [] Mirror symmetry: yes — YZ plane (the L is symmetric in depth)
+  [] Circular pattern: no
+  [] Linear pattern: no (holes not equidistant)
 
-STEP 4 — RAPPORTI DIMENSIONALI
-  Riferimento: moneta 1 EUR = 23.25mm = 142px nell'immagine
-  Scala: 0.164 mm/px
-  Braccio verticale: 275px → 45.1mm → arrotondato 45mm
-  Braccio orizzontale: 213px → 34.9mm → arrotondato 35mm
-  Profondita: 153px → 25.1mm → arrotondato 25mm
+STEP 4 — DIMENSIONAL RATIOS
+  Reference: 1 EUR coin = 23.25mm = 142px in image
+  Scale: 0.164 mm/px
+  Vertical arm: 275px -> 45.1mm -> rounded 45mm
+  Horizontal arm: 213px -> 34.9mm -> rounded 35mm
+  Depth: 153px -> 25.1mm -> rounded 25mm
 
-STEP 5 — FEATURES FUNZIONALI
-  Scopo: staffa di fissaggio a muro/superficie per supporto
-  Interfacce: viti M4 su entrambi i bracci
-  Vincoli: deve reggere carico verticale (peso oggetto supportato)
+STEP 5 — FUNCTIONAL FEATURES
+  Purpose: wall/surface mounting bracket for support
+  Interfaces: M4 screws on both arms
+  Constraints: must withstand vertical load (weight of supported object)
 ```
 
-### Output Strutturato
+### Structured Output
 
 ```
 IMAGE-TO-3D OUTPUT
 ==================
 
-TIPO INPUT: B — Foto oggetto
-CONFIDENZA: MEDIA
-RIFERIMENTO SCALA: moneta 1 EUR (Ø 23.25mm)
+INPUT TYPE: B — Object photo
+CONFIDENCE: MEDIUM
+SCALE REFERENCE: 1 EUR coin (dia 23.25mm)
 
-OBIETTIVO: Staffa a L per fissaggio a muro, due fori verticali + slot orizzontale
+OBJECTIVE: L-bracket for wall mounting, two vertical holes + horizontal slot
 
-VINCOLI:
-  Materiale suggerito: PETG — carico strutturale, buona resistenza
-  Temperatura servizio: ambiente
-  Carichi: compressione su braccio orizzontale, taglio su viti
-  Accoppiamenti: viti M4 passanti
-  Dimensioni massime: ~45 x 35 x 25 mm
+CONSTRAINTS:
+  Suggested material: PETG — structural load, good strength
+  Service temperature: ambient
+  Loads: compression on horizontal arm, shear on screws
+  Fits: M4 through-bolts
+  Maximum dimensions: ~45 x 35 x 25 mm
 
-COMPONENTI:
-  1. Profilo L — polyline 2D nel piano XZ + extrude in Y
-     Dimensioni: 35(X) x 25(Y) x 45(Z) mm, spessore 3mm
-     Funzione: corpo strutturale
+COMPONENTS:
+  1. L-profile — 2D polyline in XZ plane + extrude in Y
+     Dimensions: 35(X) x 25(Y) x 45(Z) mm, thickness 3mm
+     Function: structural body
      CadQuery: cq.Workplane("XZ").polyline(pts).close().extrude(25)
-  2. Nervatura — triangolo nel piano XZ + extrude
-     Dimensioni: base 15 x altezza 15 x spessore 3mm
-     Funzione: rinforzo angolo
+  2. Rib — triangle in XZ plane + extrude
+     Dimensions: base 15 x height 15 x thickness 3mm
+     Function: corner reinforcement
      CadQuery: cq.Workplane("XZ").polyline(tri_pts).close().extrude(3)
 
 FEATURES:
-  1. hole — Ø 4.5mm (M4 clearance) — su braccio verticale, 2 posizioni
+  1. hole — dia 4.5mm (M4 clearance) — on vertical arm, 2 positions
      CadQuery: .faces("<X").workplane().pushPoints(pts).hole(4.5)
-  2. slot — 5 x 8mm — su braccio orizzontale
+  2. slot — 5 x 8mm — on horizontal arm
      CadQuery: .faces("<Z").workplane().slot2D(8, 5).cutThruAll()
-  3. fillet — r=2mm — spigoli verticali esterni
-     CadQuery: .edges("|Z").fillet(2) — PRIMA della union con nervatura
+  3. fillet — r=2mm — external vertical edges
+     CadQuery: .edges("|Z").fillet(2) — BEFORE union with rib
 
-SIMMETRIE SFRUTTABILI:
-  - Simmetria speculare YZ → modella meta + .mirror("YZ") (se appropriato)
+EXPLOITABLE SYMMETRIES:
+  - Mirror symmetry YZ -> model half + .mirror("YZ") (if appropriate)
 
-OPERAZIONI BOOLEANE:
-  1. Base: profilo L (extrude)
-  2. fillet r=2mm su edge angolo interno (NearestToPointSelector)
-  3. + union: nervatura
-  4. - cut: fori M4 su braccio verticale
-  5. - cut: slot su braccio orizzontale
+BOOLEAN OPERATIONS:
+  1. Base: L-profile (extrude)
+  2. fillet r=2mm on internal corner edge (NearestToPointSelector)
+  3. + union: rib
+  4. - cut: M4 holes on vertical arm
+  5. - cut: slot on horizontal arm
 
-ORIENTAMENTO STAMPA SUGGERITO:
-  Piano XY: braccio orizzontale sul piatto (base della L)
-  Motivazione: massima adesione, nervatura a 45° accettabile
-  Supporti: no (nervatura esattamente 45°)
+SUGGESTED PRINT ORIENTATION:
+  XY plane: horizontal arm on the bed (base of the L)
+  Rationale: maximum adhesion, rib at 45° acceptable
+  Supports: no (rib exactly 45°)
 
-DOMANDE PER L'UTENTE:
-  1. Spessore staffa — stimo 3mm, corretto? (o misura diversa?)
-  2. Fori sul braccio verticale — M4 (Ø4.5mm)? O taglia diversa?
-  3. Lo slot e per regolazione posizione? Confermi dimensioni ~5x8mm?
-  4. Materiale: PETG va bene o preferisci altro?
+QUESTIONS FOR THE USER:
+  1. Bracket thickness — I estimate 3mm, correct? (or different measurement?)
+  2. Holes on vertical arm — M4 (dia 4.5mm)? Or different size?
+  3. Is the slot for position adjustment? Confirm dimensions ~5x8mm?
+  4. Material: is PETG fine or do you prefer another?
 ```
 
 ---
 
-## 9. Checklist Pre-Output
+## 9. Pre-Output Checklist
 
-Prima di consegnare l'output strutturato alla skill spatial-reasoning:
+Before delivering the structured output to the spatial-reasoning skill:
 
-- [ ] Tipo input classificato correttamente
-- [ ] Tutte le forme primitive identificate con dimensioni
-- [ ] Tutte le features (fori, tasche, raccordi) elencate
-- [ ] Simmetrie identificate e sfruttabili
-- [ ] Almeno un riferimento dimensionale usato (o dimensioni chieste all'utente)
-- [ ] Operazioni booleane ordinate correttamente (fillet PRIMA di boolean)
-- [ ] Orientamento stampa suggerito con motivazione
-- [ ] Materiale suggerito con motivazione
-- [ ] Domande per l'utente formulate (se confidenza < ALTA)
-- [ ] Nessuna forma organica/NURBS tentata (segnalata come limitazione)
-- [ ] Output nel formato strutturato della sezione 4
+- [ ] Input type classified correctly
+- [ ] All primitive shapes identified with dimensions
+- [ ] All features (holes, pockets, fillets) listed
+- [ ] Symmetries identified and exploitable
+- [ ] At least one dimensional reference used (or dimensions asked from user)
+- [ ] Boolean operations ordered correctly (fillet BEFORE booleans)
+- [ ] Print orientation suggested with rationale
+- [ ] Material suggested with rationale
+- [ ] Questions for the user formulated (if confidence < HIGH)
+- [ ] No organic/NURBS shapes attempted (flagged as limitation)
+- [ ] Output in the structured format from section 4

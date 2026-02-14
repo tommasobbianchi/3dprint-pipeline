@@ -1,66 +1,66 @@
-# SKILL: print-profiles — Selezione Materiale, Vincoli di Stampa e Profili Stampante
+# SKILL: print-profiles — Material Selection, Print Constraints, and Printer Profiles
 
-## Identità
-Consulente materiali e processo FDM. Seleziona il materiale ottimale per il caso d'uso,
-applica vincoli geometrici al design CadQuery, stima peso e tempo, e verifica compatibilità stampante.
+## Identity
+FDM materials and process consultant. Selects the optimal material for the use case,
+applies geometric constraints to CadQuery design, estimates weight and time, and verifies printer compatibility.
 
 ---
 
-## 1. Selezione Materiale per Caso d'Uso
+## 1. Material Selection by Use Case
 
-### 1.1 Matrice Decisionale
+### 1.1 Decision Matrix
 
-| Caso d'uso | Materiale primario | Alternativa | Motivo |
+| Use case | Primary material | Alternative | Reason |
 |---|---|---|---|
-| Prototipo rapido, nessun carico | PLA | PLA-CF | Economico, facile, nessun requisito speciale |
-| Pezzo meccanico indoor | PETG | PA12 | Buon compromesso resistenza/stampabilità |
-| Pezzo meccanico outdoor | ASA | PETG | UV-resistente, resistenza termica >85°C |
-| Alta temperatura (80-120°C) | PC | Tullomer | Resistenza termica eccellente |
-| Alta temperatura + leggero | PC-CF | PA-CF | Massima rigidità e resistenza termica |
-| Resistenza chimica (solventi, oli) | PA6 | PA-CF | Nylon eccelle in resistenza chimica |
-| Parti flessibili, guarnizioni | TPU 85A | TPU 95A | Elastomero, assorbe vibrazioni |
-| Clip a scatto, cerniere vive | PA12 | PETG | Fatica eccellente, non fragile |
-| Food-safe | PLA | Tullomer | Certificati food contact |
-| Ingranaggi, boccole | PA-CF | PA12 | Resistenza usura + rigidità |
-| Staffature, jig, tooling | PA-CF | PC-CF | Massima resistenza meccanica |
-| Enclosure elettronica outdoor | ASA | PC | UV + termica + chimici |
-| Parti strutturali auto/moto | PC-CF | PA-CF | Rigidità, temperatura, impatto |
-| Supporti solubili (con PLA/PETG) | PVA | — | Solubile in acqua |
-| Supporti solubili (con ABS/ASA) | HIPS | — | Solubile in D-Limonene |
+| Rapid prototype, no load | PLA | PLA-CF | Economical, easy, no special requirements |
+| Indoor mechanical part | PETG | PA12 | Good strength/printability compromise |
+| Outdoor mechanical part | ASA | PETG | UV-resistant, thermal resistance >85°C |
+| High temperature (80-120°C) | PC | Tullomer | Excellent thermal resistance |
+| High temperature + lightweight | PC-CF | PA-CF | Maximum stiffness and thermal resistance |
+| Chemical resistance (solvents, oils) | PA6 | PA-CF | Nylon excels in chemical resistance |
+| Flexible parts, gaskets | TPU 85A | TPU 95A | Elastomer, absorbs vibrations |
+| Snap clips, living hinges | PA12 | PETG | Excellent fatigue, not brittle |
+| Food-safe | PLA | Tullomer | Food contact certified |
+| Gears, bushings | PA-CF | PA12 | Wear resistance + stiffness |
+| Jigs, fixtures, tooling | PA-CF | PC-CF | Maximum mechanical strength |
+| Outdoor electronic enclosure | ASA | PC | UV + thermal + chemical |
+| Automotive/motorcycle structural parts | PC-CF | PA-CF | Stiffness, temperature, impact |
+| Soluble supports (with PLA/PETG) | PVA | — | Water-soluble |
+| Soluble supports (with ABS/ASA) | HIPS | — | Soluble in D-Limonene |
 
-### 1.2 Albero Decisionale
+### 1.2 Decision Tree
 
 ```
-CASO D'USO
-│
-├─ Temperatura esercizio > 80°C?
-│   ├─ Sì → Serve leggerezza/rigidità?
-│   │   ├─ Sì → PC-CF o PA-CF
-│   │   └─ No → PC o Tullomer
-│   └─ No → continua ▼
-│
-├─ Esposto a UV / outdoor?
-│   ├─ Sì → ASA (o PETG se T < 70°C)
-│   └─ No → continua ▼
-│
-├─ Serve flessibilità?
-│   ├─ Sì → TPU 85A (morbido) o TPU 95A (semi-rigido)
-│   └─ No → continua ▼
-│
-├─ Resistenza chimica critica?
-│   ├─ Sì → PA6 o PA-CF
-│   └─ No → continua ▼
-│
-├─ Carichi meccanici significativi?
-│   ├─ Sì → PETG (indoor) o ASA (outdoor) o PA-CF (estremo)
-│   └─ No → PLA (prototipo) o PETG (produzione)
-│
-└─ Food-safe richiesto?
-    ├─ Sì → PLA o Tullomer
-    └─ No → seleziona per temperatura/carico
+USE CASE
+|
++-- Service temperature > 80°C?
+|   +-- Yes -> Need lightweight/stiffness?
+|   |   +-- Yes -> PC-CF or PA-CF
+|   |   +-- No -> PC or Tullomer
+|   +-- No -> continue below
+|
++-- Exposed to UV / outdoor?
+|   +-- Yes -> ASA (or PETG if T < 70°C)
+|   +-- No -> continue below
+|
++-- Need flexibility?
+|   +-- Yes -> TPU 85A (soft) or TPU 95A (semi-rigid)
+|   +-- No -> continue below
+|
++-- Chemical resistance critical?
+|   +-- Yes -> PA6 or PA-CF
+|   +-- No -> continue below
+|
++-- Significant mechanical loads?
+|   +-- Yes -> PETG (indoor) or ASA (outdoor) or PA-CF (extreme)
+|   +-- No -> PLA (prototype) or PETG (production)
+|
++-- Food-safe required?
+    +-- Yes -> PLA or Tullomer
+    +-- No -> select by temperature/load
 ```
 
-### 1.3 Caricamento Database Materiali
+### 1.3 Loading Materials Database
 
 ```python
 import json, os
@@ -72,10 +72,10 @@ def load_materials():
         return json.load(f)
 
 def get_material(name):
-    """Ritorna le proprietà di un materiale specifico."""
+    """Returns properties of a specific material."""
     materials = load_materials()
     key = name.upper().replace(" ", "_").replace("-", "_")
-    # Cerca match esatto o parziale
+    # Exact or partial match
     if key in materials:
         return materials[key]
     for k, v in materials.items():
@@ -86,56 +86,56 @@ def get_material(name):
 
 ---
 
-## 2. Applicazione Vincoli al Design CadQuery
+## 2. Applying Constraints to CadQuery Design
 
-### 2.1 Verifica Spessore Parete
+### 2.1 Wall Thickness Verification
 
-Ogni materiale in `materials.json` ha un campo `wall_min_mm`. Prima di generare il codice CadQuery,
-verificare che tutti gli spessori di parete siano >= wall_min_mm del materiale selezionato.
+Every material in `materials.json` has a `wall_min_mm` field. Before generating CadQuery code,
+verify that all wall thicknesses are >= wall_min_mm of the selected material.
 
 ```
-SE materiale.wall_min_mm > parete_design:
-    AVVISO: "Parete {parete_design}mm troppo sottile per {materiale}.
-             Minimo: {wall_min_mm}mm. Aumento automatico."
-    parete_design = materiale.wall_min_mm
+IF material.wall_min_mm > design_wall:
+    WARNING: "Wall {design_wall}mm too thin for {material}.
+             Minimum: {wall_min_mm}mm. Automatically increased."
+    design_wall = material.wall_min_mm
 ```
 
-**Regole per materiale:**
+**Rules by material:**
 
-| Materiale | wall_min_mm | Motivo |
+| Material | wall_min_mm | Reason |
 |---|---|---|
-| PLA | 1.0 | Fragile sotto 1mm |
-| PETG | 1.2 | Stringing rende pareti sottili irregolari |
-| ABS / ASA | 1.2 | Warping crea stress su pareti sottili |
-| PC / Tullomer | 1.6 – 2.0 | Ritiro + stress interlayer richiedono pareti robuste |
-| PA6 / PA12 | 1.2 | Ritiro elevato, pareti sottili si deformano |
-| PA-CF / PC-CF | 1.4 – 1.8 | Fibre richiedono spessore per allinearsi |
-| TPU 85A | 1.0 | Flessibile, tollera pareti sottili |
-| TPU 95A | 1.2 | Semi-rigido |
+| PLA | 1.0 | Brittle under 1mm |
+| PETG | 1.2 | Stringing makes thin walls irregular |
+| ABS / ASA | 1.2 | Warping creates stress on thin walls |
+| PC / Tullomer | 1.6 – 2.0 | Shrinkage + interlayer stress require robust walls |
+| PA6 / PA12 | 1.2 | High shrinkage, thin walls warp |
+| PA-CF / PC-CF | 1.4 – 1.8 | Fibers require thickness to align |
+| TPU 85A | 1.0 | Flexible, tolerates thin walls |
+| TPU 95A | 1.2 | Semi-rigid |
 
-### 2.2 Compensazione Ritiro (Shrinkage)
+### 2.2 Shrinkage Compensation
 
-Per materiali ad alto ritiro (ABS, PA6, PC), suggerire compensazione dimensionale:
+For high-shrinkage materials (ABS, PA6, PC), suggest dimensional compensation:
 
 ```python
 def compensate_shrinkage(dimension_mm, material):
-    """Compensa il ritiro del materiale scalando la dimensione."""
+    """Compensates material shrinkage by scaling the dimension."""
     shrink_avg = (material["shrinkage_pct"]["min"] + material["shrinkage_pct"]["max"]) / 2 / 100
     return dimension_mm * (1 + shrink_avg)
 ```
 
-**Quando applicare la compensazione:**
+**When to apply compensation:**
 
-| Situazione | Azione |
+| Situation | Action |
 |---|---|
-| Tolleranze strette (press-fit, incastri) | SEMPRE compensare |
-| Dimensioni generiche (enclosure, bracket) | NON compensare (slicer compensa) |
-| Fori per viti | Compensare SOLO se diametro critico |
-| Accoppiamento con parti metalliche | SEMPRE compensare |
+| Tight tolerances (press-fit, interlocks) | ALWAYS compensate |
+| Generic dimensions (enclosure, bracket) | DO NOT compensate (slicer compensates) |
+| Screw holes | Compensate ONLY if critical diameter |
+| Mating with metal parts | ALWAYS compensate |
 
-**Tabella ritiro medio:**
+**Average shrinkage table:**
 
-| Materiale | Ritiro medio | Compensazione su 100mm |
+| Material | Average shrinkage | Compensation per 100mm |
 |---|---|---|
 | PLA | 0.4% | +0.4mm |
 | PETG | 0.45% | +0.45mm |
@@ -146,100 +146,100 @@ def compensate_shrinkage(dimension_mm, material):
 | PC | 0.65% | +0.65mm |
 | Tullomer | 0.6% | +0.6mm |
 
-### 2.3 Camera Chiusa — Avvisi
+### 2.3 Enclosed Chamber — Warnings
 
 ```
-SE materiale.chamber_required == true:
-    AVVISO: "{materiale} richiede camera chiusa (enclosed chamber).
-             Stampanti compatibili: Bambu X1C, Voron 2.4, Prusa XL (opzionale).
-             Stampanti NON compatibili: Bambu A1, Ender 3, Prusa MK4 (senza enclosure)."
+IF material.chamber_required == true:
+    WARNING: "{material} requires an enclosed chamber.
+             Compatible printers: Bambu X1C, Voron 2.4, Prusa XL (optional).
+             NOT compatible printers: Bambu A1, Ender 3, Prusa MK4 (without enclosure)."
 ```
 
-### 2.4 Asciugatura — Avvisi
+### 2.4 Drying — Warnings
 
 ```
-SE materiale.drying_required == true:
-    INFO: "{materiale} richiede asciugatura prima della stampa.
-           Temperatura: {drying_temp_hours.temp_c}°C per {drying_temp_hours.hours}h.
-           Usare drybox durante la stampa per materiali igroscopici (PA, PVA)."
+IF material.drying_required == true:
+    INFO: "{material} requires drying before printing.
+           Temperature: {drying_temp_hours.temp_c}°C for {drying_temp_hours.hours}h.
+           Use a drybox during printing for hygroscopic materials (PA, PVA)."
 ```
 
-### 2.5 Ugello Hardened Steel — Avvisi
+### 2.5 Hardened Steel Nozzle — Warnings
 
 ```
-SE materiale contiene "CF" nel nome:
-    AVVISO: "{materiale} contiene fibre abrasive.
-             Ugello in acciaio temprato (hardened steel) OBBLIGATORIO.
-             Un ugello in ottone si consuma in poche ore."
+IF material name contains "CF":
+    WARNING: "{material} contains abrasive fibers.
+             Hardened steel nozzle MANDATORY.
+             A brass nozzle will wear out in a few hours."
 ```
 
 ---
 
-## 3. Formule di Stima
+## 3. Estimation Formulas
 
-### 3.1 Peso Stimato
+### 3.1 Estimated Weight
 
 ```python
-def peso_stimato(vol_mm3, materiale="PLA", infill_pct=20):
+def estimated_weight(vol_mm3, material="PLA", infill_pct=20):
     """
-    Stima il peso del pezzo stampato.
+    Estimates weight of the printed part.
 
-    Formula: peso = volume_cm3 × densità × fattore_infill
-    fattore_infill = shell_fraction + (1 - shell_fraction) × (infill_pct / 100)
+    Formula: weight = volume_cm3 x density x infill_factor
+    infill_factor = shell_fraction + (1 - shell_fraction) x (infill_pct / 100)
 
-    Approssimazione: shell_fraction = 0.3 (media per pezzi tipici FDM)
-    Per pezzi piccoli (<30mm): shell_fraction ≈ 0.6-0.8
-    Per pezzi grandi (>100mm): shell_fraction ≈ 0.15-0.25
+    Approximation: shell_fraction = 0.3 (average for typical FDM parts)
+    For small parts (<30mm): shell_fraction ~ 0.6-0.8
+    For large parts (>100mm): shell_fraction ~ 0.15-0.25
     """
     materials = load_materials()
-    mat = materials.get(materiale, materials.get("PLA"))
-    densita = mat["density_g_cm3"]
+    mat = materials.get(material, materials.get("PLA"))
+    density = mat["density_g_cm3"]
 
     vol_cm3 = vol_mm3 / 1000.0
-    fattore = 0.3 + 0.7 * (infill_pct / 100.0)
-    peso_g = vol_cm3 * densita * fattore
+    factor = 0.3 + 0.7 * (infill_pct / 100.0)
+    weight_g = vol_cm3 * density * factor
 
-    return round(peso_g, 1)
+    return round(weight_g, 1)
 ```
 
-### 3.2 Tempo di Stampa Stimato
+### 3.2 Estimated Print Time
 
 ```python
-def tempo_stampa_stimato(vol_mm3, altezza_mm, layer_h=0.2, nozzle_d=0.4,
+def estimated_print_time(vol_mm3, height_mm, layer_h=0.2, nozzle_d=0.4,
                           speed_mm_s=60, overhead=1.3):
     """
-    Stima il tempo di stampa.
+    Estimates print time.
 
-    Formula base: tempo_h = (volume_mm3 / (layer_h × nozzle_d × speed_mm_s)) / 3600
-    Corretto con fattore overhead (movimenti, retrazioni, riscaldamento).
+    Base formula: time_h = (volume_mm3 / (layer_h x nozzle_d x speed_mm_s)) / 3600
+    Corrected with overhead factor (moves, retractions, heating).
 
-    Parametri default: layer 0.2mm, ugello 0.4mm, velocità 60mm/s, overhead 30%.
+    Default parameters: layer 0.2mm, nozzle 0.4mm, speed 60mm/s, overhead 30%.
     """
-    # Volume rate effettivo [mm³/s]
+    # Effective volume rate [mm3/s]
     flow_rate = layer_h * nozzle_d * speed_mm_s
 
-    # Tempo base [s]
-    tempo_s = vol_mm3 / flow_rate
+    # Base time [s]
+    time_s = vol_mm3 / flow_rate
 
-    # Overhead: movimenti non-print, riscaldamento, retrazioni, layer change
-    tempo_s *= overhead
+    # Overhead: non-print moves, heating, retractions, layer changes
+    time_s *= overhead
 
-    # Overhead aggiuntivo per altezza (più layer = più layer change e z-hop)
-    n_layers = altezza_mm / layer_h
-    tempo_s += n_layers * 1.5  # ~1.5s per layer change
+    # Additional overhead for height (more layers = more layer changes and z-hop)
+    n_layers = height_mm / layer_h
+    time_s += n_layers * 1.5  # ~1.5s per layer change
 
-    tempo_h = tempo_s / 3600.0
-    ore = int(tempo_h)
-    minuti = int((tempo_h - ore) * 60)
+    time_h = time_s / 3600.0
+    hours = int(time_h)
+    minutes = int((time_h - hours) * 60)
 
-    return ore, minuti
+    return hours, minutes
 ```
 
-### 3.3 Costo Filamento Stimato
+### 3.3 Estimated Filament Cost
 
 ```python
-# Prezzi medi filamento [EUR/kg] — aggiornamento 2026
-PREZZI_FILAMENTO = {
+# Average filament prices [EUR/kg] — 2026 update
+FILAMENT_PRICES = {
     "PLA":      20,   "PLA-CF":   35,
     "PETG":     22,   "PETG-CF":  38,
     "ABS":      20,   "ASA":      25,
@@ -250,243 +250,243 @@ PREZZI_FILAMENTO = {
     "PVA":      40,   "HIPS":     22,
 }
 
-def costo_stimato(peso_g, materiale="PLA"):
-    prezzo_kg = PREZZI_FILAMENTO.get(materiale, 25)
-    return round(peso_g * prezzo_kg / 1000, 2)
+def estimated_cost(weight_g, material="PLA"):
+    price_kg = FILAMENT_PRICES.get(material, 25)
+    return round(weight_g * price_kg / 1000, 2)
 ```
 
-### 3.4 Report Completo
+### 3.4 Complete Report
 
 ```
-📊 STIMA STAMPA — {nome_pezzo}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📐 Volume:          {vol:,.0f} mm³ ({vol/1000:.1f} cm³)
-⚖️  Peso stimato:    {peso:.1f}g ({materiale}, {infill}% infill)
-⏱️  Tempo stimato:   ~{ore}h {min}min (layer {layer_h}mm, {speed}mm/s)
-💰 Costo filamento: ~€{costo:.2f} ({materiale} @ €{prezzo}/kg)
-🌡️  Ugello:          {temp_nozzle_min}-{temp_nozzle_max}°C
-🛏️  Piatto:          {temp_bed_min}-{temp_bed_max}°C
-📦 Camera chiusa:   {"RICHIESTA" if chamber else "Non necessaria"}
-💧 Asciugatura:     {"RICHIESTA ({dry_t}°C × {dry_h}h)" if drying else "Non necessaria"}
+PRINT ESTIMATE — {part_name}
+================================
+Volume:            {vol:,.0f} mm3 ({vol/1000:.1f} cm3)
+Estimated weight:  {weight:.1f}g ({material}, {infill}% infill)
+Estimated time:    ~{hours}h {min}min (layer {layer_h}mm, {speed}mm/s)
+Filament cost:     ~EUR {cost:.2f} ({material} @ EUR {price}/kg)
+Nozzle temp:       {temp_nozzle_min}-{temp_nozzle_max}°C
+Bed temp:          {temp_bed_min}-{temp_bed_max}°C
+Enclosed chamber:  {"REQUIRED" if chamber else "Not needed"}
+Drying:            {"REQUIRED ({dry_t}°C x {dry_h}h)" if drying else "Not needed"}
 ```
 
 ---
 
-## 4. Regole Speciali: Tullomer e Policarbonato
+## 4. Special Rules: Tullomer and Polycarbonate
 
-### 4.1 Regole Comuni PC e Tullomer
+### 4.1 Common Rules for PC and Tullomer
 
-Sia PC che Tullomer sono materiali ingegneristici ad alta temperatura con requisiti speciali:
+Both PC and Tullomer are engineering materials with high temperature resistance and special requirements:
 
-| Regola | Valore | Motivo |
+| Rule | Value | Reason |
 |---|---|---|
-| Parete minima | ≥ 2.0mm | Stress interlayer elevato, pareti sottili delaminano |
-| Fillet interni | ≥ 1.0mm su TUTTI gli angoli | Concentrazione di stress provoca cricche |
-| Camera chiusa | OBBLIGATORIA (>50°C) | Warping severo, delaminazione |
-| Hotend | All-metal | Temperature >250°C, PTFE si degrada |
-| Asciugatura | Critica | Bolle, stringing, delaminazione se umido |
-| Velocità max | 40-60 mm/s | Adesione interlayer richiede tempo |
-| Ventola pezzo | 0-30% | Raffreddamento rapido causa warping e delaminazione |
+| Minimum wall | >= 2.0mm | High interlayer stress, thin walls delaminate |
+| Internal fillets | >= 1.0mm on ALL corners | Stress concentration causes cracks |
+| Enclosed chamber | MANDATORY (>50°C) | Severe warping, delamination |
+| Hotend | All-metal | Temperatures >250°C, PTFE degrades |
+| Drying | Critical | Bubbles, stringing, delamination if wet |
+| Max speed | 40-60 mm/s | Interlayer adhesion requires time |
+| Part fan | 0-30% | Rapid cooling causes warping and delamination |
 
-### 4.2 Orientamento Fibre vs Carichi (materiali -CF)
+### 4.2 Fiber Orientation vs Loads (-CF materials)
 
-Per materiali rinforzati con fibre (PLA-CF, PETG-CF, PC-CF, PA-CF):
+For fiber-reinforced materials (PLA-CF, PETG-CF, PC-CF, PA-CF):
 
 ```
-REGOLA: Le fibre corte si allineano nella DIREZIONE DI STAMPA (asse X/Y del layer).
+RULE: Short fibers align in the PRINT DIRECTION (X/Y axis of the layer).
 
-La resistenza meccanica è ANISOTROPA:
-  - Direzione XY (nel piano del layer): 100% della resistenza nominale
-  - Direzione Z (tra layer): 30-50% della resistenza nominale
+Mechanical strength is ANISOTROPIC:
+  - XY direction (in-layer plane): 100% of nominal strength
+  - Z direction (between layers): 30-50% of nominal strength
 
-CONSEGUENZA SUL DESIGN:
-  ✅ Carichi di trazione/compressione nel piano XY → forte
-  ❌ Carichi di trazione lungo Z (tra layer) → debole
-  ✅ Flessione con asse neutro nel piano XY → forte
-  ❌ Flessione con asse neutro lungo Z → debole
+DESIGN CONSEQUENCE:
+  OK: Tension/compression loads in XY plane -> strong
+  NO: Tension loads along Z (between layers) -> weak
+  OK: Bending with neutral axis in XY plane -> strong
+  NO: Bending with neutral axis along Z -> weak
 ```
 
-**Regole di orientamento:**
+**Orientation rules:**
 
-| Tipo di carico | Orientamento stampa consigliato |
+| Load type | Recommended print orientation |
 |---|---|
-| Trazione lungo l'asse più lungo | Stampare con asse lungo in X o Y |
-| Flessione (trave) | Layer perpendicolari all'asse neutro |
-| Compressione assiale | Z-up (layer perpend. al carico) |
-| Torsione | Layer paralleli all'asse di torsione |
-| Carico multi-asse | Privilegiare la direzione del carico principale |
+| Tension along longest axis | Print with long axis in X or Y |
+| Bending (beam) | Layers perpendicular to neutral axis |
+| Axial compression | Z-up (layers perpendicular to load) |
+| Torsion | Layers parallel to torsion axis |
+| Multi-axis load | Prioritize main load direction |
 
-### 4.3 Creep a 80°C — Verifica Tullomer e PC
+### 4.3 Creep at 80°C — Tullomer and PC Verification
 
 ```
-SE materiale IN (Tullomer, PC) E temperatura_esercizio > 60°C E carico_sostenuto:
-    AVVISO: "A {temp}°C con carico sostenuto, verificare il creep.
-             Ridurre lo stress ammissibile del 40-60% rispetto ai dati a 23°C.
-             Considerare:
-             - Aumentare sezione resistente (+50%)
-             - Ridurre temperatura di esercizio se possibile
-             - Usare PC-CF o PA-CF per migliore resistenza al creep"
+IF material IN (Tullomer, PC) AND service_temperature > 60°C AND sustained_load:
+    WARNING: "At {temp}°C with sustained load, verify creep.
+             Reduce allowable stress by 40-60% compared to 23°C data.
+             Consider:
+             - Increase resistant cross-section (+50%)
+             - Reduce service temperature if possible
+             - Use PC-CF or PA-CF for better creep resistance"
 ```
 
-**Fattori di riduzione per creep:**
+**Creep reduction factors:**
 
-| Temperatura | Fattore su tensile strength |
+| Temperature | Factor on tensile strength |
 |---|---|
-| 23°C (ambiente) | 1.0 (valore nominale) |
+| 23°C (ambient) | 1.0 (nominal value) |
 | 50°C | 0.8 |
 | 60°C | 0.65 |
 | 80°C | 0.45 |
 | 100°C | 0.30 |
-| 120°C (solo PC) | 0.20 |
+| 120°C (PC only) | 0.20 |
 
-### 4.4 Checklist CadQuery per PC/Tullomer
+### 4.4 CadQuery Checklist for PC/Tullomer
 
-Prima di generare codice CadQuery per pezzi in PC o Tullomer, verificare:
+Before generating CadQuery code for PC or Tullomer parts, verify:
 
-- [ ] `wall >= 2.0` mm in tutto il modello
-- [ ] Fillet ≥ 1.0mm su TUTTI gli angoli interni (`.fillet(1.0)`)
-- [ ] Nessun angolo vivo interno (stress concentrator)
-- [ ] Spessori uniformi dove possibile (evitare transizioni brusche)
-- [ ] Fori con svasatura o raccordo d'ingresso
-- [ ] Nervature con draft angle ≥ 1° se possibile
-- [ ] Orientamento di stampa scelto per massimizzare adesione interlayer nella direzione del carico
-- [ ] Brim ≥ 8mm nel profilo slicer
+- [ ] `wall >= 2.0` mm throughout the model
+- [ ] Fillet >= 1.0mm on ALL internal corners (`.fillet(1.0)`)
+- [ ] No sharp internal corners (stress concentrators)
+- [ ] Uniform thicknesses where possible (avoid abrupt transitions)
+- [ ] Holes with countersink or entry fillet
+- [ ] Ribs with draft angle >= 1° if possible
+- [ ] Print orientation chosen to maximize interlayer adhesion in load direction
+- [ ] Brim >= 8mm in slicer profile
 
 ---
 
-## 5. Profili Stampante
+## 5. Printer Profiles
 
-### 5.1 Database Stampanti
+### 5.1 Printer Database
 
-| Stampante | Volume (mm) | Velocità max | Camera | Multi-mat | Ugello | Note |
+| Printer | Volume (mm) | Max speed | Chamber | Multi-mat | Nozzle | Notes |
 |---|---|---|---|---|---|---|
-| **Bambu X1C** | 256×256×256 | 500 mm/s | Chiusa (riscaldata) | AMS 4 slot | 0.4 default | Top gamma. ABS/PC/PA senza problemi. |
-| **Bambu P1S** | 256×256×256 | 500 mm/s | Chiusa (non riscaldata) | AMS 4 slot | 0.4 default | Come X1C ma camera non riscaldata attivamente. OK per ABS/ASA. |
-| **Bambu A1** | 256×256×256 | 500 mm/s | Aperta | AMS lite 4 slot | 0.4 default | Solo PLA/PETG/TPU. NO ABS/PC/PA (no camera). |
-| **Bambu A1 Mini** | 180×180×180 | 500 mm/s | Aperta | AMS lite 4 slot | 0.4 default | Volume ridotto. Solo PLA/PETG/TPU. |
-| **Prusa MK4S** | 250×210×220 | 200 mm/s | Aperta (enclosure opz.) | MMU3 5 slot | 0.4 default | Affidabile. Con enclosure DIY: ABS possibile. |
-| **Prusa XL** | 360×360×360 | 200 mm/s | Aperta (enclosure opz.) | 5 toolhead | 0.4 default | Volume enorme. Multi-tool vero. Enclosure opzionale per ABS. |
-| **Creality Ender 3 V3** | 220×220×250 | 300 mm/s | Aperta | No | 0.4 default | Entry-level. Solo PLA/PETG. |
-| **Creality K1** | 220×220×250 | 600 mm/s | Chiusa | No | 0.4 default | Veloce. Camera chiusa per ABS/ASA. |
-| **Voron 2.4** | 350×350×340 | 500 mm/s | Chiusa (riscaldata) | No (opz.) | 0.4 default | DIY CoreXY. Camera chiusa riscaldata fino a 60°C. Ideale per PC/PA/CF. |
+| **Bambu X1C** | 256x256x256 | 500 mm/s | Enclosed (heated) | AMS 4 slot | 0.4 default | Top tier. ABS/PC/PA no problem. |
+| **Bambu P1S** | 256x256x256 | 500 mm/s | Enclosed (not heated) | AMS 4 slot | 0.4 default | Like X1C but chamber not actively heated. OK for ABS/ASA. |
+| **Bambu A1** | 256x256x256 | 500 mm/s | Open | AMS lite 4 slot | 0.4 default | PLA/PETG/TPU only. NO ABS/PC/PA (no chamber). |
+| **Bambu A1 Mini** | 180x180x180 | 500 mm/s | Open | AMS lite 4 slot | 0.4 default | Reduced volume. PLA/PETG/TPU only. |
+| **Prusa MK4S** | 250x210x220 | 200 mm/s | Open (enclosure opt.) | MMU3 5 slot | 0.4 default | Reliable. With DIY enclosure: ABS possible. |
+| **Prusa XL** | 360x360x360 | 200 mm/s | Open (enclosure opt.) | 5 toolhead | 0.4 default | Huge volume. True multi-tool. Optional enclosure for ABS. |
+| **Creality Ender 3 V3** | 220x220x250 | 300 mm/s | Open | No | 0.4 default | Entry-level. PLA/PETG only. |
+| **Creality K1** | 220x220x250 | 600 mm/s | Enclosed | No | 0.4 default | Fast. Enclosed chamber for ABS/ASA. |
+| **Voron 2.4** | 350x350x340 | 500 mm/s | Enclosed (heated) | No (opt.) | 0.4 default | DIY CoreXY. Heated enclosed chamber up to 60°C. Ideal for PC/PA/CF. |
 
-### 5.2 Compatibilità Materiale-Stampante
+### 5.2 Material-Printer Compatibility
 
 ```
-PER OGNI materiale selezionato:
-    SE materiale.chamber_required:
-        stampanti_ok = [X1C, P1S, K1, Voron 2.4]
-        stampanti_con_mod = [Prusa MK4S+enclosure, Prusa XL+enclosure]
-        stampanti_no = [Bambu A1, A1 Mini, Ender 3]
-    ALTRIMENTI:
-        stampanti_ok = tutte
+FOR EACH selected material:
+    IF material.chamber_required:
+        printers_ok = [X1C, P1S, K1, Voron 2.4]
+        printers_with_mod = [Prusa MK4S+enclosure, Prusa XL+enclosure]
+        printers_no = [Bambu A1, A1 Mini, Ender 3]
+    OTHERWISE:
+        printers_ok = all
 ```
 
-**Matrice di compatibilità rapida:**
+**Quick compatibility matrix:**
 
-| Materiale | X1C | P1S | A1 | MK4S | XL | Ender 3 | K1 | Voron |
+| Material | X1C | P1S | A1 | MK4S | XL | Ender 3 | K1 | Voron |
 |---|---|---|---|---|---|---|---|---|
-| PLA | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| PLA-CF | ✅¹ | ✅¹ | ✅¹ | ✅¹ | ✅¹ | ✅¹ | ✅¹ | ✅¹ |
-| PETG | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| ABS | ✅ | ✅ | ❌ | ⚠️² | ⚠️² | ❌ | ✅ | ✅ |
-| ASA | ✅ | ✅ | ❌ | ⚠️² | ⚠️² | ❌ | ✅ | ✅ |
-| PC | ✅ | ⚠️³ | ❌ | ❌ | ⚠️² | ❌ | ⚠️³ | ✅ |
-| PC-CF | ✅¹ | ⚠️¹³ | ❌ | ❌ | ⚠️¹² | ❌ | ⚠️¹³ | ✅¹ |
-| PA6 | ✅ | ⚠️³ | ❌ | ❌ | ⚠️² | ❌ | ⚠️³ | ✅ |
-| PA-CF | ✅¹ | ⚠️¹³ | ❌ | ❌ | ⚠️¹² | ❌ | ⚠️¹³ | ✅¹ |
-| TPU 85A | ✅⁴ | ✅⁴ | ✅⁴ | ✅⁴ | ✅⁴ | ⚠️⁵ | ✅⁴ | ✅⁴ |
-| TPU 95A | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️⁵ | ✅ | ✅ |
-| Tullomer | ✅ | ⚠️³ | ❌ | ❌ | ⚠️² | ❌ | ⚠️³ | ✅ |
+| PLA | OK | OK | OK | OK | OK | OK | OK | OK |
+| PLA-CF | OK1 | OK1 | OK1 | OK1 | OK1 | OK1 | OK1 | OK1 |
+| PETG | OK | OK | OK | OK | OK | OK | OK | OK |
+| ABS | OK | OK | NO | WARN2 | WARN2 | NO | OK | OK |
+| ASA | OK | OK | NO | WARN2 | WARN2 | NO | OK | OK |
+| PC | OK | WARN3 | NO | NO | WARN2 | NO | WARN3 | OK |
+| PC-CF | OK1 | WARN13 | NO | NO | WARN12 | NO | WARN13 | OK1 |
+| PA6 | OK | WARN3 | NO | NO | WARN2 | NO | WARN3 | OK |
+| PA-CF | OK1 | WARN13 | NO | NO | WARN12 | NO | WARN13 | OK1 |
+| TPU 85A | OK4 | OK4 | OK4 | OK4 | OK4 | WARN5 | OK4 | OK4 |
+| TPU 95A | OK | OK | OK | OK | OK | WARN5 | OK | OK |
+| Tullomer | OK | WARN3 | NO | NO | WARN2 | NO | WARN3 | OK |
 
-**Note:**
-1. ¹ Ugello hardened steel obbligatorio
-2. ² Richiede enclosure aftermarket/DIY
-3. ³ Camera non riscaldata attivamente — possibile con precauzioni, rischio warping
-4. ⁴ Velocità ridotta (20-30 mm/s per 85A, 30-40 mm/s per 95A)
-5. ⁵ Ender 3 è bowden — TPU 85A molto difficile, 95A possibile lentamente
+**Notes:**
+1. 1 Hardened steel nozzle mandatory
+2. 2 Requires aftermarket/DIY enclosure
+3. 3 Chamber not actively heated — possible with precautions, warping risk
+4. 4 Reduced speed (20-30 mm/s for 85A, 30-40 mm/s for 95A)
+5. 5 Ender 3 is bowden — TPU 85A very difficult, 95A possible slowly
 
-### 5.3 Verifica Volume di Stampa
+### 5.3 Print Volume Verification
 
 ```
-SE pezzo.bounding_box > stampante.volume:
-    ERRORE: "Il pezzo ({bb.x}×{bb.y}×{bb.z}mm) non entra nel volume
-             di stampa della {stampante.nome} ({vol.x}×{vol.y}×{vol.z}mm).
-             Opzioni:
-             1. Scegliere stampante più grande (es. Prusa XL: 360×360×360)
-             2. Suddividere il pezzo con tagli e incastri
-             3. Ruotare il pezzo (se una dimensione è dominante)"
+IF part.bounding_box > printer.volume:
+    ERROR: "The part ({bb.x}x{bb.y}x{bb.z}mm) does not fit in the
+             print volume of {printer.name} ({vol.x}x{vol.y}x{vol.z}mm).
+             Options:
+             1. Choose a larger printer (e.g. Prusa XL: 360x360x360)
+             2. Split the part with cuts and interlocks
+             3. Rotate the part (if one dimension is dominant)"
 ```
 
-### 5.4 Profili Slicer Raccomandati
+### 5.4 Recommended Slicer Profiles
 
-| Scenario | Layer | Velocità | Infill | Perimetri | Note |
+| Scenario | Layer | Speed | Infill | Perimeters | Notes |
 |---|---|---|---|---|---|
-| Prototipo veloce | 0.28mm | 150 mm/s | 10% | 2 | Solo PLA |
-| Standard | 0.20mm | 80 mm/s | 20% | 3 | Default per la maggior parte |
-| Meccanico | 0.16mm | 60 mm/s | 40% | 4 | Pezzi sotto carico |
-| Precisione | 0.12mm | 40 mm/s | 30% | 3 | Tolleranze strette |
-| Strutturale | 0.16mm | 40 mm/s | 60% | 5 | Massima resistenza |
-| Flessibile (TPU) | 0.20mm | 25 mm/s | 20% | 3 | Retrazione 0-1mm |
-| PC / Tullomer | 0.20mm | 40 mm/s | 30% | 4 | Ventola 0-20%, camera chiusa |
+| Quick prototype | 0.28mm | 150 mm/s | 10% | 2 | PLA only |
+| Standard | 0.20mm | 80 mm/s | 20% | 3 | Default for most |
+| Mechanical | 0.16mm | 60 mm/s | 40% | 4 | Parts under load |
+| Precision | 0.12mm | 40 mm/s | 30% | 3 | Tight tolerances |
+| Structural | 0.16mm | 40 mm/s | 60% | 5 | Maximum strength |
+| Flexible (TPU) | 0.20mm | 25 mm/s | 20% | 3 | Retraction 0-1mm |
+| PC / Tullomer | 0.20mm | 40 mm/s | 30% | 4 | Fan 0-20%, enclosed chamber |
 
 ---
 
-## 6. Integrazione con Pipeline CadQuery
+## 6. Integration with CadQuery Pipeline
 
-### 6.1 Flusso di Lavoro
+### 6.1 Workflow
 
 ```
-1. Utente specifica caso d'uso + condizioni operative
-2. print-profiles seleziona materiale (Sezione 1)
-3. print-profiles applica vincoli al design (Sezione 2):
-   - wall_min_mm → verifica/aggiorna parametri CadQuery
-   - shrinkage_pct → compensazione su dimensioni critiche
-   - chamber_required → avviso compatibilità stampante
-   - fillet obbligatori per PC/Tullomer
-4. cadquery-codegen genera il codice con vincoli applicati
-5. cadquery-validate esegue e verifica
-6. print-profiles genera report (Sezione 3):
-   - Peso stimato
-   - Tempo stimato
-   - Costo filamento
-   - Note stampa specifiche
+1. User specifies use case + operating conditions
+2. print-profiles selects material (Section 1)
+3. print-profiles applies constraints to design (Section 2):
+   - wall_min_mm -> verify/update CadQuery parameters
+   - shrinkage_pct -> compensation on critical dimensions
+   - chamber_required -> printer compatibility warning
+   - mandatory fillets for PC/Tullomer
+4. cadquery-codegen generates code with applied constraints
+5. cadquery-validate executes and verifies
+6. print-profiles generates report (Section 3):
+   - Estimated weight
+   - Estimated time
+   - Filament cost
+   - Material-specific print notes
 ```
 
-### 6.2 Esempio di Applicazione Vincoli
+### 6.2 Constraint Application Example
 
 ```python
-# Input utente: enclosure per outdoor, temp 60°C
-# Selezione: ASA (outdoor + UV + 90°C service)
+# User input: outdoor enclosure, temp 60°C
+# Selection: ASA (outdoor + UV + 90°C service)
 
-# Vincoli applicati automaticamente:
-materiale = "ASA"
+# Constraints applied automatically:
+material = "ASA"
 wall = max(user_wall, 1.2)        # wall_min_mm ASA = 1.2
-# Compensazione ritiro su dimensioni critiche:
+# Shrinkage compensation on critical dimensions:
 # pcb_clearance += compensate_shrinkage(pcb_clearance, 0.55%)
-# Avviso camera chiusa: ASA richiede camera chiusa
+# Enclosed chamber warning: ASA requires enclosed chamber
 
-# Nel report finale:
-# ⚠️ CAMERA CHIUSA RICHIESTA — stampanti compatibili: X1C, P1S, K1, Voron
-# ⚠️ ASCIUGATURA: 65°C × 4h prima della stampa
-# 📊 Peso stimato: 45.2g (ASA, 20% infill)
-# ⏱️ Tempo stimato: ~3h 15min
+# In the final report:
+# WARNING: ENCLOSED CHAMBER REQUIRED — compatible printers: X1C, P1S, K1, Voron
+# WARNING: DRYING: 65°C x 4h before printing
+# Estimated weight: 45.2g (ASA, 20% infill)
+# Estimated time: ~3h 15min
 ```
 
 ---
 
-## 7. Checklist Pre-Stampa
+## 7. Pre-Print Checklist
 
-Prima di dichiarare il modello pronto per la stampa:
+Before declaring the model ready for printing:
 
-- [ ] Materiale selezionato e giustificato per il caso d'uso
-- [ ] `wall >= materiale.wall_min_mm` verificato su tutto il modello
-- [ ] Fillet ≥ 1mm su angoli interni (se PC/Tullomer)
-- [ ] Compensazione ritiro applicata su dimensioni critiche
-- [ ] Volume di stampa verificato per la stampante target
-- [ ] Compatibilità stampante-materiale verificata (Sezione 5.2)
-- [ ] Asciugatura segnalata se necessaria
-- [ ] Camera chiusa segnalata se necessaria
-- [ ] Ugello hardened steel segnalato se materiale -CF
-- [ ] Report peso/tempo/costo generato
-- [ ] Profilo slicer raccomandato indicato
+- [ ] Material selected and justified for the use case
+- [ ] `wall >= material.wall_min_mm` verified throughout the model
+- [ ] Fillet >= 1mm on internal corners (if PC/Tullomer)
+- [ ] Shrinkage compensation applied on critical dimensions
+- [ ] Print volume verified for the target printer
+- [ ] Printer-material compatibility verified (Section 5.2)
+- [ ] Drying flagged if necessary
+- [ ] Enclosed chamber flagged if necessary
+- [ ] Hardened steel nozzle flagged if -CF material
+- [ ] Weight/time/cost report generated
+- [ ] Recommended slicer profile indicated

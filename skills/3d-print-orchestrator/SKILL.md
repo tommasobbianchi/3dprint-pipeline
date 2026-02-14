@@ -1,362 +1,362 @@
-# SKILL: 3d-print-orchestrator — Orchestratore Pipeline 3D Print
+# SKILL: 3d-print-orchestrator — 3D Print Pipeline Orchestrator
 
-## Identità
-Orchestratore centrale della pipeline 3D Print. Riceve richieste in linguaggio naturale
-(testo e/o immagini), coordina tutte le skill specializzate e produce output pronto per la stampa.
-
----
-
-## 1. Workflow Completo
-
-```
-INPUT (testo / immagine / combo)
-│
-├─ [se immagine allegata]
-│   └─ skills/image-to-3d/SKILL.md
-│      → Classificazione input (sketch/foto/disegno tecnico/screenshot/prodotto)
-│      → Specifica strutturata (forme, dimensioni, features, materiale suggerito)
-│
-├─ [se materiale specificato o da selezionare]
-│   └─ skills/print-profiles/SKILL.md
-│      → Selezione materiale per caso d'uso
-│      → Vincoli: wall_min, shrinkage, chamber, drying, nozzle
-│      → Profilo stampante e compatibilità
-│
-├─ skills/spatial-reasoning/SKILL.md
-│   → Fase 1: Decomposizione funzionale
-│   → Fase 2: Piano di modellazione (primitivi, booleane, ordine)
-│   → Fase 3: DFM check (spessori, overhang, supporti, orientamento)
-│   → Fase 4: Coordinate e dimensioni finali
-│
-├─ skills/cadquery-codegen/SKILL.md
-│   → Script Python parametrico (template obbligatorio)
-│   → Tutte le dimensioni in variabili commentate [mm]
-│   → Funzioni separate: make_body(), make_features(), make_assembly()
-│   → Export STEP + STL
-│
-├─ skills/cadquery-validate/SKILL.md
-│   → Esecuzione script Python
-│   → Validazione BREP (bounding box, volume, fill ratio)
-│   → Fix loop automatico (max 5 tentativi, catalogo 20 errori)
-│   → Export finale .step + .stl
-│
-└─ OUTPUT
-   → Script .py (parametrico, commentato, standalone)
-   → File .step (importabile in Onshape/Fusion360/FreeCAD)
-   → File .stl (per slicer: Bambu Studio, PrusaSlicer, OrcaSlicer)
-   → Report completo (vedi §4)
-```
-
-### 1.1 Regole di Orchestrazione
-
-1. **Ordine obbligatorio** — Le fasi vanno eseguite nell'ordine indicato. Non saltare fasi.
-2. **Ragionamento PRIMA del codice** — Mai scrivere CadQuery senza aver completato spatial-reasoning.
-3. **Un materiale alla volta** — Se l'utente non specifica, suggerisci il materiale e chiedi conferma.
-4. **Vincoli materiale → codice** — I vincoli da print-profiles (wall_min, fillet) DEVONO essere applicati nel codice CadQuery.
-5. **Validazione obbligatoria** — Mai consegnare codice non eseguito. Sempre passare per cadquery-validate.
-6. **Fix automatico** — Se la validazione fallisce, il loop fix di cadquery-validate gestisce fino a 5 tentativi.
-7. **Output completo** — Ogni consegna include .py + .step + .stl + report.
-
-### 1.2 Gestione Errori tra Fasi
-
-```
-ERRORE in una fase
-│
-├─ image-to-3d fallisce (immagine illeggibile/ambigua)
-│   → Chiedi all'utente: "Puoi descrivere a parole il pezzo?"
-│   → Procedi con input testuale
-│
-├─ print-profiles: materiale non compatibile con stampante
-│   → Mostra matrice compatibilità
-│   → Suggerisci alternativa
-│
-├─ spatial-reasoning: geometria troppo complessa
-│   → Scomponi in sotto-assembly
-│   → Genera parti separate, poi assembla
-│
-├─ cadquery-codegen: pattern non coperto dai template
-│   → Genera codice custom seguendo il template obbligatorio
-│   → Riferisci ai 6 template come base
-│
-└─ cadquery-validate: 5 tentativi esauriti
-    → Riporta tutti gli errori all'utente
-    → Suggerisci semplificazione geometrica
-    → Mai consegnare codice non funzionante
-```
+## Identity
+Central orchestrator of the 3D Print pipeline. Receives requests in natural language
+(text and/or images), coordinates all specialized skills, and produces print-ready output.
 
 ---
 
-## 2. Comandi Rapidi
+## 1. Complete Workflow
 
-Scorciatoie per richieste frequenti. Ogni comando attiva il workflow completo
-ma con parametri pre-impostati.
+```
+INPUT (text / image / combo)
+|
++-- [if image attached]
+|   +-- skills/image-to-3d/SKILL.md
+|      -> Input classification (sketch/photo/technical drawing/screenshot/product)
+|      -> Structured specification (shapes, dimensions, features, suggested material)
+|
++-- [if material specified or to be selected]
+|   +-- skills/print-profiles/SKILL.md
+|      -> Material selection by use case
+|      -> Constraints: wall_min, shrinkage, chamber, drying, nozzle
+|      -> Printer profile and compatibility
+|
++-- skills/spatial-reasoning/SKILL.md
+|   -> Phase 1: Functional decomposition
+|   -> Phase 2: Modeling plan (primitives, booleans, order)
+|   -> Phase 3: DFM check (thicknesses, overhang, supports, orientation)
+|   -> Phase 4: Coordinates and final dimensions
+|
++-- skills/cadquery-codegen/SKILL.md
+|   -> Parametric Python script (mandatory template)
+|   -> All dimensions in commented variables [mm]
+|   -> Separate functions: make_body(), make_features(), make_assembly()
+|   -> Export STEP + STL
+|
++-- skills/cadquery-validate/SKILL.md
+|   -> Python script execution
+|   -> BREP validation (bounding box, volume, fill ratio)
+|   -> Automatic fix loop (max 5 attempts, 20-error catalog)
+|   -> Final export .step + .stl
+|
++-- OUTPUT
+   -> Script .py (parametric, commented, standalone)
+   -> File .step (importable in Onshape/Fusion360/FreeCAD)
+   -> File .stl (for slicer: Bambu Studio, PrusaSlicer, OrcaSlicer)
+   -> Complete report (see section 4)
+```
 
-| Comando | Descrizione | Template base | Esempio |
+### 1.1 Orchestration Rules
+
+1. **Mandatory order** — Phases must be executed in the indicated order. Do not skip phases.
+2. **Reasoning BEFORE code** — Never write CadQuery without completing spatial-reasoning.
+3. **One material at a time** — If the user doesn't specify, suggest a material and ask for confirmation.
+4. **Material constraints -> code** — Constraints from print-profiles (wall_min, fillet) MUST be applied in CadQuery code.
+5. **Mandatory validation** — Never deliver unexecuted code. Always pass through cadquery-validate.
+6. **Automatic fix** — If validation fails, the fix loop in cadquery-validate handles up to 5 attempts.
+7. **Complete output** — Every delivery includes .py + .step + .stl + report.
+
+### 1.2 Error Handling Between Phases
+
+```
+ERROR in a phase
+|
++-- image-to-3d fails (unreadable/ambiguous image)
+|   -> Ask the user: "Can you describe the part in words?"
+|   -> Proceed with text input
+|
++-- print-profiles: material not compatible with printer
+|   -> Show compatibility matrix
+|   -> Suggest alternative
+|
++-- spatial-reasoning: geometry too complex
+|   -> Break into sub-assemblies
+|   -> Generate separate parts, then assemble
+|
++-- cadquery-codegen: pattern not covered by templates
+|   -> Generate custom code following the mandatory template
+|   -> Reference the 6 templates as a base
+|
++-- cadquery-validate: 5 attempts exhausted
+    -> Report all errors to the user
+    -> Suggest geometric simplification
+    -> Never deliver non-working code
+```
+
+---
+
+## 2. Quick Commands
+
+Shortcuts for frequent requests. Each command triggers the full workflow
+but with pre-set parameters.
+
+| Command | Description | Base template | Example |
 |---|---|---|---|
-| `/box WxDxH [materiale]` | Scatola parametrica con coperchio | `parametric_box.py` | `/box 80x60x40 PETG` |
-| `/bracket [materiale]` | Staffa a L con gusset | `bracket_l.py` | `/bracket PC` |
-| `/enclosure BOARD [materiale]` | Enclosure per PCB | `enclosure.py` | `/enclosure "Arduino Uno" PETG` |
-| `/snap` | Modulo snap-fit dimostrativo | `snap_fit.py` | `/snap` |
-| `/thread M[n]` | Foro per inserto a caldo | `threaded_insert.py` | `/thread M3` |
-| `/hinge [materiale]` | Cerniera a pin | `hinge.py` | `/hinge PA12` |
-| `/validate FILE` | Valida ed esporta script esistente | — | `/validate enclosure.py` |
-| `/export FILE` | Export STEP+STL da script | — | `/export enclosure.py` |
-| `/material MAT` | Mostra vincoli e proprietà materiale | — | `/material PETG` |
-| `/sketch` | Analizza immagine allegata | — | `/sketch` (con immagine) |
+| `/box WxDxH [material]` | Parametric box with lid | `parametric_box.py` | `/box 80x60x40 PETG` |
+| `/bracket [material]` | L-bracket with gusset | `bracket_l.py` | `/bracket PC` |
+| `/enclosure BOARD [material]` | PCB enclosure | `enclosure.py` | `/enclosure "Arduino Uno" PETG` |
+| `/snap` | Snap-fit demo module | `snap_fit.py` | `/snap` |
+| `/thread M[n]` | Heat insert hole | `threaded_insert.py` | `/thread M3` |
+| `/hinge [material]` | Pin hinge | `hinge.py` | `/hinge PA12` |
+| `/validate FILE` | Validate and export existing script | — | `/validate enclosure.py` |
+| `/export FILE` | Export STEP+STL from script | — | `/export enclosure.py` |
+| `/material MAT` | Show material constraints and properties | — | `/material PETG` |
+| `/sketch` | Analyze attached image | — | `/sketch` (with image) |
 
-### 2.1 Parsing Comandi
+### 2.1 Command Parsing
 
 ```
-COMANDO RICEVUTO
-│
-├─ Inizia con "/"?
-│   ├─ Match con comando noto → Esegui con parametri
-│   └─ No match → "Comando non riconosciuto. Comandi disponibili: ..."
-│
-└─ Testo libero?
-    ├─ Contiene immagine → Fase image-to-3d → workflow completo
-    ├─ Contiene dimensioni esplicite → spatial-reasoning → workflow
-    └─ Descrizione generica → Chiedi dettagli (§3 modalità interattiva)
+COMMAND RECEIVED
+|
++-- Starts with "/"?
+|   +-- Match with known command -> Execute with parameters
+|   +-- No match -> "Unknown command. Available commands: ..."
+|
++-- Free text?
+    +-- Contains image -> image-to-3d phase -> full workflow
+    +-- Contains explicit dimensions -> spatial-reasoning -> workflow
+    +-- Generic description -> Ask for details (section 3 interactive mode)
 ```
 
 ---
 
-## 3. Modalita Interattiva
+## 3. Interactive Mode
 
-Quando le informazioni sono insufficienti, chiedi in modo strutturato.
+When information is insufficient, ask in a structured way.
 
-### 3.1 Informazioni Minime Richieste
+### 3.1 Minimum Required Information
 
-| Informazione | Obbligatoria | Default se non fornita |
+| Information | Required | Default if not provided |
 |---|---|---|
-| Tipo di pezzo | SI | — (chiedi sempre) |
-| Dimensioni principali | SI | — (chiedi sempre) |
-| Materiale | NO | PLA |
-| Spessore parete | NO | Da materiale (wall_min) |
-| Fillet/raccordi | NO | 1.0 mm |
-| Fori di montaggio | NO | Nessuno |
-| Aperture | NO | Nessuna |
-| Stampante | NO | Generica (250x250x250mm) |
+| Part type | YES | — (always ask) |
+| Main dimensions | YES | — (always ask) |
+| Material | NO | PLA |
+| Wall thickness | NO | From material (wall_min) |
+| Fillet/rounds | NO | 1.0 mm |
+| Mounting holes | NO | None |
+| Openings | NO | None |
+| Printer | NO | Generic (250x250x250mm) |
 
-### 3.2 Domande Strutturate
+### 3.2 Structured Questions
 
-Quando mancano informazioni, chiedi con formato preciso:
+When information is missing, ask with precise format:
 
 ```
-Per procedere ho bisogno di:
-1. **Dimensioni** — Larghezza × Profondità × Altezza in mm?
-2. **Materiale** — Quale materiale? (PLA, PETG, ABS, ASA, PC, PA, TPU...)
-3. **Fori montaggio** — Servono fori? Se sì: diametro, posizioni, tipo (passante/inserto)?
-4. **Aperture** — Servono aperture sui lati? Se sì: dimensioni e posizione?
+To proceed I need:
+1. **Dimensions** — Width x Depth x Height in mm?
+2. **Material** — Which material? (PLA, PETG, ABS, ASA, PC, PA, TPU...)
+3. **Mounting holes** — Need holes? If yes: diameter, positions, type (through/insert)?
+4. **Openings** — Need openings on sides? If yes: dimensions and position?
 ```
 
-### 3.3 Regole di Interazione
+### 3.3 Interaction Rules
 
-1. **Chiedi tutto insieme** — Non fare una domanda alla volta. Raggruppa.
-2. **Proponi default** — "Se non specificato, userò PLA con parete 2mm."
-3. **Conferma dimensioni critiche** — Per enclosure di PCB, conferma sempre le posizioni fori.
-4. **Non indovinare materiale per parti meccaniche** — Chiedi sempre per pezzi strutturali.
+1. **Ask everything at once** — Don't ask one question at a time. Group them.
+2. **Propose defaults** — "If not specified, I'll use PLA with 2mm wall."
+3. **Confirm critical dimensions** — For PCB enclosures, always confirm hole positions.
+4. **Don't guess material for mechanical parts** — Always ask for structural parts.
 
 ---
 
-## 4. Output Standard
+## 4. Standard Output
 
-Ogni richiesta completata produce questo output.
+Every completed request produces this output.
 
-### 4.1 File Generati
+### 4.1 Generated Files
 
-| File | Formato | Scopo |
+| File | Format | Purpose |
 |---|---|---|
-| `{nome}.py` | Python | Script CadQuery parametrico, standalone, eseguibile |
-| `{nome}.step` | STEP AP214 | Import in CAD (Onshape, Fusion360, FreeCAD, SolidWorks) |
-| `{nome}.stl` | STL binario | Import in slicer (Bambu Studio, PrusaSlicer, OrcaSlicer) |
-| `{nome}_report.txt` | Testo | Report completo (opzionale, stampato a console) |
+| `{name}.py` | Python | Parametric CadQuery script, standalone, executable |
+| `{name}.step` | STEP AP214 | Import in CAD (Onshape, Fusion360, FreeCAD, SolidWorks) |
+| `{name}.stl` | Binary STL | Import in slicer (Bambu Studio, PrusaSlicer, OrcaSlicer) |
+| `{name}_report.txt` | Text | Complete report (optional, printed to console) |
 
-Per assembly multi-parte:
+For multi-part assemblies:
 
-| File | Scopo |
+| File | Purpose |
 |---|---|
-| `{nome}_body.step/.stl` | Corpo principale |
-| `{nome}_lid.step/.stl` | Coperchio (se presente) |
-| `{nome}_assembly.step` | Assembly completo (colori per parte) |
+| `{name}_body.step/.stl` | Main body |
+| `{name}_lid.step/.stl` | Lid (if present) |
+| `{name}_assembly.step` | Complete assembly (color per part) |
 
-### 4.2 Report Completo
+### 4.2 Complete Report
 
-Dopo ogni consegna, stampa SEMPRE:
+After every delivery, ALWAYS print:
 
 ```
-═══════════════════════════════════════════════
-  REPORT — {NOME COMPONENTE}
-═══════════════════════════════════════════════
+===============================================
+  REPORT — {COMPONENT NAME}
+===============================================
 
-✅ Esecuzione Python: OK (tentativo N/5)
-✅ Shape BREP: Valido
+OK Python execution: OK (attempt N/5)
+OK BREP Shape: Valid
 
-📐 Geometria:
-   Bounding box: {X:.1f} × {Y:.1f} × {Z:.1f} mm
-   Volume:       {vol:,.0f} mm³ ({vol/1000:.1f} cm³)
-   Area sup.:    {area:,.0f} mm²
+Geometry:
+   Bounding box: {X:.1f} x {Y:.1f} x {Z:.1f} mm
+   Volume:       {vol:,.0f} mm3 ({vol/1000:.1f} cm3)
+   Surface area: {area:,.0f} mm2
 
-⚖️ Stampa:
-   Materiale:     {materiale}
-   Peso stimato:  {peso:.1f}g (infill {infill}%)
-   Tempo stimato: ~{ore}h {min}min
-   Costo mat.:    ~€{costo:.2f}
+Print:
+   Material:       {material}
+   Estimated wt:   {weight:.1f}g (infill {infill}%)
+   Estimated time:  ~{hours}h {min}min
+   Material cost:  ~EUR {cost:.2f}
 
-🖨️ Stampante:
-   Compatibile:   {lista stampanti compatibili}
-   Volume stampa: {check ✅ o ⚠️}
-   Camera chiusa: {richiesta/non richiesta}
+Printer:
+   Compatible:     {compatible printer list}
+   Print volume:   {check OK or WARNING}
+   Enclosed:       {required/not required}
 
-📦 Orientamento stampa:
-   Asse Z-up:     {descrizione orientamento}
-   Supporti:      {necessari/non necessari}
-   Note slicer:   {eventuali note}
+Print orientation:
+   Z-up axis:      {orientation description}
+   Supports:       {needed/not needed}
+   Slicer notes:   {any notes}
 
-📁 File esportati:
-   {lista file .py + .step + .stl}
+Exported files:
+   {list of .py + .step + .stl files}
 
-═══════════════════════════════════════════════
+===============================================
 ```
 
-### 4.3 Calcoli per il Report
+### 4.3 Report Calculations
 
 ```python
 import json, os
 
-# Carica materiali
+# Load materials
 mat_path = os.path.join(os.path.dirname(__file__), "..", "print-profiles", "materials.json")
 with open(mat_path) as f:
-    MATERIALI = json.load(f)
+    MATERIALS = json.load(f)
 
-def report(result, materiale="PLA", infill_pct=20, layer_h=0.2):
-    """Genera report completo per un risultato CadQuery."""
+def report(result, material="PLA", infill_pct=20, layer_h=0.2):
+    """Generates complete report for a CadQuery result."""
     bb = result.val().BoundingBox()
     vol_mm3 = result.val().Volume()
     vol_cm3 = vol_mm3 / 1000
 
-    mat = MATERIALI[materiale]
-    densita = mat["density_g_cm3"]
-    fattore = 0.3 + 0.7 * (infill_pct / 100)
-    peso_g = vol_cm3 * densita * fattore
+    mat = MATERIALS[material]
+    density = mat["density_g_cm3"]
+    factor = 0.3 + 0.7 * (infill_pct / 100)
+    weight_g = vol_cm3 * density * factor
 
-    # Tempo: approssimazione basata su volume
-    velocita_cm3h = 20  # [cm³/h] media FDM
-    tempo_h = (vol_cm3 / velocita_cm3h) * 1.3  # overhead 30%
-    ore = int(tempo_h)
-    minuti = int((tempo_h - ore) * 60)
+    # Time: approximation based on volume
+    speed_cm3h = 20  # [cm3/h] FDM average
+    time_h = (vol_cm3 / speed_cm3h) * 1.3  # 30% overhead
+    hours = int(time_h)
+    minutes = int((time_h - hours) * 60)
 
-    # Costo materiale (€/kg medio)
-    PREZZI = {"PLA": 20, "PETG": 22, "ABS": 22, "ASA": 28,
+    # Material cost (EUR/kg average)
+    PRICES = {"PLA": 20, "PETG": 22, "ABS": 22, "ASA": 28,
               "PC": 35, "PA6": 40, "PA12": 45, "TPU_85A": 35,
               "TPU_95A": 30, "PLA-CF": 35, "PETG-CF": 38,
               "PC-CF": 55, "PA-CF": 60, "Tullomer": 50,
               "PVA": 45, "HIPS": 22}
-    costo = peso_g / 1000 * PREZZI.get(materiale, 25)
+    cost = weight_g / 1000 * PRICES.get(material, 25)
 
     print(f"BB: {bb.xlen:.1f} x {bb.ylen:.1f} x {bb.zlen:.1f} mm")
-    print(f"Volume: {vol_mm3:,.0f} mm³ ({vol_cm3:.1f} cm³)")
-    print(f"Peso: {peso_g:.1f}g ({materiale}, {infill_pct}% infill)")
-    print(f"Tempo: ~{ore}h {minuti}min")
-    print(f"Costo materiale: ~€{costo:.2f}")
+    print(f"Volume: {vol_mm3:,.0f} mm3 ({vol_cm3:.1f} cm3)")
+    print(f"Weight: {weight_g:.1f}g ({material}, {infill_pct}% infill)")
+    print(f"Time: ~{hours}h {minutes}min")
+    print(f"Material cost: ~EUR {cost:.2f}")
 ```
 
 ---
 
-## 5. Integrazione con Template CadQuery
+## 5. Integration with CadQuery Templates
 
-I 6 template in `skills/cadquery-codegen/templates/` sono il punto di partenza per categorie note.
+The 6 templates in `skills/cadquery-codegen/templates/` are the starting point for known categories.
 
-| Richiesta utente | Template | Personalizzazioni tipiche |
+| User request | Template | Typical customizations |
 |---|---|---|
-| Scatola, contenitore, box | `parametric_box.py` | Dimensioni, divisori interni, coperchio |
-| Staffa, supporto, angolare | `bracket_l.py` | Dimensioni bracci, fori, gusset |
-| Enclosure PCB, case elettronica | `enclosure.py` | Dimensioni PCB, standoff, aperture, ventilazione |
-| Clip, gancio, chiusura a scatto | `snap_fit.py` | Dimensioni hook, deflessione, clearance |
-| Foro filettato, inserto a caldo | `threaded_insert.py` | Taglia M2-M8, profondità, pattern |
-| Cerniera, perno, articolazione | `hinge.py` | Larghezza, n. knuckle, diametro pin |
+| Box, container, case | `parametric_box.py` | Dimensions, internal dividers, lid |
+| Bracket, mount, angle | `bracket_l.py` | Arm dimensions, holes, gusset |
+| PCB enclosure, electronic case | `enclosure.py` | PCB dimensions, standoffs, openings, ventilation |
+| Clip, hook, snap closure | `snap_fit.py` | Hook dimensions, deflection, clearance |
+| Threaded hole, heat insert | `threaded_insert.py` | Size M2-M8, depth, pattern |
+| Hinge, pin, articulation | `hinge.py` | Width, knuckle count, pin diameter |
 
-### 5.1 Quando NON usare un template
+### 5.1 When NOT to Use a Template
 
-- Pezzo completamente custom → Genera da zero seguendo il template strutturale di CLAUDE.md
-- Combinazione di pattern → Combina elementi da template diversi
-- Assembly complesso → Scomponi in parti, ciascuna con il suo pattern
+- Fully custom part -> Generate from scratch following CLAUDE.md structural template
+- Combination of patterns -> Combine elements from different templates
+- Complex assembly -> Break into parts, each with its own pattern
 
 ---
 
-## 6. Fasi Dettagliate — Cosa Fare in Ogni Fase
+## 6. Detailed Phases — What to Do in Each Phase
 
-### 6.1 Fase image-to-3d (solo se immagine allegata)
+### 6.1 image-to-3d Phase (only if image attached)
 
-1. Classifica il tipo di input (A-E)
-2. Estrai forme, dimensioni, features
-3. Identifica materiale suggerito
-4. Produci specifica strutturata
-5. Se dimensioni mancanti → chiedi all'utente
+1. Classify input type (A-E)
+2. Extract shapes, dimensions, features
+3. Identify suggested material
+4. Produce structured specification
+5. If dimensions missing -> ask the user
 
-### 6.2 Fase print-profiles
+### 6.2 print-profiles Phase
 
-1. Carica `materials.json`
-2. Seleziona materiale per caso d'uso (o usa quello richiesto)
-3. Estrai vincoli: `wall_min_mm`, `shrinkage_pct`, `chamber_required`
-4. Verifica compatibilità stampante (se specificata)
-5. Prepara parametri per il codice CadQuery
+1. Load `materials.json`
+2. Select material for use case (or use the requested one)
+3. Extract constraints: `wall_min_mm`, `shrinkage_pct`, `chamber_required`
+4. Verify printer compatibility (if specified)
+5. Prepare parameters for CadQuery code
 
-### 6.3 Fase spatial-reasoning
+### 6.3 spatial-reasoning Phase
 
-1. **Decomposizione funzionale** — Elenca componenti e funzioni
-2. **Piano di modellazione** — Primitivi, ordine operazioni booleane, ordine fillet
-3. **DFM check** — Spessori ≥ wall_min, overhang < 45°, orientamento stampa
-4. **Coordinate finali** — Tabella con tutte le dimensioni e posizioni
+1. **Functional decomposition** — List components and functions
+2. **Modeling plan** — Primitives, boolean operation order, fillet order
+3. **DFM check** — Thicknesses >= wall_min, overhang < 45°, print orientation
+4. **Final coordinates** — Table with all dimensions and positions
 
-**Regola critica:** Il fillet sugli spigoli verticali esterni (`edges("|Z")`) va applicato
-PRIMA delle operazioni booleane (cut per cavità, union per standoff). Vedi memory #55.
+**Critical rule:** Fillet on external vertical edges (`edges("|Z")`) must be applied
+BEFORE boolean operations (cut for cavities, union for standoffs). See memory #55.
 
-### 6.4 Fase cadquery-codegen
+### 6.4 cadquery-codegen Phase
 
-1. Scegli template base (se applicabile)
-2. Personalizza parametri
-3. Struttura: header → parametri → costruzione → export
-4. Applica vincoli materiale (wall_min, fillet)
-5. Genera script Python completo e standalone
+1. Choose base template (if applicable)
+2. Customize parameters
+3. Structure: header -> parameters -> construction -> export
+4. Apply material constraints (wall_min, fillet)
+5. Generate complete standalone Python script
 
-### 6.5 Fase cadquery-validate
+### 6.5 cadquery-validate Phase
 
-1. Esegui lo script Python
-2. Verifica: no errori, BB valido, volume > 0
-3. Se errore → applica fix dal catalogo (max 5 tentativi)
+1. Execute the Python script
+2. Verify: no errors, valid BB, volume > 0
+3. If error -> apply fix from catalog (max 5 attempts)
 4. Export .step + .stl
-5. Genera report
+5. Generate report
 
 ---
 
-## 7. Esempi di Richieste e Routing
+## 7. Request Examples and Routing
 
-| Richiesta utente | Fasi attivate | Template |
+| User request | Phases activated | Template |
 |---|---|---|
-| "Crea una scatola 80x60x40 in PLA" | profiles → spatial → codegen → validate | `parametric_box.py` |
-| [immagine di un bracket] | image-to-3d → profiles → spatial → codegen → validate | `bracket_l.py` |
-| "Enclosure per Raspberry Pi 4" | profiles → spatial → codegen → validate | `enclosure.py` |
-| `/box 100x80x50 PETG` | profiles → spatial → codegen → validate | `parametric_box.py` |
-| `/validate my_part.py` | validate (solo) | — |
-| `/material ASA` | profiles (solo) | — |
-| "Crea un pezzo che resista a 100°C" | profiles (selezione) → interattivo → spatial → codegen → validate | custom |
+| "Create a box 80x60x40 in PLA" | profiles -> spatial -> codegen -> validate | `parametric_box.py` |
+| [image of a bracket] | image-to-3d -> profiles -> spatial -> codegen -> validate | `bracket_l.py` |
+| "Enclosure for Raspberry Pi 4" | profiles -> spatial -> codegen -> validate | `enclosure.py` |
+| `/box 100x80x50 PETG` | profiles -> spatial -> codegen -> validate | `parametric_box.py` |
+| `/validate my_part.py` | validate (only) | — |
+| `/material ASA` | profiles (only) | — |
+| "Create a part that can withstand 100°C" | profiles (selection) -> interactive -> spatial -> codegen -> validate | custom |
 
 ---
 
-## 8. Checklist Pre-Consegna
+## 8. Pre-Delivery Checklist
 
-Prima di consegnare all'utente, verifica TUTTI questi punti:
+Before delivering to the user, verify ALL these points:
 
-- [ ] Ragionamento spaziale completato (4 fasi documentate)
-- [ ] Vincoli materiale applicati (wall_min, fillet, shrinkage)
-- [ ] Script Python esegue senza errori
-- [ ] Bounding box dimensioni > 0.1mm e < 500mm su tutti gli assi
-- [ ] Volume > 0 mm³
-- [ ] File .step esportato e verificato
-- [ ] File .stl esportato e verificato
-- [ ] Nessun `try: except: pass` nel codice
-- [ ] Tutti i parametri con commento `[mm]` o `[deg]`
-- [ ] Nessun magic number
-- [ ] Report completo stampato
-- [ ] Orientamento stampa indicato (Z-up)
+- [ ] Spatial reasoning completed (4 documented phases)
+- [ ] Material constraints applied (wall_min, fillet, shrinkage)
+- [ ] Python script runs without errors
+- [ ] Bounding box dimensions > 0.1mm and < 500mm on all axes
+- [ ] Volume > 0 mm3
+- [ ] .step file exported and verified
+- [ ] .stl file exported and verified
+- [ ] No `try: except: pass` in code
+- [ ] All parameters with `[mm]` or `[deg]` comment
+- [ ] No magic numbers
+- [ ] Complete report printed
+- [ ] Print orientation indicated (Z-up)
