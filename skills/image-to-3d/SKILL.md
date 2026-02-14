@@ -1,3 +1,12 @@
+---
+name: image-to-3d
+description: Visual analyzer for reverse-engineering images into structured 3D specifications for CadQuery modeling. Analyzes sketches, photos, technical drawings, and CAD screenshots to produce structured output with shapes, dimensions, features, and material suggestions. Use when converting images or photos of physical objects into 3D models.
+license: MIT
+metadata:
+  author: tommasobbianchi
+  version: "1.0.0"
+---
+
 # SKILL: image-to-3d — Image Analysis and Structured Specifications for CadQuery
 
 ## Identity

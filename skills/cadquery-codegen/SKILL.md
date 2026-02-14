@@ -1,3 +1,12 @@
+---
+name: cadquery-codegen
+description: Parametric CadQuery code generator for FDM 3D printing. Produces standalone Python scripts that export .STEP + .STL files with full parametric control. Use when generating 3D models from descriptions, creating mechanical parts, or building parametric CAD scripts with CadQuery.
+license: MIT
+metadata:
+  author: tommasobbianchi
+  version: "1.0.0"
+---
+
 # SKILL: cadquery-codegen — CadQuery Code Generation
 
 ## Identity

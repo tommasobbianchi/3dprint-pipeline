@@ -1,3 +1,12 @@
+---
+name: cadquery-validate
+description: Automatic validation, diagnosis, and correction loop for CadQuery code. Runs up to 5 attempts to produce a valid BREP model with STEP + STL export. Use when validating or fixing CadQuery scripts, debugging 3D model generation errors, or ensuring export correctness.
+license: MIT
+metadata:
+  author: tommasobbianchi
+  version: "1.0.0"
+---
+
 # SKILL: cadquery-validate — CadQuery Validation and Automatic Fix
 
 ## Identity

@@ -1,3 +1,12 @@
+---
+name: spatial-reasoning
+description: Structured spatial reasoning protocol for 3D modeling. Executes a multi-phase analysis (functional decomposition, modeling plan, DFM check, coordinate planning) before writing any CAD code. Use when designing 3D parts, planning boolean operations, or reasoning about geometry before CadQuery/OpenSCAD code generation.
+license: MIT
+metadata:
+  author: tommasobbianchi
+  version: "1.0.0"
+---
+
 # Skill: spatial-reasoning — Structured Spatial Reasoning for 3D Modeling
 
 ## Identity

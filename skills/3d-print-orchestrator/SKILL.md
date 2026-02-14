@@ -1,3 +1,12 @@
+---
+name: 3d-print-orchestrator
+description: Central orchestrator for AI-powered 3D print pipelines. Receives natural language requests (text and/or images), coordinates specialized skills (spatial reasoning, CadQuery codegen, validation, material selection), and produces print-ready STEP + STL output. Use when building end-to-end 3D printing workflows from natural language descriptions.
+license: MIT
+metadata:
+  author: tommasobbianchi
+  version: "1.0.0"
+---
+
 # SKILL: 3d-print-orchestrator — 3D Print Pipeline Orchestrator
 
 ## Identity

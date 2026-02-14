@@ -1,3 +1,12 @@
+---
+name: print-profiles
+description: FDM materials and process consultant for 3D printing. Selects optimal material for use case, applies geometric constraints to CadQuery design, estimates weight and time, and verifies printer compatibility. Use when choosing 3D printing materials, configuring slicer profiles, or checking design-for-manufacturing constraints.
+license: MIT
+metadata:
+  author: tommasobbianchi
+  version: "1.0.0"
+---
+
 # SKILL: print-profiles — Material Selection, Print Constraints, and Printer Profiles
 
 ## Identity
