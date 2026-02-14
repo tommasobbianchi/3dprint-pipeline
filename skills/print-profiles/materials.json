@@ -15,8 +15,8 @@
     "chamber_required": false,
     "drying_required": false,
     "drying_temp_hours": { "temp_c": 45, "hours": 4 },
-    "bed_adhesion_notes": "PEI, vetro, nastro blu. Adesione facile, nessun accorgimento speciale.",
-    "notes_it": "Materiale base per prototipazione. Fragile, bassa resistenza termica. Non adatto a pezzi meccanici sotto carico o esposti al sole. Biodegradabile in condizioni industriali."
+    "bed_adhesion_notes": "PEI, glass, blue tape. Easy adhesion, no special measures needed.",
+    "notes": "Baseline prototyping material. Brittle, low thermal resistance. Not suitable for load-bearing or sun-exposed parts. Biodegradable under industrial conditions."
   },
   "PLA-CF": {
     "full_name": "PLA Carbon Fiber",
@@ -34,8 +34,8 @@
     "chamber_required": false,
     "drying_required": true,
     "drying_temp_hours": { "temp_c": 50, "hours": 4 },
-    "bed_adhesion_notes": "PEI. Simile al PLA ma richiede ugello in acciaio temprato (hardened steel).",
-    "notes_it": "Rigidità superiore al PLA standard, finitura opaca. Le fibre riducono il ritiro ma aumentano l'abrasività. OBBLIGATORIO ugello hardened steel. Ridotta resistenza interlayer rispetto al PLA puro."
+    "bed_adhesion_notes": "PEI. Similar to PLA but requires hardened steel nozzle.",
+    "notes": "Higher stiffness than standard PLA, matte finish. Fibers reduce shrinkage but increase abrasiveness. MANDATORY hardened steel nozzle. Reduced interlayer adhesion compared to pure PLA."
   },
   "PETG": {
     "full_name": "Polyethylene Terephthalate Glycol",
@@ -53,8 +53,8 @@
     "chamber_required": false,
     "drying_required": true,
     "drying_temp_hours": { "temp_c": 65, "hours": 4 },
-    "bed_adhesion_notes": "PEI (attenzione: può incollarsi troppo su PEI liscio), vetro con colla stick. Tendenza allo stringing.",
-    "notes_it": "Buon compromesso tra facilità di stampa e prestazioni meccaniche. Resistenza chimica e UV discreta. Tende allo stringing — calibrare retrazione. Buona scelta per uso esterno non strutturale."
+    "bed_adhesion_notes": "PEI (caution: may bond too strongly on smooth PEI), glass with glue stick. Prone to stringing.",
+    "notes": "Good balance between ease of printing and mechanical performance. Decent chemical and UV resistance. Prone to stringing — calibrate retraction. Good choice for non-structural outdoor use."
   },
   "PETG-CF": {
     "full_name": "PETG Carbon Fiber",
@@ -72,8 +72,8 @@
     "chamber_required": false,
     "drying_required": true,
     "drying_temp_hours": { "temp_c": 65, "hours": 6 },
-    "bed_adhesion_notes": "PEI texturizzato. Ugello hardened steel obbligatorio.",
-    "notes_it": "PETG con fibre corte di carbonio. Maggiore rigidità e stabilità dimensionale rispetto al PETG puro. Finitura opaca. Ridotta resistenza interlayer. Ugello hardened steel obbligatorio."
+    "bed_adhesion_notes": "Textured PEI. Hardened steel nozzle mandatory.",
+    "notes": "PETG with short carbon fibers. Higher stiffness and dimensional stability than pure PETG. Matte finish. Reduced interlayer adhesion. Hardened steel nozzle mandatory."
   },
   "ABS": {
     "full_name": "Acrylonitrile Butadiene Styrene",
@@ -91,8 +91,8 @@
     "chamber_required": true,
     "drying_required": true,
     "drying_temp_hours": { "temp_c": 65, "hours": 4 },
-    "bed_adhesion_notes": "ABS juice (ABS sciolto in acetone), PEI, Kapton. Warping senza camera chiusa.",
-    "notes_it": "Materiale classico industriale. Buona resistenza meccanica e termica. RICHIEDE camera chiusa per evitare warping e delaminazione. Fumi tossici (stirene) — ventilare. Levigabile con acetone."
+    "bed_adhesion_notes": "ABS juice (ABS dissolved in acetone), PEI, Kapton. Severe warping without enclosed chamber.",
+    "notes": "Classic industrial material. Good mechanical and thermal resistance. REQUIRES enclosed chamber to prevent warping and delamination. Toxic fumes (styrene) — ventilate. Smoothable with acetone."
   },
   "ASA": {
     "full_name": "Acrylonitrile Styrene Acrylate",
@@ -110,8 +110,8 @@
     "chamber_required": true,
     "drying_required": true,
     "drying_temp_hours": { "temp_c": 65, "hours": 4 },
-    "bed_adhesion_notes": "PEI, colla stick. Simile all'ABS ma leggermente migliore adesione.",
-    "notes_it": "Versione UV-resistente dell'ABS. Ideale per pezzi da esterno (automotive, garden, outdoor enclosures). Camera chiusa fortemente raccomandata. Fumi tossici — ventilare."
+    "bed_adhesion_notes": "PEI, glue stick. Similar to ABS but slightly better adhesion.",
+    "notes": "UV-resistant version of ABS. Ideal for outdoor parts (automotive, garden, outdoor enclosures). Enclosed chamber strongly recommended. Toxic fumes — ventilate."
   },
   "PC": {
     "full_name": "Polycarbonate",
@@ -129,8 +129,8 @@
     "chamber_required": true,
     "drying_required": true,
     "drying_temp_hours": { "temp_c": 80, "hours": 8 },
-    "bed_adhesion_notes": "PEI ad alta temperatura, colla stick. Warping severo senza camera >50°C.",
-    "notes_it": "Materiale ingegneristico ad alte prestazioni. Eccellente resistenza agli urti e termica. RICHIEDE camera chiusa >50°C, hotend all-metal, e piatto >100°C. Fillet ≥1mm su tutti gli angoli interni. Asciugatura critica."
+    "bed_adhesion_notes": "High-temp PEI, glue stick. Severe warping without chamber >50C.",
+    "notes": "High-performance engineering material. Excellent impact and thermal resistance. REQUIRES enclosed chamber >50C, all-metal hotend, and bed >100C. Fillet >=1mm on all internal corners. Critical drying."
   },
   "PC-CF": {
     "full_name": "Polycarbonate Carbon Fiber",
@@ -148,8 +148,8 @@
     "chamber_required": true,
     "drying_required": true,
     "drying_temp_hours": { "temp_c": 80, "hours": 10 },
-    "bed_adhesion_notes": "PEI ad alta temperatura. Ugello hardened steel obbligatorio. Camera chiusa >50°C.",
-    "notes_it": "PC rinforzato con fibre di carbonio. Massima rigidità e resistenza termica tra i materiali FDM. Ugello hardened steel obbligatorio. Camera chiusa >50°C. Asciugatura critica (10h a 80°C). Per pezzi strutturali ad alta temperatura."
+    "bed_adhesion_notes": "High-temp PEI. Hardened steel nozzle mandatory. Enclosed chamber >50C.",
+    "notes": "Carbon fiber reinforced PC. Maximum stiffness and thermal resistance among FDM materials. Hardened steel nozzle mandatory. Enclosed chamber >50C. Critical drying (10h at 80C). For structural high-temperature parts."
   },
   "PA6": {
     "full_name": "Polyamide 6 (Nylon 6)",
@@ -167,8 +167,8 @@
     "chamber_required": true,
     "drying_required": true,
     "drying_temp_hours": { "temp_c": 70, "hours": 12 },
-    "bed_adhesion_notes": "Colla PVA, PEI texturizzato. Warping significativo, usare brim largo (8-10mm).",
-    "notes_it": "Nylon classico. Eccellente resistenza meccanica, usura e chimica. MOLTO igroscopico — stampare da filamento appena essiccato. Ritiro elevato (fino a 1.5%) — compensare nel design. Camera chiusa raccomandata. Brim largo per adesione."
+    "bed_adhesion_notes": "PVA glue, textured PEI. Significant warping, use wide brim (8-10mm).",
+    "notes": "Classic nylon. Excellent mechanical, wear, and chemical resistance. VERY hygroscopic — print from freshly dried filament. High shrinkage (up to 1.5%) — compensate in design. Enclosed chamber recommended. Wide brim for adhesion."
   },
   "PA12": {
     "full_name": "Polyamide 12 (Nylon 12)",
@@ -186,8 +186,8 @@
     "chamber_required": false,
     "drying_required": true,
     "drying_temp_hours": { "temp_c": 70, "hours": 8 },
-    "bed_adhesion_notes": "Colla PVA, PEI texturizzato. Meno warping del PA6 ma comunque usare brim.",
-    "notes_it": "Nylon a basso assorbimento di umidità (rispetto a PA6). Più facile da stampare, meno ritiro. Buona resistenza chimica e all'usura. Meno rigido del PA6. Adatto a ingranaggi, boccole, clip a scatto."
+    "bed_adhesion_notes": "PVA glue, textured PEI. Less warping than PA6 but still use brim.",
+    "notes": "Low moisture absorption nylon (compared to PA6). Easier to print, less shrinkage. Good chemical and wear resistance. Less rigid than PA6. Suitable for gears, bushings, snap clips."
   },
   "PA-CF": {
     "full_name": "Polyamide Carbon Fiber",
@@ -205,8 +205,8 @@
     "chamber_required": true,
     "drying_required": true,
     "drying_temp_hours": { "temp_c": 80, "hours": 12 },
-    "bed_adhesion_notes": "PEI texturizzato, colla PVA. Ugello hardened steel obbligatorio. Camera chiusa.",
-    "notes_it": "Il materiale FDM più resistente. Fibre di carbonio in matrice nylon. Rapporto peso/resistenza eccezionale. Ugello hardened steel obbligatorio. Asciugatura critica (12h a 80°C). Per staffature, tooling, pezzi strutturali."
+    "bed_adhesion_notes": "Textured PEI, PVA glue. Hardened steel nozzle mandatory. Enclosed chamber.",
+    "notes": "The strongest FDM material. Carbon fibers in nylon matrix. Exceptional weight-to-strength ratio. Hardened steel nozzle mandatory. Critical drying (12h at 80C). For brackets, tooling, structural parts."
   },
   "TPU_85A": {
     "full_name": "Thermoplastic Polyurethane 85A Shore",
@@ -224,8 +224,8 @@
     "chamber_required": false,
     "drying_required": true,
     "drying_temp_hours": { "temp_c": 50, "hours": 4 },
-    "bed_adhesion_notes": "PEI, vetro. Stampare LENTAMENTE (20-30 mm/s). Direct drive obbligatorio.",
-    "notes_it": "Elastomero morbido (85A Shore). Per guarnizioni, ammortizzatori, grip, cover protettive flessibili. Estrusore direct drive OBBLIGATORIO (no bowden). Velocità max 30 mm/s. Retrazione minima o zero."
+    "bed_adhesion_notes": "PEI, glass. Print SLOWLY (20-30 mm/s). Direct drive mandatory.",
+    "notes": "Soft elastomer (85A Shore). For gaskets, dampers, grips, flexible protective covers. Direct drive extruder MANDATORY (no bowden). Max speed 30 mm/s. Minimal or zero retraction."
   },
   "TPU_95A": {
     "full_name": "Thermoplastic Polyurethane 95A Shore",
@@ -243,8 +243,8 @@
     "chamber_required": false,
     "drying_required": true,
     "drying_temp_hours": { "temp_c": 50, "hours": 4 },
-    "bed_adhesion_notes": "PEI, vetro. Direct drive fortemente raccomandato. Velocità max 40 mm/s.",
-    "notes_it": "Elastomero semi-rigido (95A Shore). Più facile da stampare del 85A, compatibile con alcuni bowden corti. Per bumper, cinghie, passacavi, parti semi-flessibili. Velocità max 40 mm/s."
+    "bed_adhesion_notes": "PEI, glass. Direct drive strongly recommended. Max speed 40 mm/s.",
+    "notes": "Semi-rigid elastomer (95A Shore). Easier to print than 85A, compatible with some short bowden tubes. For bumpers, belts, cable glands, semi-flexible parts. Max speed 40 mm/s."
   },
   "Tullomer": {
     "full_name": "Tullomer (Extrudr Bio-Engineering Polymer)",
@@ -262,8 +262,8 @@
     "chamber_required": true,
     "drying_required": true,
     "drying_temp_hours": { "temp_c": 60, "hours": 6 },
-    "bed_adhesion_notes": "PEI texturizzato, colla stick. Camera chiusa raccomandata. Hotend all-metal.",
-    "notes_it": "Polimero bio-based ad alte prestazioni di Extrudr. Alternativa a PC per applicazioni ad alta temperatura. Resistenza chimica eccellente, food-safe. Fillet ≥1mm su tutti gli angoli interni obbligatori. Verificare creep a 80°C per carichi sostenuti. Orientamento stampa critico per resistenza meccanica."
+    "bed_adhesion_notes": "Textured PEI, glue stick. Enclosed chamber recommended. All-metal hotend.",
+    "notes": "Bio-based high-performance polymer by Extrudr. Alternative to PC for high-temperature applications. Excellent chemical resistance, food-safe. Fillet >=1mm on all internal corners mandatory. Check creep at 80C for sustained loads. Print orientation critical for mechanical strength."
   },
   "PVA": {
     "full_name": "Polyvinyl Alcohol",
@@ -281,8 +281,8 @@
     "chamber_required": false,
     "drying_required": true,
     "drying_temp_hours": { "temp_c": 45, "hours": 4 },
-    "bed_adhesion_notes": "Non usare come materiale strutturale. Solo come supporto solubile.",
-    "notes_it": "SOLO MATERIALE DI SUPPORTO. Solubile in acqua (immergere 12-24h in acqua tiepida). Compatibile con PLA e PETG. ESTREMAMENTE igroscopico — conservare in drybox sigillato. Stampare subito dopo apertura."
+    "bed_adhesion_notes": "Do not use as structural material. Support material only.",
+    "notes": "SUPPORT MATERIAL ONLY. Water-soluble (soak 12-24h in warm water). Compatible with PLA and PETG. EXTREMELY hygroscopic — store in sealed drybox. Print immediately after opening."
   },
   "HIPS": {
     "full_name": "High Impact Polystyrene",
@@ -300,7 +300,7 @@
     "chamber_required": true,
     "drying_required": true,
     "drying_temp_hours": { "temp_c": 60, "hours": 4 },
-    "bed_adhesion_notes": "PEI, Kapton. Camera chiusa raccomandata (come ABS).",
-    "notes_it": "Materiale di supporto solubile in D-Limonene per ABS/ASA. Può essere usato come materiale strutturale leggero ma resistenza limitata. Camera chiusa raccomandata. Fumi — ventilare."
+    "bed_adhesion_notes": "PEI, Kapton. Enclosed chamber recommended (like ABS).",
+    "notes": "D-Limonene soluble support material for ABS/ASA. Can be used as lightweight structural material but limited strength. Enclosed chamber recommended. Fumes — ventilate."
   }
 }
