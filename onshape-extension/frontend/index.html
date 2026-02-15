@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3dprint-pipeline — CAD Generator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <h1>CAD Generator</h1>
+
+    <div id="api-key-setup" class="card" style="display:none">
+      <h2>Onshape API Keys</h2>
+      <p>Enter your Onshape API key pair to enable direct upload to documents.</p>
+      <label>Access Key <input type="text" id="access-key" placeholder="Access key"></label>
+      <label>Secret Key <input type="password" id="secret-key" placeholder="Secret key"></label>
+      <div class="btn-row">
+        <button id="save-keys-btn" class="btn btn-secondary">Save Keys</button>
+        <button id="skip-keys-btn" class="btn btn-ghost">Skip (download only)</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <label for="prompt">Describe your part</label>
+      <textarea id="prompt" rows="4" placeholder="e.g. 30mm cube with a 10mm center through-hole"></textarea>
+
+      <div class="row">
+        <div class="field">
+          <label for="material">Material</label>
+          <select id="material"><option value="PLA">PLA</option></select>
+        </div>
+        <button id="generate-btn" class="btn btn-primary">Generate</button>
+      </div>
+    </div>
+
+    <div id="status" class="card" style="display:none">
+      <div id="status-text">Generating...</div>
+      <div id="progress-bar"><div id="progress-fill"></div></div>
+    </div>
+
+    <div id="result" class="card" style="display:none">
+      <h2>Result</h2>
+      <div id="metrics"></div>
+      <div class="btn-row">
+        <button id="download-step-btn" class="btn btn-primary">Download STEP</button>
+        <button id="download-stl-btn" class="btn btn-secondary">Download STL</button>
+        <button id="upload-onshape-btn" class="btn btn-secondary" style="display:none">Upload to Onshape</button>
+      </div>
+      <div id="upload-status"></div>
+    </div>
+
+    <div id="error" class="card error" style="display:none">
+      <h2>Error</h2>
+      <pre id="error-text"></pre>
+    </div>
+  </div>
+
+  <script src="onshape-api.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+[Unit]
+Description=3dprint-pipeline Onshape Extension Backend
+After=network.target
+
+[Service]
+Type=simple
+User=tommaso
+WorkingDirectory=/home/tommaso/projects/3dprint-pipeline/onshape-extension
+ExecStart=/usr/bin/env uvicorn backend.app:app --host 0.0.0.0 --port 8420
+Restart=on-failure
+RestartSec=5
+Environment=HOME=/home/tommaso
+Environment=CLAUDE_MODEL=sonnet
+Environment=PORT=8420
+
+[Install]
+WantedBy=multi-user.target
