@@ -1,0 +1,26 @@
+{
+  "id": "00984833",
+  "category_semantic": "Moderate",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a tiered rectangular 3D object with specific dimensions. Start by creating a sketch of a rectangle with a length of 0.475652 units, a width of 0.049547 units, and extrude it to a height of 0.317101 units. Next, create a sketch of a second rectangle with the same length of 0.475652 units but a slightly smaller width of 0.198188 units. This second rectangle should be centered at the same position as the original rectangle and extruded by the same height of 0.317101 units. The final object should look like two rectangles placed on top of each other, with the rectangle on top being slightly narrower.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 0.475652\nwidth:float = 0.049547\nheight:float = 0.317101\n\nb_height:float = 0.198188\nb_length:float = length\nb_width:float = 0.049547\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .box(length, width, height)\n    .faces(\"-Y\")\n    .workplane()\n    .center(0,0.000515)\n    .rect(b_length,b_height)\n    .extrude(b_width)\n)\n\npart = part.translate((-length/2,width/2+b_width+0.011569,0)).rotate((0,0,1),(0,0,0),-90)\n\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.423,
+  "chamfer_distance": 8.353812873912571e-05,
+  "bbox_similarity": 0.9999989355471918,
+  "volume_ratio": 0.9999965994264106,
+  "gt_volume": 0.012143923823234523,
+  "gen_volume": 0.012143882526927899,
+  "gt_bbox": [
+    0.09909417,
+    0.4756521,
+    0.3171014
+  ],
+  "gen_bbox": [
+    0.09909399691969156,
+    0.4756520092487335,
+    0.31710100173950195
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "00672272",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a long, rectangular object with specific dimensions. First, sketch a long rectangle with a length of 0.647727 units, a width of 0.051136 units, and extrude it to a height of 0.025568 units. Next, sketch two small squares, each with the same width as the rectangle (0.051136 units), a length of 1/16 of the rectangle's length (approximately 0.040483 units), and extrude them to 1/3 of the rectangle's height (approximately 0.008523 units). Position these squares symmetrically on the center of the rectangle's shorter edges.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nlength:float = 0.647727\nwidth:float = 0.051136\nheight:float = 0.025568\n\nsub_length:float = 0.75\nsub_height:float = 0.008523\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .box(length,width,height)\n    .box(sub_length,width,sub_height)\n)\n\npart = part.translate((sub_length/2,-width/2,sub_height/2))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.394,
+  "chamfer_distance": 1.2653784030350387e-05,
+  "bbox_similarity": 0.9999953347031751,
+  "volume_ratio": 0.9999877245801242,
+  "gt_volume": 0.0008914523672755723,
+  "gen_volume": 0.0008914414243234647,
+  "gt_bbox": [
+    0.75,
+    0.05113636000000071,
+    0.025568177
+  ],
+  "gen_bbox": [
+    0.75,
+    0.05113599821925163,
+    0.02556800004094839
+  ]
+}

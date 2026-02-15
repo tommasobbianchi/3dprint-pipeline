@@ -1,0 +1,26 @@
+{
+  "id": "00689964",
+  "category_semantic": "Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a 3D object that resembles a screw with a hexagonal head. Begin by drawing a sketch of a regular hexagon with a side length of 0.61859 units and extrude it by 0.214286 units. Next, draw a smaller circle inside the hexagon, centered at the same point as the hexagon, with a diameter of 0.321427 units. Then, extrude this circle outward by 0.75025 units to resemble the bolt of a screw.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\ndiameter:float = 0.321427\ncylinder_length:float = 0.75025\n\nsides:int = 6\nlength:float = 0.61859\nextrude:float = 0.214286\n\ncylinder = cq.Workplane(\"XZ\").cylinder(cylinder_length, diameter/2)\npart:cq.Workplane = cylinder.faces(\"-Y\").polygon(sides, length).workplane().extrude(extrude)\n\npart = part.translate((0,cylinder_length/2,0))\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.474,
+  "chamfer_distance": 6.518858121319679e-05,
+  "bbox_similarity": 0.999913111392239,
+  "volume_ratio": 1.0025398839833295,
+  "gt_volume": 0.11380851938582674,
+  "gen_volume": 0.11409757982138125,
+  "gt_bbox": [
+    0.6185898,
+    0.9642857,
+    0.5357142
+  ],
+  "gen_bbox": [
+    0.6185899972915649,
+    0.9645359814167023,
+    0.5357146263122559
+  ]
+}

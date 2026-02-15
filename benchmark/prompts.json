@@ -1,0 +1,406 @@
+{
+  "version": "1.0.0",
+  "description": "Benchmark prompts for 3dprint-pipeline CadQuery code generation quality assessment",
+  "prompts": [
+    {
+      "id": "simple_001",
+      "text": "Create a 30x30x30mm cube with a through-hole dia 10mm centered on the top face. Material PLA. Fillet r=2mm on all vertical edges.",
+      "complexity": "simple",
+      "expected_features": ["box", "through_hole", "fillet"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "simple_002",
+      "text": "Create a cylindrical spacer: outer diameter 12mm, inner bore dia 5.2mm (M5 clearance hole), height 8mm. Chamfer 0.5mm on both top and bottom edges.",
+      "complexity": "simple",
+      "expected_features": ["cylinder", "bore", "chamfer"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "simple_003",
+      "text": "Create a flat rectangular plate 80x50x3mm with 4 M3 through-holes (dia 3.4mm) at the corners, 5mm from each edge. Round the plate corners with r=5mm.",
+      "complexity": "simple",
+      "expected_features": ["plate", "corner_holes", "rounded_corners"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "simple_004",
+      "text": "Create a washer: outer diameter 16mm, inner diameter 8.4mm (M8 clearance), thickness 2mm. No fillets needed.",
+      "complexity": "simple",
+      "expected_features": ["ring", "bore"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "simple_005",
+      "text": "Create a rectangular tube 60mm long with outer dimensions 20x15mm and wall thickness 2mm. Open at both ends.",
+      "complexity": "simple",
+      "expected_features": ["rectangular_tube", "shell"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "simple_006",
+      "text": "Create a solid hexagonal prism with a flat-to-flat distance of 20mm and height 15mm. Chamfer 1mm on the top edges.",
+      "complexity": "simple",
+      "expected_features": ["hexagonal_prism", "chamfer"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "simple_007",
+      "text": "Create a cylindrical standoff: outer diameter 8mm, inner bore 3.4mm (M3 clearance), height 12mm. Add a 1mm wide flange at the base (diameter 12mm, 2mm tall).",
+      "complexity": "simple",
+      "expected_features": ["cylinder", "bore", "flange"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "simple_008",
+      "text": "Create a stepped cylinder: bottom section dia 30mm x 10mm tall, top section dia 20mm x 15mm tall, centered. Fillet r=2mm at the step transition.",
+      "complexity": "simple",
+      "expected_features": ["stepped_cylinder", "fillet"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "simple_009",
+      "text": "Create a simple right-angle bracket: two arms 40x20x3mm each, meeting at a 90-degree angle. No holes, no ribs. Fillet r=3mm at the inner corner.",
+      "complexity": "simple",
+      "expected_features": ["l_shape", "fillet"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "simple_010",
+      "text": "Create a disk with diameter 50mm and thickness 5mm. Add a central hole dia 10mm and 6 equally spaced holes dia 4mm on a 35mm bolt circle.",
+      "complexity": "simple",
+      "expected_features": ["disk", "center_hole", "bolt_pattern"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "simple_011",
+      "text": "Create a U-channel extrusion 80mm long. The U profile has outer width 30mm, height 20mm, and wall thickness 3mm. Open at both ends.",
+      "complexity": "simple",
+      "expected_features": ["u_channel", "extrusion"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "simple_012",
+      "text": "Create a solid cone with base diameter 40mm and top diameter 10mm, height 30mm. Add a 5mm through-hole along the central axis.",
+      "complexity": "simple",
+      "expected_features": ["cone", "center_hole"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "simple_013",
+      "text": "Create a T-shaped extrusion 50mm long. The T profile: horizontal bar 40x5mm, vertical stem 5x20mm centered below the horizontal bar.",
+      "complexity": "simple",
+      "expected_features": ["t_shape", "extrusion"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "simple_014",
+      "text": "Create a cylindrical tube: outer diameter 25mm, inner diameter 20mm, height 40mm. Add a slot 5mm wide cut along the full length on one side.",
+      "complexity": "simple",
+      "expected_features": ["tube", "slot"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "simple_015",
+      "text": "Create a square plate 60x60x4mm with a central counterbore hole: through-hole dia 5.5mm, counterbore dia 10mm, counterbore depth 2mm.",
+      "complexity": "simple",
+      "expected_features": ["plate", "counterbore"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "medium_001",
+      "text": "L-bracket for wall-mounting a 20x20mm aluminum extrusion. Horizontal arm: 60x40mm with 2x dia 5.5mm holes (M5 clearance) spaced 30mm. Vertical arm: 60x40mm with 2x dia 5.5mm symmetrical holes. Thickness: 4mm. 3 triangular reinforcement ribs in the inner corner (h=15mm, thickness 2mm). Fillet r=3mm in the inner L-corner. Material: PETG.",
+      "complexity": "medium",
+      "expected_features": ["l_bracket", "holes", "gussets", "fillet"],
+      "material": "PETG",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "medium_002",
+      "text": "Phone stand with 15-degree viewing angle. Base 90x65mm, back support rising to about 100mm. A lip at the front of the back support to hold the phone. Stable enough not to tip over. Material PLA. Fillet r=2mm on all visible edges.",
+      "complexity": "medium",
+      "expected_features": ["angled_support", "base", "lip", "fillet"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "medium_003",
+      "text": "Desk cable clip for 3 cables (each up to dia 8mm). Flat adhesive base 50x12x3mm. Three snap-in slots from the top, spaced equally along the length. Each slot has a slight taper to grip the cable. Material PLA.",
+      "complexity": "medium",
+      "expected_features": ["base", "cable_slots", "snap_taper"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "medium_004",
+      "text": "Wall-mounted clip for a dia 25mm pipe. Wall mounting with 2x M4 screws (holes spaced 50mm vertically). The pipe must snap in through a side opening (C-clip, not a closed circle). Material PETG. Wall thickness 2.5mm.",
+      "complexity": "medium",
+      "expected_features": ["c_clip", "mounting_holes", "snap_opening"],
+      "material": "PETG",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "medium_005",
+      "text": "Parametric box with lid: inner dimensions 80x60x40mm. Wall 2mm. Lid with male/female interlock (1.5mm lip). 4x M3 self-tapping screw holes at corners. Label slot 40x15mm recessed 0.5mm on the front. Material PETG.",
+      "complexity": "medium",
+      "expected_features": ["box", "lid", "interlock", "screw_holes", "label_slot"],
+      "material": "PETG",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "medium_006",
+      "text": "SD card holder that stores 6 micro-SD cards. Rectangular body with 6 equally spaced slots (each 11.5x15x1.2mm) on the top face. A small lip on each slot to prevent the card from falling out. Base 80x25x10mm. Material PLA.",
+      "complexity": "medium",
+      "expected_features": ["body", "card_slots", "retention_lips"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "medium_007",
+      "text": "Shelf bracket with decorative cutout. Horizontal arm 100x30x5mm, vertical arm 100x30x5mm. A circular decorative cutout dia 40mm in the triangular gusset area. 2 mounting holes M5 on each arm. Inner corner fillet r=5mm. Material PLA.",
+      "complexity": "medium",
+      "expected_features": ["l_bracket", "gusset", "decorative_cutout", "holes", "fillet"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "medium_008",
+      "text": "Battery holder for 4x AA batteries in a 2x2 grid. Each battery compartment sized for AA (14.5mm dia x 50.5mm long) with 0.5mm clearance. Spring contact recess at one end (3mm deep). Flat base with 2 M3 mounting holes. Material PLA.",
+      "complexity": "medium",
+      "expected_features": ["compartments", "spring_recess", "mounting_holes"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "medium_009",
+      "text": "USB-C cable dock plate for a desk: 120x40x8mm flat plate with 3 equally spaced U-shaped channels (12mm wide, 5mm deep) cut from the front edge. Each channel guides a cable to lay flat. Rounded front edges r=3mm. 2 rubber-foot recesses (dia 10mm, 1mm deep) on the bottom. Material PETG.",
+      "complexity": "medium",
+      "expected_features": ["plate", "cable_channels", "rounded_edges", "foot_recesses"],
+      "material": "PETG",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "medium_010",
+      "text": "Pen holder: cylindrical body dia 40mm, height 80mm, wall 2mm. Open top. Flat base with 3mm solid bottom. 4 decorative vertical slots (3mm wide, 50mm tall) equally spaced around the body starting 15mm from the bottom. Fillet r=1mm on slot edges. Material PLA.",
+      "complexity": "medium",
+      "expected_features": ["cylinder", "shell", "decorative_slots", "fillet"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "medium_011",
+      "text": "Bookend: L-shape base 100x80x3mm, vertical support 100x120x3mm. Add a triangular gusset rib (60mm along base, 80mm along vertical, 4mm thick) for stiffness. Fillet r=2mm on all outer edges. 2 anti-slip pads (dia 15mm, 1mm deep recesses) on the bottom of the base. Material PLA.",
+      "complexity": "medium",
+      "expected_features": ["l_shape", "gusset", "fillet", "anti_slip"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "medium_012",
+      "text": "Corner bracket for two 2020 aluminum extrusions meeting at 90 degrees. 5mm thick plates on each face. 4 holes total: 2 per arm, dia 5.5mm, spaced to match 2020 extrusion T-slot center (10mm from extrusion edge). Single triangular gusset in the corner. Material PETG.",
+      "complexity": "medium",
+      "expected_features": ["corner_bracket", "holes", "gusset"],
+      "material": "PETG",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "medium_013",
+      "text": "Hook for a horizontal rail (rail cross-section: 20x5mm). The hook hangs over the top of the rail and has a slot matching the rail profile with 0.3mm clearance. Below the hook, a single arm extends 30mm downward with a curved end (radius 15mm) for hanging items. Thickness 5mm throughout. Material PETG.",
+      "complexity": "medium",
+      "expected_features": ["hook_slot", "hanging_arm", "curved_end"],
+      "material": "PETG",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "medium_014",
+      "text": "Soap dish: oval base 120x80mm, walls 15mm high, wall thickness 3mm. Drainage holes: grid of 5mm dia holes spaced 10mm apart on the bottom. Slightly angled bottom (2 degrees) so water drains toward one end. Fillet r=3mm on top edges. Material PETG.",
+      "complexity": "medium",
+      "expected_features": ["oval_base", "walls", "drainage_holes", "angled_bottom", "fillet"],
+      "material": "PETG",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "medium_015",
+      "text": "Servo mount bracket for SG90 micro servo. Servo body fits in a rectangular pocket 23x12.5x22mm with 0.3mm clearance. Mounting tabs with 2x M2 holes on each side (matching SG90 tab positions: 28mm apart center-to-center). Base plate 35x30x3mm with 2 M3 mounting holes. Material PLA.",
+      "complexity": "medium",
+      "expected_features": ["servo_pocket", "tab_holes", "base_plate", "mounting_holes"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "medium_016",
+      "text": "Switch plate cover for a standard EU single light switch (dimensions: 80x80mm, center hole 50x50mm). Thickness 3mm. Rounded corners r=5mm. Central rectangular opening 50x50mm for the switch. 2 mounting holes dia 3.5mm spaced 60mm vertically. Chamfer 0.5mm on front edges for a clean look. Material PLA.",
+      "complexity": "medium",
+      "expected_features": ["plate", "center_opening", "mounting_holes", "chamfer"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "medium_017",
+      "text": "Toolbox insert divider: rectangular grid that fits inside a 200x150mm toolbox compartment. Height 40mm, wall thickness 2mm. Create a 4x3 grid of compartments. No bottom (open bottom to save material). Material PLA.",
+      "complexity": "medium",
+      "expected_features": ["grid", "divider_walls", "open_bottom"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "medium_018",
+      "text": "Wedge doorstop: length 100mm, width 40mm. Height from 2mm (tip) to 25mm (base). Anti-slip texture on the bottom face (grid of small 1x1mm bumps, 3mm pitch). Lanyard hole dia 5mm in the tall end. Material TPU.",
+      "complexity": "medium",
+      "expected_features": ["wedge", "texture_bumps", "lanyard_hole"],
+      "material": "TPU",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "medium_019",
+      "text": "Monitor riser foot: 4 identical cylindrical feet, each dia 30mm x 15mm tall, connected by a cross-shaped beam (width 20mm, thickness 5mm). Total footprint 120x120mm. Rubber pad recesses on bottom of each foot (dia 25mm, 1mm deep). Material PETG.",
+      "complexity": "medium",
+      "expected_features": ["cylindrical_feet", "cross_beam", "pad_recesses"],
+      "material": "PETG",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "medium_020",
+      "text": "Raspberry Pi Zero W case (PCB: 65x30mm). Simple two-piece snap case. Base with 2mm wall, 4 internal standoffs matching Pi Zero mounting holes (58x23mm pattern, M2.5). Apertures for micro-USB (2x) and mini-HDMI on the correct sides. Snap-fit lid with 0.1mm clearance. Material PLA.",
+      "complexity": "medium",
+      "expected_features": ["enclosure", "standoffs", "apertures", "snap_lid"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "complex_001",
+      "text": "Enclosure for ESP32-CAM: PCB 40.5x27x4.5mm (without camera). Camera module protrusion: 8x8x5mm centered on one short side. Lens hole dia 8mm aligned with camera. Micro-SD slot accessible from the side. FTDI connector slot (6 pins, 2.54mm pitch) on the opposite side. Snap-fit closure. M2 mounting hole on the back. Material PLA. Print orientation: base on build plate, no supports needed.",
+      "complexity": "complex",
+      "expected_features": ["enclosure", "lens_hole", "sd_slot", "connector_slot", "snap_fit", "mounting_hole"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "complex_002",
+      "text": "Reducer adapter for vacuum cleaner hose: Inlet dia 35mm outer, 2mm wall. Outlet dia 25mm outer, 2mm wall. Transition length 45mm (gradual loft). 5mm straight lip on both ends for tube insertion. Fillet r=0.5mm on lip edges. Tolerance: slip-fit 0.3mm clearance. Material PETG.",
+      "complexity": "complex",
+      "expected_features": ["loft", "tube_lips", "wall_thickness", "fillet"],
+      "material": "PETG",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "complex_003",
+      "text": "2-part hinge for a door panel: Total width 40mm. 3 alternating knuckles (2 on one part, 1 on the other). Integrated pin dia 3mm with 0.3mm clearance. Mounting holes: 2 per side, M3. Mounting plates 40x15x3mm. Fillet r=0.5mm on all edges. Material PLA. Export as 2 separate STLs.",
+      "complexity": "complex",
+      "expected_features": ["hinge_leaves", "knuckles", "pin_holes", "mounting_holes", "fillet"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "complex_004",
+      "text": "NEMA 17 stepper motor mount bracket. 4 motor mounting holes: M3 at 31mm spacing (standard NEMA 17 square pattern). Center hole dia 22.5mm for motor boss. 2 side mounting holes M4 for 2020 extrusion. Base thickness 5mm. Side arm with 90-degree angle and 2 reinforcement ribs. All internal corners fillet r>=1.5mm. Material PC.",
+      "complexity": "complex",
+      "expected_features": ["motor_pattern", "center_hole", "side_mount", "ribs", "fillet"],
+      "material": "PC",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "complex_005",
+      "text": "Arduino Uno Rev3 enclosure. PCB: 68.6x53.4mm. M3 standoffs at exact positions: (13.97,2.54), (66.04,7.62), (66.04,35.56), (15.24,50.8) mm from board corner. Openings: USB-B (12x10.9mm) and DC jack (9x11mm) on the correct sides. Ventilation slots on top. 4-point snap-fit closure. Wall 2mm, fillet r=1.5mm on outer edges. Material PETG. Export body and lid separately.",
+      "complexity": "complex",
+      "expected_features": ["enclosure", "standoffs", "usb_opening", "dc_opening", "ventilation", "snap_fit"],
+      "material": "PETG",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "complex_006",
+      "text": "Smartphone charging dock: Angled rest at 70 degrees for visible screen. Width 80mm. Stable base 80x90mm. Front lip 8mm tall. USB-C cable groove width 12mm routed through the base to exit from the rear. Anti-slip pads: 4x dia 10mm recesses 1mm deep on the bottom. Fillet r=3mm on all visible edges. Material PLA.",
+      "complexity": "complex",
+      "expected_features": ["angled_rest", "base", "front_lip", "cable_channel", "anti_slip", "fillet"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "complex_007",
+      "text": "Weatherproof IP54 enclosure for outdoor sensor. Internal dimensions 60x40x25mm. Wall 3mm. O-ring groove around lid perimeter (1.5x1.5mm cross-section). Cable gland: dia 8mm hole with conical boss for PG7. 4x M3 screws with heat inserts for closure. Internal standoffs for PCB (4x M2.5, height 5mm). Drainage groove 1x1mm on external bottom. Material ASA. Fillet r=2mm on outer edges.",
+      "complexity": "complex",
+      "expected_features": ["enclosure", "oring_groove", "cable_gland", "heat_inserts", "standoffs", "drainage", "fillet"],
+      "material": "ASA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "complex_008",
+      "text": "Ergonomic drawer handle. Path: elliptical arc, width 120mm, max protrusion 30mm. Cross-section: 12x20mm rectangle with rounded corners r=4mm. Mounting feet at each end: 20x20x5mm with M4 hole. Gradual transition between handle and feet. Fillet r=2mm on transitions. Material PETG.",
+      "complexity": "complex",
+      "expected_features": ["sweep", "mounting_feet", "loft_transition", "fillet"],
+      "material": "PETG",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "complex_009",
+      "text": "Modular desk organizer base module: 80x80mm footprint, height 30mm, wall 2mm. Puzzle-type interlocking edge on all 4 sides (male on 2 adjacent sides, female on the other 2). Tight-fit tolerance 0.1mm on connectors. Internal cavity with rounded bottom corners r=3mm. Material PLA. Fillet r=1mm on all visible edges.",
+      "complexity": "complex",
+      "expected_features": ["box", "puzzle_connectors", "interlocking", "fillet"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "complex_010",
+      "text": "Spur gear: 20 teeth, module 1.5, face width 8mm. Shaft bore dia 5mm with a 2x2mm keyway. Simplified involute tooth profile (polygonal approximation acceptable). Hub diameter 15mm, hub length 12mm. Chamfer 0.3mm on tooth tips. Material PLA-CF.",
+      "complexity": "complex",
+      "expected_features": ["gear_teeth", "shaft_bore", "keyway", "hub", "chamfer"],
+      "material": "PLA-CF",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "complex_011",
+      "text": "Cable gland housing for PG9 (cable range 4-8mm). Threaded body with external M16x1.5 thread approximation (hexagonal grip section). Internal cone for cable compression. Nut: M16x1.5 internal thread approximation with knurled outer grip. Material PA (nylon). Export body and nut as separate STLs.",
+      "complexity": "complex",
+      "expected_features": ["threaded_body", "compression_cone", "nut", "knurl"],
+      "material": "PA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "complex_012",
+      "text": "Multi-part desk clamp for a vertical rod (dia 12mm). Two halves that bolt together with 2x M4 screws. Each half has a semicircular groove (dia 12.4mm with 0.2mm clearance per side). Flat base on the desk-facing side with a rubber pad recess. Tightening creates press-fit on the rod. Material PETG. Wall thickness 4mm.",
+      "complexity": "complex",
+      "expected_features": ["clamp_halves", "rod_groove", "bolt_holes", "rubber_recess"],
+      "material": "PETG",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "complex_013",
+      "text": "Hex key holder for 9 metric hex keys (1.5, 2, 2.5, 3, 4, 5, 6, 8, 10mm). Angled base so keys fan out at 15 degrees. Each hole sized with 0.3mm clearance. Keys organized small to large. Text labels on the front for each size. Base plate 120x30x5mm with 2 mounting holes. Material PLA.",
+      "complexity": "complex",
+      "expected_features": ["angled_holes", "text_labels", "mounting_holes"],
+      "material": "PLA",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "complex_014",
+      "text": "Cantilever snap-fit clip mechanism demo. Base block 30x20x10mm. Cantilever beam extending 12mm from one face, width 5mm, thickness 1.2mm. Triangular snap-fit lip at the end with 30-degree insertion angle and 90-degree retention. Mating slot in a separate receiver block. Material PETG. Export clip and receiver as separate parts.",
+      "complexity": "complex",
+      "expected_features": ["cantilever", "snap_lip", "receiver_slot"],
+      "material": "PETG",
+      "expected_solid_count": 1
+    },
+    {
+      "id": "complex_015",
+      "text": "GoPro-style mounting system: base plate 40x30x5mm with 2 M4 mounting holes. On top, a 3-prong GoPro mount (2 outer prongs + 1 inner prong pattern, each 3mm thick, 15mm tall). Prongs have M5 through-holes for the GoPro thumb screw. 0.5mm clearance between prongs. Material PETG. Fillet r=1mm on prong bases.",
+      "complexity": "complex",
+      "expected_features": ["base_plate", "gopro_prongs", "through_holes", "fillet"],
+      "material": "PETG",
+      "expected_solid_count": 1
+    }
+  ]
+}

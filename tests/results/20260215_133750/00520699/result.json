@@ -1,0 +1,26 @@
+{
+  "id": "00520699",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a 3D object resembling a thermometer. Start by sketching a circle with a diameter of 0.15 units and extrude it to a height of 0.0375 units to form a small cylinder. Then, add a very long rectangle with dimensions 0.691425 units in length, 0.093715 units in width, and 0.02625 units in height at the top edge of the circle. The rectangle should be extruded slightly less than the cylinder and positioned such that it extends from the circle. Rotate the entire assembly for proper orientation.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\ncylinder_height:float = 0.0375\ndiameter:float = 0.15\ncylinder:cq.Workplane = cq.Workplane(\"XY\").cylinder(cylinder_height, diameter/2)\n\nlength:float = 0.691425\nwidth:float = 0.093715\nheight:float = 0.02625\nrectangle:cq.Workplane = cq.Workplane(\"XY\").box(length, width, height)\n\npart:cq.Workplane = (\n    cylinder\n    .translate((0,0,cylinder_height/2))\n    .union(rectangle.translate((length/2 + diameter/2 - 0.0164, 0, height/2)))\n)\n\npart = part.rotate((0,1,0),(0,0,0),90).rotate((0,0,1),(0,0,0),180)\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.452,
+  "chamfer_distance": 1.9446264612294614e-05,
+  "bbox_similarity": 0.9999898816599982,
+  "volume_ratio": 1.000379795428127,
+  "gt_volume": 0.002333731132139551,
+  "gen_volume": 0.0023346174725540152,
+  "gt_bbox": [
+    0.037500000000000006,
+    0.15,
+    0.825
+  ],
+  "gen_bbox": [
+    0.03750000149011621,
+    0.15000000596046448,
+    0.8250249773263931
+  ]
+}

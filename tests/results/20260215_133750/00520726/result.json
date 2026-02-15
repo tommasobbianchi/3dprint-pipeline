@@ -1,0 +1,26 @@
+{
+  "id": "00520726",
+  "category_semantic": "Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a 3D model of a rectangular block with a length of 0.5 units, a width of 0.5 units, and a height of 0.633333 units. On top of this block, add a cylinder with a height of 0.116667 units and a diameter of 0.316667 units. The cylinder should be centered on the top surface of the rectangle. Additionally, hollow out a portion from the bottom of the rectangle, creating a cavity with a length of 0.411666 units, a width of 0.411666 units, and a depth of 0.533333 units. This cavity should be centered within the bottom surface of the rectangle, and the bottom of the cavity should be slightly recessed from the bottom surface of the rectangle by 0.05 units. Finally, translate the entire model so that the base of the rectangle aligns with the ground plane.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 0.5\nwidth:float = 0.5\nheight:float = 0.633333\n\nrectangle:cq.Workplane = cq.Workplane(\"XY\").box(length, width, height)\n\ncylinder_height:float = 0.116667\ndiameter:float = 0.316667\ncylinder:cq.Workplane = cq.Workplane(\"XY\").cylinder(cylinder_height, diameter/2)\n\ncut_length:float = length - 0.044167*2\ncut_width:float = width - 0.044167*2\ncut_height:float = height - 0.1\ncut_rectangle:cq.Workplane = cq.Workplane(\"XY\").box(cut_length, cut_width, cut_height)\n\npadding:float = 0.118359\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .union(rectangle)\n    .union(cylinder.translate((0,0,(height/2+cylinder_height/2))))\n    .cut(cut_rectangle.translate((0,0,-0.1/2)))\n)\n\npart = part.translate((0,0,height/2))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.539,
+  "chamfer_distance": 0.00016525565361919685,
+  "bbox_similarity": 1.0,
+  "volume_ratio": 1.0005294486106346,
+  "gt_volume": 0.07709151319386445,
+  "gen_volume": 0.07713232918841667,
+  "gt_bbox": [
+    0.5,
+    0.5,
+    0.75
+  ],
+  "gen_bbox": [
+    0.5,
+    0.5,
+    0.75
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "00684686",
+  "category_semantic": "Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a rectangular plate with specific dimensions and a rectangular hole within it. Begin by creating a rectangle with dimensions 0.231564 units in length, 0.028954 units in width, and extrude it to a height of 0.926255 units. Next, sketch a smaller rectangle inside the original rectangle, with dimensions approximately 1/4th the size of the first rectangle (0.12897 units in length and 0.479215 units in height). Position this smaller rectangle at the bottom of the original object, ensuring there is a small space of 0.005463 units between the bottom of the new rectangle and the bottom of the original rectangle. Finally, negatively extrude this smaller rectangle to create a rectangular hole in the original object. Adjust the position of the entire part by translating it by (-0.050509, -0.014477, 0.286873) units to achieve the desired placement.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 0.231564\nwidth:float = 0.028954\nheight:float = 0.926255\n\ncut_length:float = 0.12897\ncut_height:float = 0.479215\nbottom_margin:float = 0.005463\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .box(length, width, height)\n    .faces(\"-Z\")\n    .workplane(offset=-cut_height/2-bottom_margin)\n    .center(0.003764,0)\n    .box(cut_length,width,cut_height,combine=\"cut\")\n)\n\npart = part.translate((-0.050509,-width/2,0.286873))\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.401,
+  "chamfer_distance": 2.78062788226136e-05,
+  "bbox_similarity": 0.9999015875529631,
+  "volume_ratio": 1.0002933089268453,
+  "gt_volume": 0.00441948570012387,
+  "gen_volume": 0.004420781974731782,
+  "gt_bbox": [
+    0.23156391999999998,
+    0.02894548000000006,
+    0.9262555
+  ],
+  "gen_bbox": [
+    0.231564000248909,
+    0.028953999280929565,
+    0.9262549728155136
+  ]
+}

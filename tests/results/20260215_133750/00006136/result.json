@@ -1,0 +1,26 @@
+{
+  "id": "00006136",
+  "category_semantic": "Simple",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a right triangle with a base length of 1.04094 units and a height of 0.465517 units, then extrude this shape by 0.75 units to form a 3D object.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nfrom typing import List,Tuple\n\nlength:float = 1.04094\nwidth:float = 0.465517\nextrude:float = 0.75\n\npts:List[Tuple[float, float]] = [\n    (0, 0),\n    (length/2, width),\n    (length, 0)\n]\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .polyline(pts)\n    .close()\n    .extrude(extrude)\n)\n\npart = part.translate((-length/2,0,0)).rotate((0,0,1),(0,0,0),-90).rotate((0,1,0),(0,0,0),-90)\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.382,
+  "chamfer_distance": 7.758582757579645e-05,
+  "bbox_similarity": 0.9999960734959389,
+  "volume_ratio": 1.0000109815352387,
+  "gt_volume": 0.18171374289939002,
+  "gen_volume": 0.181715738395261,
+  "gt_bbox": [
+    0.75,
+    1.0409282,
+    0.4655172000000001
+  ],
+  "gen_bbox": [
+    0.75,
+    1.0409400463104248,
+    0.4655170142650605
+  ]
+}

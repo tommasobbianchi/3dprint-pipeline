@@ -1,0 +1,26 @@
+{
+  "id": "00689273",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create an object that resembles a whistle. Begin by drawing a short, wide cylinder with a width of 0.325804 units and a diameter of 0.651607 units. Next, from one sector of the cylinder's curved surface, add a rectangular block extruding outwards from the top, center. This rectangular block should be narrow, with a width of 0.201998 units, very short, with a height of 0.065161 units, and longer than the diameter of the cylinder, with a length of 0.839006 units. Ensure the positioning of the rectangular block is adjusted to be centered and slightly raised relative to the top surface of the cylinder, using appropriate margins and translations for precise placement.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nwidth:float = 0.325804\ndiameter:float = 0.651607\n\nlength:float = 0.839006\nbox_width:float = 0.201998\nheight:float = 0.065161\nbox_margin:float = 0.791217\nheight_margin:float = 0.480984\n\ncylinder:cq.Workplane = cq.Workplane(\"XZ\").cylinder(width, diameter/2)\nbox:cq.Workplane = cq.Workplane(\"XY\").box(length, box_width, height)\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .add(cylinder)\n    .add(box.translate((box_margin/2+0.564309/2-0.020395,0,height/2-diameter/2+height_margin+0.003495)))\n)\n\npart = part.translate((-diameter/2-0.09946,-width/2,0.207149))\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.396,
+  "chamfer_distance": 5.222630615046313e-05,
+  "bbox_similarity": 0.9996421287727995,
+  "volume_ratio": 1.0069254732835016,
+  "gt_volume": 0.11882241306547996,
+  "gen_volume": 0.11964531451264614,
+  "gt_bbox": [
+    1.4016073,
+    0.32580369999999986,
+    0.6516073
+  ],
+  "gen_bbox": [
+    1.4026744961738586,
+    0.3258039951324463,
+    0.6514044553041458
+  ]
+}

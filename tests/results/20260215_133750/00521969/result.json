@@ -1,0 +1,26 @@
+{
+  "id": "00521969",
+  "category_semantic": "Moderate",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a rounded square with a length of 0.74999 units and a width of 0.73843 units, and then extrude it to a height of 0.11078 units with a fillet of 0.038 units on the edges.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 0.74999\nwidth:float =  0.73843\nheight:float = 0.11078\nfillet:float = 0.038\n\nrectangle:cq.Workplane = cq.Workplane(\"XY\").box(length, width, height)\nrectangle_two = cq.Workplane(\"XY\").box(length, width*2, height)\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .union(rectangle).translate((-length/2, width/2, 0))\n    .cut(rectangle_two.translate((0, width, 0)).rotate((0,0,1),(0,0,0),-0.857).translate((length/2, 0, 0)))\n).translate((length, 0, height/2)).edges(\"|Z\").fillet(fillet)\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.452,
+  "chamfer_distance": 8.001241528387777e-05,
+  "bbox_similarity": 0.9997205711841348,
+  "volume_ratio": 0.9996263775663923,
+  "gt_volume": 0.06077643634269672,
+  "gen_volume": 0.060753728902644355,
+  "gt_bbox": [
+    0.749995,
+    0.7384321,
+    0.1107796
+  ],
+  "gen_bbox": [
+    0.7493711113929749,
+    0.7384300231933594,
+    0.11078000068664551
+  ]
+}

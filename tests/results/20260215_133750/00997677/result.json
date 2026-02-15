@@ -1,0 +1,26 @@
+{
+  "id": "00997677",
+  "category_semantic": "Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a 3D object that resembles an inverted table. Begin by drawing a rectangle with dimensions 1.5 units in length and 0.75 units in width, and then extrude this sketch by 0.034954 units to form the base. Next, create two smaller rectangles, each with dimensions 0.35911 units in length and 0.581568 units in width. Place these rectangles symmetrically at each end of the larger rectangle, ensuring a margin of 0.055864 units from the edge of the base rectangle. Extrude these smaller rectangles by 0.699153 units to create rectangular columns that protrude from the rectangular surface. Finally, translate the entire assembly so that the base of the columns aligns with the bottom of the base rectangle.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nb_length:float = 1.5\nb_width:float = 0.75\nb_height:float = 0.034954\n\nbase:cq.Workplane = cq.Workplane(\"XY\").box(b_length, b_width, b_height)\n\nlength:float = 0.35911\nwidth:float = 0.581568\nheight:float =  0.699153\nbox:cq.Workplane = cq.Workplane(\"XY\").box(length, width, height)\nmargin:float = 0.055864\n\npart:cq.Workplane = (\n    base\n    .union(box.translate((-b_length/2 + length/2, b_width/2 - width/2 - margin, b_height/2 + height/2)))\n    .union(box.translate((+b_length/2 - length/2, b_width/2 - width/2 - margin, b_height/2 + height/2)))\n)\n\npart = part.translate((0, 0, b_height/2))\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.438,
+  "chamfer_distance": 9.432409515187279e-05,
+  "bbox_similarity": 0.9999985549476949,
+  "volume_ratio": 0.9999880512558308,
+  "gt_volume": 0.33135906800414733,
+  "gen_volume": 0.3313551086794156,
+  "gt_bbox": [
+    1.5,
+    0.75,
+    0.7341102
+  ],
+  "gen_bbox": [
+    1.5,
+    0.75,
+    0.7341070175170898
+  ]
+}

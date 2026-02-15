@@ -1,0 +1,26 @@
+{
+  "id": "00037161",
+  "category_semantic": "Moderate",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a square with dimensions 1.5 units in length and width, and 0.0255 units in height. Then, create a smaller empty rectangle in the center of the square, with dimensions 0.12 units in length and 0.24 units in width, and the same height as the square.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 1.5\nwidth:float = 1.5\nheight:float = 0.0255\n\nsquare:cq.Workplane = cq.Workplane(\"XY\").box(length, width, height)\n\nempty_length:float = 0.12\nempty_width:float = 0.24\nempty_rectangle:cq.Workplane = cq.Workplane(\"XY\").box(empty_length, empty_width, height)\n\npart:cq.Workplane = square.cut(empty_rectangle)\n\npart = part.translate((0,0,height/2))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.422,
+  "chamfer_distance": 6.388652386457134e-05,
+  "bbox_similarity": 0.999999993766834,
+  "volume_ratio": 0.9999999818801272,
+  "gt_volume": 0.056640600000000006,
+  "gen_volume": 0.05664059897367954,
+  "gt_bbox": [
+    1.5,
+    1.5,
+    0.025500000000000043
+  ],
+  "gen_bbox": [
+    1.5,
+    1.5,
+    0.025499999523162842
+  ]
+}

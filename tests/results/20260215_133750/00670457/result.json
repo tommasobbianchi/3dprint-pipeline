@@ -1,0 +1,26 @@
+{
+  "id": "00670457",
+  "category_semantic": "Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a long rectangular object with specific dimensions. Start by creating a sketch of a long rectangle with a length of 0.051687 units and a width of 0.120604 units. Next, draw a sketch of an isosceles trapezium where the base of the trapezium is the same length as the shorter edge of the rectangle, which is 0.051687 units. Connect this trapezium to the rectangle such that the base of the trapezium is attached to the shorter edge of the rectangle. Finally, extrude this combined shape to a height of 0.75 units to form the 3D object.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nfrom typing import List,Tuple\n\nbox_length:float = 0.051687\nbox_width:float = 0.120604\nbox_height:float = 0.75\nbox:cq.Workplane = cq.Workplane(\"XY\").box(box_length,box_width,box_height)\n\ncorner_length:float = 0.052223\ncorner_width:float = 0.030151\n\npts:List[Tuple[float, float]] = [\n    (0, 0),\n    (0, corner_width),\n    (corner_length, 0)\n]\n\ncorner:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .polyline(pts)\n    .close()\n    .extrude(box_length)\n    .rotate((0,1,0),(0,0,0),-90)\n    .translate((-box_length/2,-corner_width/2,corner_length/2))\n)\n\npart:cq.Workplane = (\n    box\n    .cut(corner.translate((0,-box_width/2+corner_width/2,box_height/2-corner_length/2)))\n    .cut(corner.translate((0,-box_width/2+corner_width/2,box_height/2-corner_length/2)).rotate((0,0,1),(0,0,0),180))\n)\n\npart = part.translate((box_length/2,box_width/2,box_height/2))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.394,
+  "chamfer_distance": 2.8794492852733518e-05,
+  "bbox_similarity": 0.9999973155742751,
+  "volume_ratio": 1.0000001830901253,
+  "gt_volume": 0.004593858133272454,
+  "gen_volume": 0.004593858974362515,
+  "gt_bbox": [
+    0.0516872,
+    0.1206035,
+    0.75
+  ],
+  "gen_bbox": [
+    0.05168699845671655,
+    0.1206040009856224,
+    0.75
+  ]
+}

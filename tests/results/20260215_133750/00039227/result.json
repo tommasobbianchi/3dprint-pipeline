@@ -1,0 +1,26 @@
+{
+  "id": "00039227",
+  "category_semantic": "Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a cylinder with a diameter of 1.27949 units. Then, create an empty rectangle in the center of the cylinder with a length of 0.787604 units and a width of 0.506095 units.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\ndiameter:float = 1.27949\nlength:float = 0.787604\nwidth:float = 0.506095\n\nextrude:float = 0.75\n\noutline = cq.Sketch().circle(diameter/2).rect(length,width, mode=\"s\")\npart = cq.Workplane(\"XZ\").placeSketch(outline).extrude(extrude)\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.391,
+  "chamfer_distance": 0.00011329883169670322,
+  "bbox_similarity": 0.999894308715842,
+  "volume_ratio": 1.0067870438397823,
+  "gt_volume": 0.6604941317084401,
+  "gen_volume": 0.6649769343362643,
+  "gt_bbox": [
+    1.279494,
+    0.7500000000000006,
+    1.279494
+  ],
+  "gen_bbox": [
+    1.2794899940490723,
+    0.75,
+    1.2790923118591309
+  ]
+}

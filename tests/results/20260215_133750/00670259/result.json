@@ -1,0 +1,26 @@
+{
+  "id": "00670259",
+  "category_semantic": "Moderate",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a long rectangular pipe with a length of 0.06 meters, a width of 0.06 meters, and an extrusion height of 0.75 meters. The pipe should have an inside padding of 0.0045 meters on all sides.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 0.06\nwidth:float = 0.06\n\ninside_padding:float = 0.0045\nextrude:float = 0.75\n\noutline:cq.Sketch = cq.Sketch().rect(length,width).rect(length-inside_padding*2,width-inside_padding*2, mode=\"s\")\npart:cq.Workplane = cq.Workplane(\"XY\").placeSketch(outline).extrude(extrude)\n\npart = part.rotate((1,0,0),(0,0,0),-90)\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.372,
+  "chamfer_distance": 3.431377356125158e-05,
+  "bbox_similarity": 0.9999999850988388,
+  "volume_ratio": 0.9999999362785189,
+  "gt_volume": 0.0007492499999999999,
+  "gen_volume": 0.0007492499522566802,
+  "gt_bbox": [
+    0.06,
+    0.75,
+    0.06
+  ],
+  "gen_bbox": [
+    0.05999999865889549,
+    0.75,
+    0.05999999865889549
+  ]
+}

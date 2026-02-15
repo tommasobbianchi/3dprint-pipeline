@@ -1,0 +1,26 @@
+{
+  "id": "00998088",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a rectangular 3D object with specific dimensions. Start by creating a sketch of a long rectangle with dimensions 1.5 units in length, 0.413793 units in width, and then extrude it by 0.031034 units in height. Next, draw two sketches of two small rectangles with dimensions calculated as (length - 1.28276)/2 for length and width - 0.31034 for width. Round the edges of these rectangles at two corners corresponding to the longer edge of the rectangle with a fillet radius of 0.025 units. Negatively extrude these rectangle sketches to create two square-shaped cutouts with rounded edges at two corners of the rectangular plate. Ensure these cutouts are symmetrically placed and aligned with the edges of the main rectangle.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 1.5\nwidth:float = 0.413793\nheight:float = 0.031034\nfillet:float = 0.025\n\nbox:cq.Workplane = cq.Workplane(\"XY\").box(length, width, height)\n\nc_length:float = (length - 1.28276)/2\nc_width:float = width - 0.31034\ncorner_cut:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .box(c_length, c_width, height)\n    .faces(\"X\")\n    .edges(\"<Y\")\n    .fillet(fillet)\n)\n\npart:cq.Workplane = (\n    box\n    .cut(corner_cut.translate((-length/2+c_length/2,width/2-c_width/2,0)))\n    .cut(corner_cut.rotate((0,1,0),(0,0,0),180).translate((length/2-c_length/2,width/2-c_width/2,0)))\n)\n\npart = part.translate((0,width/2,height/2))\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.402,
+  "chamfer_distance": 3.402627223739677e-05,
+  "bbox_similarity": 0.9999947642945718,
+  "volume_ratio": 0.9999860005825453,
+  "gt_volume": 0.018574377857898765,
+  "gen_volume": 0.01857411782742917,
+  "gt_bbox": [
+    1.5,
+    0.4137931,
+    0.03103448
+  ],
+  "gen_bbox": [
+    1.5,
+    0.41379299759864807,
+    0.031034000217914588
+  ]
+}

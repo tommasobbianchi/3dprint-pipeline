@@ -20,3 +20,18 @@ __pycache__/
 # OS
 .DS_Store
 Thumbs.db
+
+# Generated 3D outputs
+*.stl
+*.step
+
+# CADPrompt dataset (cloned externally)
+tests/cadprompt_repo/
+
+# Benchmark binary outputs (keep summaries/reports)
+tests/results/*/output.*
+tests/results/*/code.py
+benchmark/results/
+
+# Video
+video/

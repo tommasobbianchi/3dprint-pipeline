@@ -1,0 +1,26 @@
+{
+  "id": "00681831",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a cylindrical 3D object with a diameter of 0.955953 units and a width of 0.295686 units. Begin by drawing a circle with the specified diameter. Next, cut out a small isosceles trapezium from the top of the circle, ensuring the trapezium has a base length of 0.163062 units, a top length equal to the base length, and a height calculated as the difference between the cylinder's diameter and an offset of 0.698688 units. The sketch should resemble a small trapezoidal sector removed from the circle. Finally, extrude this entire sketch to create the cylindrical object. Adjust the position of the cylinder by translating it by (0, width/2, -0.272116) to center it appropriately.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nwidth:float = 0.295686\ndiameter:float = 0.955953\nb_length:float = 0.163062\nb_width:float = width\noffset:float = 0.698688\nb_height:float = diameter - offset\n\n\nbox:cq.Workplane = cq.Workplane(\"XY\").box(b_length,b_width,b_height)\n\ncylinder:cq.Workplane = cq.Workplane(\"XZ\").cylinder(width,diameter/2)\n\ncut_part:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .add(box.translate((0,0,diameter/2-b_height/2)))\n    .add(box.translate((b_length/2,0,b_height/2)).rotate((0,1,0),(0,0,0),28).translate((-b_length/2,0,diameter/2-b_height)))\n    .add(box.translate((-b_length/2,0,b_height/2)).rotate((0,1,0),(0,0,0),-26).translate((b_length/2,0,diameter/2-b_height)))\n )\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .add(cylinder)\n    .cut(cut_part.translate((0.005716,0,0)))\n)\n\npart = part.translate((0,width/2,-0.272116))\n\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.447,
+  "chamfer_distance": 7.767878565554241e-05,
+  "bbox_similarity": 0.9999166282969822,
+  "volume_ratio": 1.0034715087626884,
+  "gt_volume": 0.1908510367770665,
+  "gen_volume": 0.19151357782360626,
+  "gt_bbox": [
+    0.9559518,
+    0.29568570000000044,
+    0.9160836
+  ],
+  "gen_bbox": [
+    0.9558233916759491,
+    0.2956860065460205,
+    0.9159784764051437
+  ]
+}

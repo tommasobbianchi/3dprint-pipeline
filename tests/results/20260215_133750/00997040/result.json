@@ -1,0 +1,26 @@
+{
+  "id": "00997040",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to generate a CAD model for a 3D object based on specific dimensions. Start by creating a side profile of the object. First, sketch a thin rectangle with a length of 0.75 units and a minimal height of 0.0018 units (approximately 1/20th of the width, which is 0.042 units). On top of this thin rectangle, sketch a square with a side length of about half the width of the rectangle (0.021 units). Position this square such that its bottom right corner aligns with the top right corner of the rectangle, and its bottom left corner aligns with the vertical line through the center of the rectangle. Above this square, draw another square that is slightly smaller (side length of 0.0192 units), placing it so that the bottom right corner of this second square aligns with the top right corner of the first square. Ensure that the sketch forms a closed shape. Finally, extrude this front profile to a depth of about 20 times the width of the rectangle (0.84 units) to complete the 3D object.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 0.75\nwidth:float =  0.042\nheight:float =  0.0018\n\nrec:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .box(length, width, height)\n    .faces(\"Z\")\n    .workplane()\n    .center(0,width/2-0.0228/2)\n    .rect(length,0.0228)\n    .extrude(0.0192)\n    .faces(\">Z\")\n    .workplane()\n    .center(0,0.0228/2-0.021/2)\n    .rect(length, 0.021)\n    .extrude(0.015)\n)\n\npart:cq.Workplane = rec.translate((-length/2,-width/2,height/2)).rotate((0,0,1),(0,0,0),-90)\n\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.433,
+  "chamfer_distance": 1.2535279370679206e-05,
+  "bbox_similarity": 0.9999999811567334,
+  "volume_ratio": 0.999999961934384,
+  "gt_volume": 0.0006212699999999897,
+  "gen_volume": 0.0006212699763509645,
+  "gt_bbox": [
+    0.042,
+    0.75,
+    0.036
+  ],
+  "gen_bbox": [
+    0.04199999943375596,
+    0.75,
+    0.035999998450279236
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "00522865",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a 3D model with the following specifications:\n\n1. Start by creating a rectangular base with dimensions 1.5 units in length, 1.2 units in width, and 0.147638 units in height.\n2. In the center of this base, cut out a rectangular hollow that is 0.975 units in length, 0.675 units in width, and 0.11811 units in depth.\n3. On top of the base, centered, add a second rectangle that is 1.25274 units in length, 0.982742 units in width, and 0.041339 units in height.\n4. On top of the second rectangle, at its center, place a third rectangle that is 0.059055 units in length, 0.11811 units in width, and 0.088583 units in height. This third rectangle should be positioned such that it is 0.390573 units from the end and 0.314204 units from the side of the second rectangle.\n5. Mirror the third rectangle on the opposite side of the second rectangle, maintaining the same distances from the edges.\n6. Translate the entire assembly so that the base is centered vertically at its half height.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\ntop_length:float = 0.059055\ntop_width:float = 0.11811\ntop_height:float = 0.088583\ntop_box:cq.Workplane = cq.Workplane(\"XY\").box(top_length, top_width, top_height)\n\nmid_length:float = 1.25274\nmid_width:float = 0.982742\nmid_height:float = 0.041339\nmid_box:cq.Workplane = cq.Workplane(\"XY\").box(mid_length, mid_width, mid_height)\n\nbase_length:float = 1.5\nbase_width:float = 1.2\nbase_height:float = 0.147638\nbase_box:cq.Workplane = cq.Workplane(\"XY\").box(base_length, base_width, base_height)\n\ncut_length:float = 0.975\ncut_width:float = 0.675\ncut_height:float = 0.11811\ncut_box:cq.Workplane = cq.Workplane(\"XY\").box(cut_length, cut_width, cut_height)\n\nwidth_padding:float = 0.314204\nlength_padding:float = 0.390573\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .union(base_box)\n    .cut(cut_box.translate((0,0,-base_height/2 + cut_height/2)))\n    .union(mid_box.translate((0,0,base_height/2 + mid_height/2)))\n    .union(top_box.translate((mid_length/2 - top_length/2 - length_padding, mid_width/2 - top_width/2 - width_padding, base_height/2 + mid_height+top_height/2)))\n    .union(top_box.translate((-mid_length/2 + top_length/2 + length_padding, mid_width/2 - top_width/2 - width_padding, base_height/2 + mid_height+top_height/2)))\n)\n\npart = part.translate((0,0,base_height/2))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.445,
+  "chamfer_distance": 0.00023434973473595924,
+  "bbox_similarity": 0.9999989111262517,
+  "volume_ratio": 0.0,
+  "gt_volume": 0.0,
+  "gen_volume": 0.2401462730891777,
+  "gt_bbox": [
+    1.5,
+    1.2,
+    0.27755910000000006
+  ],
+  "gen_bbox": [
+    1.5,
+    1.2000000476837158,
+    0.2775599956512451
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "00672098",
+  "category_semantic": "Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a U-shaped object by starting with a rectangular base of dimensions 0.337772 units in length, 0.75 units in width, and 0.021792 units in height. Then, subtract a smaller rectangle from the center of the base, leaving a margin of 0.01816 units on the sides and top, to form the \"U\" shape. Finally, extrude this \"U\" shaped sketch by a small amount to create the 3D object.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 0.337772\nwidth:float = 0.75\nheight:float = 0.021792\n\nbox:cq.Workplane = cq.Workplane(\"XY\").box(length, width, height)\n\ncut_margin:float = 0.01816\ncut_length:float = length - cut_margin*2\ncut_width:float = width - cut_margin\ncut_box:cq.Workplane = cq.Workplane(\"XY\").box(cut_length, cut_width, height)\n\npart:cq.Workplane = box.cut(cut_box.translate((0,cut_margin/2,0)))\n\npart = part.translate((-length/2,width/2,0))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.416,
+  "chamfer_distance": 1.3002635252671972e-05,
+  "bbox_similarity": 0.9999959433052599,
+  "volume_ratio": 1.000021637970867,
+  "gt_volume": 0.0007128963533790518,
+  "gen_volume": 0.0007129117790095774,
+  "gt_bbox": [
+    0.33777240000000064,
+    0.75,
+    0.02179176
+  ],
+  "gen_bbox": [
+    0.337772011756897,
+    0.75,
+    0.02179200015962124
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "00999141",
+  "category_semantic": "Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a trapezoid plate. Begin by sketching an isosceles trapezium with a base angle of approximately 70 degrees. The trapezium should have a bottom length of 0.628103 units and a top length of 0.240157 units. The height of the trapezium should be 0.722001 units. The top edge should be horizontally centered and shifted slightly to the right by 0.009237 units from the center of the bottom edge. After creating the sketch, extrude it by 0.011084 units to form the 3D plate. Finally, translate the extruded shape slightly to the left by 0.018474 units to center it properly.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nfrom typing import List,Tuple\n\nlength:float = 0.628103\nwidth:float = 0.011084\nheight:float = 0.722001\ntop_length:float = 0.240157\n\ntop_x:float = (length - top_length)/2\nshift:float = 0.009237\n\npoints:List[Tuple[float, float]] = [\n    (0,0),\n    (top_x+shift,height),\n    (top_x+top_length+shift,height),\n    (length,0)\n]\n\nwork:cq.Workplane = (\n    cq.Workplane(\"XY\").center(-(length/2),-(height/2))\n    .polyline(points).close()\n)\n\n#-0.0018474\npart:cq.Workplane = work.extrude(width).translate((-0.018474,height/2,0))\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.387,
+  "chamfer_distance": 4.498956722440622e-05,
+  "bbox_similarity": 0.9999948170536659,
+  "volume_ratio": 0.9999847704069748,
+  "gt_volume": 0.0034742471921298443,
+  "gen_volume": 0.003474194280759039,
+  "gt_bbox": [
+    0.6281030000000001,
+    0.7220009,
+    0.01108417
+  ],
+  "gen_bbox": [
+    0.6281029880046844,
+    0.7220010161399841,
+    0.011083999648690224
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "00000633",
+  "category_semantic": "Moderate",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a rectangular block with dimensions 0.75 units in length, 0.1875 units in width, and 0.00391 units in height. Additionally, include a circular hole in the center of the rectangle with a diameter of 0.12512 units.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 0.75\nwidth:float = 0.1875\nheight:float = 0.00391\nhole_diameter:float = 0.06256*2\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .box(length, width, height, centered = False)\n    .faces(\">Z\")\n    .hole(hole_diameter, height)\n)\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.407,
+  "chamfer_distance": 2.553428191579964e-05,
+  "bbox_similarity": 0.9996800025304159,
+  "volume_ratio": 1.0006850111466912,
+  "gt_volume": 0.0005016224970264171,
+  "gen_volume": 0.0005019661140283112,
+  "gt_bbox": [
+    0.75,
+    0.1875,
+    0.00390625
+  ],
+  "gen_bbox": [
+    0.75,
+    0.1875,
+    0.003909999970346689
+  ]
+}

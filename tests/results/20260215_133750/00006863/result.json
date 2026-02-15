@@ -1,0 +1,26 @@
+{
+  "id": "00006863",
+  "category_semantic": "Simple",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create an extruded rectangle with a length of 0.66788 units, a width of 0.75 units, and an extrusion height of 0.32847 units. The rectangle should be centered at the origin in the XY plane.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 0.66788\nwidth:float = 0.75\nextrude:float = 0.32847\n\nsketch:cq.Sketch = cq.Sketch().rect(length,width)\npart:cq.Workplane = cq.Workplane(\"XY\").placeSketch(sketch).extrude(extrude)\n\npart = part.translate((length/2, width/2, 0))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.383,
+  "chamfer_distance": 0.00010922882256759988,
+  "bbox_similarity": 0.9999955692156872,
+  "volume_ratio": 1.0000037058573517,
+  "gt_volume": 0.1645332934732799,
+  "gen_volume": 0.16453390321019512,
+  "gt_bbox": [
+    0.6678832,
+    0.75,
+    0.3284672
+  ],
+  "gen_bbox": [
+    0.6678799986839294,
+    0.75,
+    0.32846999168395996
+  ]
+}

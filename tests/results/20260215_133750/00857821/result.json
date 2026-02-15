@@ -1,0 +1,26 @@
+{
+  "id": "00857821",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a heart-shaped object with a diameter of 0.374906 units and a height of 0.1875 units. The heart shape is formed by combining a circle and a custom polygon, then extruding the resulting shape. The circle is centered at (diameter/2, diameter*2 - 0.187124) with a radius of (diameter/2). The polygon is defined by points at (0,0), (0,diameter), and ((diameter*.7) + 0.01883 - 0.0001, diameter). The final 3D model is created by extruding the combined 2D shape and then translating it to center it vertically.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nfrom typing import List, Tuple\n\ndiameter:float = 0.374906\nheight:float = 0.1875\n\npts:List[Tuple[float,float]] = [\n    (0,0),\n    (0,diameter),\n    ((diameter*.7) + 0.01883 - 0.0001 ,diameter)\n]\n\ncylinder:cq.Sketch = (\n    cq.Sketch()\n    .push([(diameter/2,diameter*2 - 0.187124)])\n    .circle((diameter/2))\n    .push([(0,0)])\n    .polygon(pts)\n    .wires()\n    .hull()\n)\n\nhalf:cq.Workplane = cq.Workplane(\"XY\").placeSketch(cylinder).extrude(height).translate((0,0,-height/2))\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .union(half)\n    .union(half.rotate((0,1,0),(0,0,0),180))\n)\n\npart = part.translate((0,0,height/2))\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.513,
+  "chamfer_distance": 6.322109091098426e-05,
+  "bbox_similarity": 0.9998611712788871,
+  "volume_ratio": 1.0017965563572655,
+  "gt_volume": 0.06437843950103166,
+  "gen_volume": 0.06449409899578806,
+  "gt_bbox": [
+    0.7496254,
+    0.7499532,
+    0.1875
+  ],
+  "gen_bbox": [
+    0.7498111724853516,
+    0.7500796914100647,
+    0.1875
+  ]
+}

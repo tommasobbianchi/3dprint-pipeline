@@ -1,0 +1,26 @@
+{
+  "id": "00680715",
+  "category_semantic": "Moderate",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a cylindrical ring with a height of 0.00656 units and an outer diameter of 1.5 units. The ring should have a central hole with a diameter calculated by subtracting 0.203459 units twice from the outer diameter. After creating the ring, extrude it along the x-axis and position it so that the center of the ring aligns with the midpoint of its height.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nheight:float = 0.00656\ndiameter:float = 1.5\nhole_diameter:float = diameter - 0.203459*2\n\npart:cq.Workplane = cq.Workplane(\"XZ\").cylinder(height, diameter/2).faces(\">Z\").hole(hole_diameter, height)\n\npart = part.translate((0, 0, height/2))\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.447,
+  "chamfer_distance": 2.183025396619344e-05,
+  "bbox_similarity": 0.9998845476624647,
+  "volume_ratio": 1.0051567687392784,
+  "gt_volume": 0.005406336482739096,
+  "gen_volume": 0.005434215709707305,
+  "gt_bbox": [
+    1.5,
+    0.006559767000000712,
+    1.5
+  ],
+  "gen_bbox": [
+    1.5,
+    0.006560000125318766,
+    1.499533772468567
+  ]
+}

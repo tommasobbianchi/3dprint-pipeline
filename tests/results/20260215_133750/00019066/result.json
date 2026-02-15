@@ -1,0 +1,26 @@
+{
+  "id": "00019066",
+  "category_semantic": "Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a 3D model starting with a rectangle that is marginally extruded with a length of 0.345 units and a width of 0.0024 units, where the length is approximately 1.5 times the width. Then, add a very small rectangular rod at one corner of the rectangle, pointing upwards, with dimensions 0.00375 units by 0.75 units by 0.0075 units, where the height of the rod is 3 times the length of the rectangle.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\npane_length:float = 0.345\npane_width:float = 0.0024\npane_height:float = 0.18\npane:cq.Workplane = cq.Workplane(\"XY\").box(pane_length, pane_width, pane_height)\n\nbar_length:float = 0.00375\nbar_width:float = 0.75\nbar_height:float = 0.0075\nbar:cq.Workplane = cq.Workplane(\"XY\").box(bar_length, bar_width, bar_height)\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .union(pane.translate((pane_length/2, -pane_width/2, pane_height/2)))\n    .union(bar.translate((bar_length/2, bar_width/2, bar_height/2)))\n)\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.415,
+  "chamfer_distance": 1.0981270520749865e-05,
+  "bbox_similarity": 0.9999999855522399,
+  "volume_ratio": 1.0000000678488392,
+  "gt_volume": 0.00017013375000001223,
+  "gen_volume": 0.00017013376154338967,
+  "gt_bbox": [
+    0.3450000000000007,
+    0.7524,
+    0.18000000000000005
+  ],
+  "gen_bbox": [
+    0.3449999988079071,
+    0.7524000001139939,
+    0.18000000715255737
+  ]
+}

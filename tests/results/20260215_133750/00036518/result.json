@@ -1,0 +1,26 @@
+{
+  "id": "00036518",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a 3D object that is a sliced cylinder with specific dimensions. First, create a cylinder with a diameter of 0.375 units and a height of 0.691189 units. Then, slice this cylinder at an angle using a cutting plane defined by points that transition from the base to the top of the cylinder, effectively removing approximately one-third of the material. The cutting plane starts at the base of the cylinder, extends up to the top with a length of 0.208765 units along the top, and then angles down to the opposite side at the base. Rotate and adjust the final object for proper orientation and positioning.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nfrom typing import List,Tuple\n\ndiameter:float = 0.375\nlength:float = 0.691189\ntop_length:float = 0.208765\n\ncylinder:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .cylinder(length, diameter/2)\n    .rotate((0,1,0),(0,0,0),90)\n)\n\npts:List[Tuple[float, float]] = [\n    (0, 0),\n    (0, diameter),\n    (top_length, diameter),\n    (length, 0)\n]\n\nintersect_angle:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .polyline(pts)\n    .close()\n    .extrude(diameter)\n    .translate((-length/2,-diameter/2,-diameter/2))\n)\n\npart:cq.Workplane = (\n    cylinder\n    .intersect(intersect_angle)\n    .rotate((1,0,0),(0,0,0),-90)\n)\n\npart = part.rotate((0,0,1),(0,0,0),180).translate((0.40445,0,0))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.467,
+  "chamfer_distance": 6.842882201663106e-05,
+  "bbox_similarity": 0.9999998482819517,
+  "volume_ratio": 1.0033488974678542,
+  "gt_volume": 0.04950527165275603,
+  "gen_volume": 0.049671059731639385,
+  "gt_bbox": [
+    0.69118871,
+    0.375,
+    0.375
+  ],
+  "gen_bbox": [
+    0.6911890245974064,
+    0.375,
+    0.375
+  ]
+}

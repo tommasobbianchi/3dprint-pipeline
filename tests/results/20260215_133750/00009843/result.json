@@ -1,0 +1,26 @@
+{
+  "id": "00009843",
+  "category_semantic": "Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a 3D object consisting of three parts. First, create a rectangle with dimensions 1.40217 units in length, 0.062517 units in width, and 0.75 units in height, and extrude it. Next, create another rectangle on top of the first one with dimensions 1.27174 units in length, 0.103421 units in width, and 0.75 units in height, ensuring that the widths on the left and right sides are slightly smaller than the first rectangle. Finally, create a vertically opposite isosceles trapezoid on top of the second rectangle, with a base width of 1.33696 units, a top width slightly smaller than the base, a height of 0.75 units, and an angle of 72 degrees. Position the trapezoid such that its width is slightly longer than the width of the second rectangle.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nr1_length:float = 1.40217\nr1_width:float = 0.062517\nr1_height:float = 0.75\n\nr1:cq.Workplane = cq.Workplane(\"XY\").box(r1_length, r1_width, r1_height)\n\nr2_length:float = 1.27174\nr2_width:float = 0.103421\nr2_height:float = 0.75\n\nr2:cq.Workplane = cq.Workplane(\"XY\").box(r2_length, r2_width, r2_height)\n\ntrap_length:float = 1.33696\ntrap_width:float = 0.092231\ntrap_height:float = 0.75\ntrap_angle = 72\n\ntrap_sketch = cq.Sketch().trapezoid(trap_length, trap_width, trap_angle)\ntrap:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .placeSketch(trap_sketch)\n    .extrude(trap_height)\n    .translate((0,0,-trap_height/2))\n)\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .union(r1.translate((0,0,0)))\n    .union(r2.translate((0,r1_width/2 + r2_width/2,0)))\n    .union(trap.translate((0,r1_width/2 + r2_width/2 + trap_width,0)))\n)\n\npart = part.translate((0, -r1_width/2 - r2_width - trap_width, r1_height/2))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.441,
+  "chamfer_distance": 8.703595746575559e-05,
+  "bbox_similarity": 0.9893990976944624,
+  "volume_ratio": 0.9689507124083125,
+  "gt_volume": 0.25745418815874227,
+  "gen_volume": 0.24946041902891705,
+  "gt_bbox": [
+    1.402174,
+    0.26086960000000003,
+    0.75
+  ],
+  "gen_bbox": [
+    1.402169942855835,
+    0.252573995385319,
+    0.75
+  ]
+}

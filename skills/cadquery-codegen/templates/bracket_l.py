@@ -51,7 +51,8 @@ def make_l_profile():
 def make_inner_fillet(body):
     """Applies fillet to the inner L-corner (before gussets)."""
     # Select only the inner corner edge (x=thickness, z=thickness)
-    inner_edge_pt = (thickness, depth / 2, thickness)
+    # Body spans Y=-depth..0 (XZ workplane extrudes in -Y)
+    inner_edge_pt = (thickness, -depth / 2, thickness)
     body = (
         body
         .edges(cq.selectors.NearestToPointSelector(inner_edge_pt))
@@ -100,7 +101,9 @@ def add_gussets(body):
         return body
     gusset_spacing = depth / (n_gussets + 1)
     for i in range(n_gussets):
-        y_pos = gusset_spacing * (i + 1)
+        # Body spans Y=-depth..0 (XZ workplane extrudes in -Y)
+        # Center gussets evenly within that range
+        y_center = -depth + gusset_spacing * (i + 1)
         gusset = (
             cq.Workplane("XZ")
             .moveTo(thickness, thickness)
@@ -108,7 +111,7 @@ def add_gussets(body):
             .lineTo(thickness, thickness + gusset_h)
             .close()
             .extrude(gusset_thick)
-            .translate((0, y_pos - gusset_thick / 2, 0))
+            .translate((0, y_center + gusset_thick / 2, 0))
         )
         body = body.union(gusset)
     return body

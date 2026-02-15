@@ -24,11 +24,14 @@ for attempt in 1..5:
     if result.success:
         bb = bounding_box(result)
         vol = volume(result)
+        n_solids = solid_count(result)
 
-        if bb valid AND vol > 0:
+        if bb valid AND vol > 0 AND n_solids == 1:
             export(STEP + STL)
             print REPORT
             return SUCCESS
+        elif n_solids > 1:
+            code = fix_solid_alignment(code, result)
         else:
             code = fix_geometry(code, bb, vol)
     else:
@@ -92,6 +95,7 @@ OTHERWISE:
 | 13 | Volume = 0 mm3 | Body completely hollowed by cut, shell too thin, or non-solid shape | Verify that `wall > 0`, that shell doesn't hollow everything, that cut doesn't remove the entire body |
 | 14 | Negative or NaN volume | Corrupted BREP shape | Rebuild geometry from scratch with simpler operations |
 | 15 | Export failed (file not created) | `result` is not a valid CadQuery object, or path not writable | Verify that `result` is `cq.Workplane`, not an intermediate value. Verify the directory exists |
+| 21 | `len(result.val().Solids()) > 1` | Multiple disconnected solids — features (ribs, bosses, gussets) not touching the main body. Common when XZ/YZ workplane extrusion direction is misunderstood, or `union()` of non-overlapping parts. | Review coordinate alignment: XZ workplane extrudes in **-Y** (not +Y). Verify all features are within the body's coordinate range. Use `result.val().Solids()` to identify which solid is smaller (the detached one), then fix its position coordinates. |
 
 ### 2.4 Pattern Errors (structural code)
 
@@ -140,7 +144,13 @@ ERROR RECEIVED
 |   +-- pip install cadquery (fix #10)
 |
 +-- No catalog match?
-    +-- Manually analyze traceback, apply specific fix
+|   +-- Manually analyze traceback, apply specific fix
+|
++-- Post-execution: len(result.val().Solids()) > 1?
+    +-- Multiple disconnected solids detected (error #21)
+    +-- Diagnose: print BB of each solid to identify detached feature
+    +-- Most common cause: XZ workplane extrusion in -Y direction
+    +-- Fix: align feature coordinates within body's coordinate range
 ```
 
 ---
@@ -152,6 +162,7 @@ After a successful validation, ALWAYS generate this report:
 ```
 OK Python execution: OK (attempt N/5)
 OK BREP Shape: Valid
+OK Solid count: 1 (single connected solid)
 OK Bounding box: {X:.1f} x {Y:.1f} x {Z:.1f} mm
 Volume: {vol:,.0f} mm3 ({vol/1000:.1f} cm3)
 Surface area: {area:,.0f} mm2
@@ -237,6 +248,28 @@ fill_ratio = vol / bb_vol if bb_vol > 0 else 0
 assert fill_ratio > 0.001, f"Fill ratio too low ({fill_ratio:.4f}) — possible degenerate shape"
 ```
 
+### 5.4 Solid Count Check
+
+```python
+solids = result.val().Solids()
+n_solids = len(solids)
+
+assert n_solids == 1, f"ERROR #21: {n_solids} disconnected solids detected (expected 1)"
+
+# If multiple solids, diagnose which is detached:
+if n_solids > 1:
+    for i, s in enumerate(solids):
+        bb_s = s.BoundingBox()
+        vol_s = s.Volume()
+        print(f"  Solid {i}: BB {bb_s.xlen:.1f}x{bb_s.ylen:.1f}x{bb_s.zlen:.1f} mm, vol={vol_s:.0f} mm3")
+    print("  -> The smallest solid is likely a detached feature. Fix its coordinates.")
+```
+
+**Common causes of disconnected solids:**
+1. **XZ workplane extrusion direction**: `Workplane("XZ").extrude(d)` goes in -Y, not +Y. Features positioned at positive Y float in space.
+2. **Union of non-touching parts**: `body.union(feature)` succeeds silently even when parts don't overlap, creating 2 separate solids inside a compound shape.
+3. **Incorrect translate coordinates**: After computing feature positions, verify they fall within the body's bounding box range.
+
 ### 5.3 Printability Check
 
 ```python
@@ -305,6 +338,7 @@ Before declaring the model valid and delivering to the user:
 - [ ] Bounding box dimensions < 500mm on all axes
 - [ ] Volume > 0 mm3
 - [ ] Fill ratio > 0.001 (volume / bb_volume)
+- [ ] Single connected solid (`len(result.val().Solids()) == 1`) — no floating parts
 - [ ] .step file exported and verified to exist
 - [ ] .stl file exported and verified to exist
 - [ ] No `try: except: pass` in final code

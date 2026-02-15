@@ -1,0 +1,26 @@
+{
+  "id": "00983173",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a square with dimensions 1.3125 inches by 1.3125 inches and extrude it to a height of 0.0625 inches. Then, create four tiny circular holes, each with a diameter of 0.05 inches, positioning each one near a corner of the square. Next, create a hollow cylinder with an outer diameter of 1 inch and an inner diameter of 0.9375 inches, and extrude it to a height of 0.6875 inches. Position this cylinder so that it intersects the square in the middle and extends through it. The entire assembly should be translated slightly in the Z-axis by approximately 0.03125 inches.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength = 1.3125\nwidth = 1.3125\nheight = 0.0625\ndiameter = 1\nhole_diameter = diameter - 0.03125*2\nextrude = 0.6875\nz_offset = 0.025308\n\npart = (\n    cq.Workplane(\"XY\")\n    .box(length, width, height)\n    .faces(\"Z\")\n    .tag(\"top_plate\")\n    .workplane(offset=0)\n    .center(0,0)\n    .circle(diameter/2)\n    .extrude(extrude)\n    .faces(\">Z\")\n    .hole(hole_diameter)\n    .faces(tag=\"top_plate\")\n    .edges()\n    .toPending()\n    .offset2D(-.05)\n    .vertices()\n    .hole(0.05)\n).translate((0,0,z_offset+0.005942))\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.481,
+  "chamfer_distance": 0.0001077072289244952,
+  "bbox_similarity": 1.0,
+  "volume_ratio": 1.0008779036786004,
+  "gt_volume": 0.1293076436669518,
+  "gen_volume": 0.12942116332299816,
+  "gt_bbox": [
+    1.3125,
+    1.3125,
+    0.75
+  ],
+  "gen_bbox": [
+    1.3125,
+    1.3125,
+    0.75
+  ]
+}

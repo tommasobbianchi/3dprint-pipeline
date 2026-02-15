@@ -1,0 +1,26 @@
+{
+  "id": "00037276",
+  "category_semantic": "Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create an object that resembles a taut bike chain. Begin by sketching two circles: one large with a diameter of 0.485133 units and one small with a diameter of 0.157385 units. Position these circles so that they are separated by a distance approximately equal to the diameter of the larger circle, which is calculated as the difference between the total length (0.993343 units) and the sum of the radii of the two circles. Connect these circles with two lines that are tangent to both circles to form a closed shape. Finally, extrude this shape by a width of 0.243343 units to create the 3D object.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlg_diameter:float = 0.485133\nsm_diameter:float = 0.157385\nlength:float = 0.993343 - lg_diameter/2 - sm_diameter/2\nwidth:float = 0.243343\n\nresult:cq.Sketch = (\n    cq.Sketch()\n    .push([(length/2, 0)])\n    .circle(lg_diameter/2)\n    .push([(-length/2, 0)])\n    .circle(sm_diameter/2)\n    .wires()\n    .hull()\n)\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .placeSketch(result)\n    .extrude(width)\n)\n\npart = part.rotate((1,0,0),(0,0,0), 90).translate((-length/2,0,0)).rotate((0,0,1),(0,0,0),180)\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.464,
+  "chamfer_distance": 6.154746049658203e-05,
+  "bbox_similarity": 0.9999211766392987,
+  "volume_ratio": 0.9944376765652119,
+  "gt_volume": 0.07939384236735171,
+  "gen_volume": 0.07895222813737392,
+  "gt_bbox": [
+    0.9933429,
+    0.24334290000000072,
+    0.4851328
+  ],
+  "gen_bbox": [
+    0.9931113570928574,
+    0.2433429956436158,
+    0.4851313531398773
+  ]
+}

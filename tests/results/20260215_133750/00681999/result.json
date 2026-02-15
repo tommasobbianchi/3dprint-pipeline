@@ -1,0 +1,26 @@
+{
+  "id": "00681999",
+  "category_semantic": "Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to generate a CAD model for a 3D object. Start by creating a large rectangle with a height of 0.5 units and a width of 0.75 units. Then, create a square cutout that is 0.25 units on each side, which is approximately 1/3rd the size of the rectangle's width. Position this square cutout such that its top edge aligns with the center of the top edge of the rectangle, and it extends downward to about the center of the rectangle. Finally, extrude the remaining shape to form the final 3D object with a depth of 0.25 units.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 0.75\nwidth:float = 0.25\nheight:float = 0.5\n\ndim:float = 0.25\n\ncube:cq.Workplane = cq.Workplane(\"XY\").box(dim,dim,dim)\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\").box(length, width, height)\n    .cut(cube.translate((0,0,dim/2)))\n)\n\npart = part.translate((-length/2,-width/2,height/2))\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.416,
+  "chamfer_distance": 9.970578976973996e-05,
+  "bbox_similarity": 0.9999999999999999,
+  "volume_ratio": 1.000000000000001,
+  "gt_volume": 0.07812499999999992,
+  "gen_volume": 0.078125,
+  "gt_bbox": [
+    0.7500000000000003,
+    0.25,
+    0.5
+  ],
+  "gen_bbox": [
+    0.75,
+    0.25,
+    0.5
+  ]
+}

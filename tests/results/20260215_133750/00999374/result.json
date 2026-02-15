@@ -1,0 +1,26 @@
+{
+  "id": "00999374",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a complex 3D object that resembles a shovel excavator. Begin by creating a sketch of an irregular rhombus using the following points: [(-0.215997, -0.071707), (0.283196/2 - 0.086266, -0.571139/2 + 0.128415), (0.283196/2 + 0.154673, 0.571139/2 - 0.103869), (0.283196/3 - 0.094331, 0.571139 - 0.45031)]. Extrude this sketch by a height of 0.493701 to form the main body of the excavator. Next, create a rectangular prism with dimensions 0.1323 by 0.78659 by 0.203642. Rotate this prism by -41.7 degrees around the Z-axis and translate it to the position (0.223543, -0.361526, 0.301748). Attach this rectangular prism to the center of one of the extruded edges on the rhombus to complete the model.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nfrom typing import List,Tuple\n\npts = [\n    (-0.215997 , -0.071707),\n    ((0.283196/2)-0.086266, (-0.571139/2)+0.128415),\n    ((0.283196/2)+0.154673, (0.571139/2)-0.103869),\n    ((0.283196/3)-0.094331, (0.571139)-0.45031)\n]\n\nextrude = 0.493701\n\npick = (\n    cq.Workplane(\"XY\")\n    .polyline(pts)\n    .close()\n    .extrude(extrude)\n)\n\nhandle = cq.Workplane(\"XY\").box( 0.1323,0.78659, 0.203642).rotate((0,0,1),(0,0,0),-41.7).translate((0.223543 ,-0.361526,0.301748))\n\npart = pick.union(handle)\n\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.431,
+  "chamfer_distance": 4.98223190058954e-05,
+  "bbox_similarity": 0.9997230747552116,
+  "volume_ratio": 1.0009312440267295,
+  "gt_volume": 0.057349178923005666,
+  "gen_volume": 0.057402585003315555,
+  "gt_bbox": [
+    0.75,
+    0.8809524,
+    0.493701
+  ],
+  "gen_bbox": [
+    0.7505619078874588,
+    0.8808805644512177,
+    0.4937010109424591
+  ]
+}

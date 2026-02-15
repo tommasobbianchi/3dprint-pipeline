@@ -1,0 +1,26 @@
+{
+  "id": "00037135",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a bench by sketching a shape resembling the letter 'h' on the X-Y axis using specific points. The points for the polyline are [(-0.05430806, 0.05735744), (-0.05430806, -0.05851911), (-0.04704762, -0.05851911), (-0.0383351, -0.00217813), (0.00232334, -0.00217813), (0.0116167, -0.06200412), (0.01742505, -0.06200412), (0.01452087, 0.01030982), (-0.02875133, 0.01030982), (-0.0450147, 0.05735744), (-0.05430806, 0.05735744)]. After creating the polyline, close it to form a loop and extrude this sketch along the Z-axis by 0.1016 meters to form the basic shape of the bench. Finally, scale the entire object by a factor of 7.38186180173805, and rotate it first by -90 degrees around the X-axis, and then by -90 degrees around the Z-axis to position it correctly.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nfrom typing import List,Tuple\n\npts:List[Tuple[float, float]] = [\n    (-0.05430806, 0.05735744),\n    (-0.05430806, -0.05851911),\n    (-0.04704762, -0.05851911),\n    (-0.0383351, -0.00217813),\n    (0.00232334, -0.00217813),\n    (0.0116167, -0.06200412),\n    (0.01742505, -0.06200412),\n    (0.01452087, 0.01030982),\n    (-0.02875133, 0.01030982),\n    (-0.0450147, 0.05735744),\n    (-0.05430806, 0.05735744)\n]\n\nbench:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .polyline(pts)\n    .close()\n    .extrude(0.10160000000000001)\n)\n\nbench = bench.val().scale(7.38186180173805) #type:ignore\n\npart = bench.rotate((1,0,0),(0,0,0),-90).rotate((0,0,1),(0,0,0),-90)\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.419,
+  "chamfer_distance": 0.0001125554200453482,
+  "bbox_similarity": 0.9999961980658474,
+  "volume_ratio": 0.9999885261799287,
+  "gt_volume": 0.11813571268745504,
+  "gen_volume": 0.11813435721954367,
+  "gt_bbox": [
+    0.75,
+    0.5295259,
+    0.8811139
+  ],
+  "gen_bbox": [
+    0.7499971389770509,
+    0.5295238941907883,
+    0.8811105489730835
+  ]
+}

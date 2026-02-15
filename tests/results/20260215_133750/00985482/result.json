@@ -1,0 +1,26 @@
+{
+  "id": "00985482",
+  "category_semantic": "Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a 3D object resembling a trapezoid with a trapezoidal hole in it. Begin by defining a trapezoid with specific dimensions: a length of 0.75 units, a width of 0.340821 units, and an extrusion height of 0.031444 units. The trapezoid should have a right margin of 0.16366 units and a left margin of 0.117823 units. Use these dimensions to sketch the trapezoid shape and then extrude this sketch to form the solid trapezoid. Next, create a trapezoidal hole within the first trapezoid. The hole should be slightly smaller, with an offset of 0.047166 units from the edges of the original trapezoid. Extrude this hole through the trapezoid to create the final 3D object with a trapezoidal recess.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nfrom typing import List,Tuple\n\nlength:float = 0.75\nwidth:float = 0.340821\nextrude:float = 0.031444\nframe_size:float = 0.047166\nright_margin:float = 0.16366\nleft_margin:float = 0.17824 - 0.060417\n\npts:List[Tuple[float, float]] = [\n    (0,0),\n    (length,0),\n    (length-right_margin,width),\n    (0+left_margin,width)\n    \n]\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .polyline(pts)\n    .close()\n    .extrude(extrude)\n    .faces(\"-Z\")\n    .edges()\n    .toPending()\n    .offset2D(-frame_size)\n    .extrude(extrude, combine=\"cut\")\n)\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.382,
+  "chamfer_distance": 2.5199172608739355e-05,
+  "bbox_similarity": 0.9999986378195108,
+  "volume_ratio": 0.9999953213772107,
+  "gt_volume": 0.002599500021217936,
+  "gen_volume": 0.002599487859137896,
+  "gt_bbox": [
+    0.75,
+    0.3408206,
+    0.03144409
+  ],
+  "gen_bbox": [
+    0.75,
+    0.3408209979534149,
+    0.0314439982175827
+  ]
+}

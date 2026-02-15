@@ -1,0 +1,26 @@
+{
+  "id": "00520974",
+  "category_semantic": "Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a square with each side measuring 0.25 units and extrude it to a length of 0.5 units.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 0.75\nwidth:float = 0.25\nheight:float = 0.25\n\nbase:cq.Workplane = cq.Workplane(\"XY\").box(length, width, height)\npart:cq.Workplane = base.union(base.rotate((0,1,0),(0,0,0),90).translate((0,0,length/2+height/2)))\n\npart = part.translate((width/2, -width/2, -height/2))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.4,
+  "chamfer_distance": 6.266707943192255e-05,
+  "bbox_similarity": 0.9999999999999993,
+  "volume_ratio": 0.9999999999999999,
+  "gt_volume": 0.09375000000000001,
+  "gen_volume": 0.09375,
+  "gt_bbox": [
+    0.75,
+    0.2500000000000005,
+    1.0
+  ],
+  "gen_bbox": [
+    0.75,
+    0.25,
+    1.0
+  ]
+}

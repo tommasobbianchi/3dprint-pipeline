@@ -1,0 +1,26 @@
+{
+  "id": "00520402",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a long, hollow cylinder with a height of 0.75 units, an outer diameter of 0.078575 units, and an inner diameter of 0.058318 units. After creating the cylinder, extrude it along its length. Then, cut a semi-circular shape with a diameter of 0.078654 units from the middle of the cylinder. Rotate and position the cut to achieve the desired shape and orientation.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nheight:float = 0.75\nouter_diameter:float = 0.078575\ninner_diameter:float = 0.058318\n\nellipse_diameter:float = 0.078654\n\ncylinder:cq.Workplane = cq.Workplane(\"XY\").cylinder(height, outer_diameter/2)\ninner_cylinder:cq.Workplane = cq.Workplane(\"XY\").cylinder(height, inner_diameter/2)\n\nellipse:cq.Workplane = cq.Workplane().cylinder(1, ellipse_diameter/2).rotate((0,1,0),(0,0,0),90)\n\npart:cq.Workplane = (\n    cylinder\n    .cut(inner_cylinder)\n    .cut(ellipse.translate((1/2,-.002,.001867)))\n    .translate((0,0,height/2))\n)\n\npart = part.rotate((0,0,1),(0,0,0),-90)\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.53,
+  "chamfer_distance": 3.512403064320388e-05,
+  "bbox_similarity": 0.9968790768315552,
+  "volume_ratio": 0.9910713662589634,
+  "gt_volume": 0.0015785836779315147,
+  "gen_volume": 0.0015644890824416857,
+  "gt_bbox": [
+    0.07875,
+    0.07875,
+    0.75
+  ],
+  "gen_bbox": [
+    0.07849747687578201,
+    0.07826520502567291,
+    0.75
+  ]
+}

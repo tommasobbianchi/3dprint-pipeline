@@ -1,0 +1,26 @@
+{
+  "id": "00009823",
+  "category_semantic": "Simple",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a 3D hexagonal prism with 6 sides, each side having a length of 1.5 units, and an extrusion height of 0.016238 units.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nsides:int = 6\nlength:float = 1.5\nextrude:float = 0.016238\n\npart:cq.Workplane = cq.Workplane(\"XY\").polygon(sides, length).extrude(extrude)\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.387,
+  "chamfer_distance": 4.635100561008376e-05,
+  "bbox_similarity": 0.9999995465996753,
+  "volume_ratio": 1.0000011332004264,
+  "gt_volume": 0.023730475849690503,
+  "gen_volume": 0.023730502741075854,
+  "gt_bbox": [
+    1.5,
+    1.2990382,
+    0.016237980000000037
+  ],
+  "gen_bbox": [
+    1.5,
+    1.299038052558899,
+    0.016238000243902206
+  ]
+}

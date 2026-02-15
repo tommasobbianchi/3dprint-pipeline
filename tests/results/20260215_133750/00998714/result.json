@@ -1,0 +1,26 @@
+{
+  "id": "00998714",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a triangular 3D object with specific dimensions. First, draw a sketch of an equilateral triangle with each side measuring 0.929516 units, pointing downwards. Next, cut out a semicircle from the bottom corner of the triangle, where the diameter of this semicircular cutout should be approximately 2/3rd of the length of each side of the triangle, which is about 0.619677 units. Finally, extrude this sketch to a height of 0.3 units to create a 3D object.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nfrom typing import List,Tuple\n\nlength:float = 0.929516\nwidth:float = 0.54 \nheight:float = 0.3\ntop_length:float = 1.5\n\ntop_x:float = (length - top_length)/2\n\npoints:List[Tuple[float, float]] = [\n    (0, 0),\n    (length, 0),\n    (top_x + top_length, width),\n    (top_x, width),\n]\n\nwork:cq.Workplane = (\n    cq.Workplane(\"XZ\")\n    .center(-length/2,-width/2)\n    .polyline(points).close()\n)\n\npart:cq.Workplane = work.extrude(height).translate((0,height/2,width/2+0.12))\n\nradius = (length/2)+0.014\n\nellipse = cq.Workplane(\"XZ\").circle(radius).extrude(height).translate((0,height/2,))\npart = part.cut(ellipse.translate((0,0,width+0.12-radius-0.18)))\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.434,
+  "chamfer_distance": 4.844160244025674e-05,
+  "bbox_similarity": 0.9999999689099229,
+  "volume_ratio": 0.9979738762787748,
+  "gt_volume": 0.12282557223990449,
+  "gen_volume": 0.12257671243441616,
+  "gt_bbox": [
+    1.5,
+    0.3,
+    0.54
+  ],
+  "gen_bbox": [
+    1.5,
+    0.30000001192092896,
+    0.5400000289082527
+  ]
+}

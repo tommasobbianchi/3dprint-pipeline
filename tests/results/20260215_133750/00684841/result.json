@@ -1,0 +1,26 @@
+{
+  "id": "00684841",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a curved, 3D object. Begin by creating a sketch of a minor sector of a circle with a radius of 0.18 units on the XZ plane, and then extrude it along a path defined by a rectangle with dimensions 0.0075 by 0.750037 units, centered at (-0.00375, 0) on the XY plane. Next, create a sketch of another sector, centered at the same point, but with a marginally smaller radius of 0.18 units, and place it on the original object. Use this second sketch to negatively extrude through the original object to cut out the inside, leaving a small sector from a hollow cylinder. Adjust the final object's position by translating it to (0.180047, -0.375015, 0) and rotating it 180 degrees around the Z-axis.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\narc:cq.Workplane = cq.Workplane(\"XZ\").radiusArc((0.180047,0.18),0.18)\nrect:cq.Workplane = cq.Workplane(\"XY\").center(-0.0075/2,0).rect(0.0075,0.750037)\n\npart:cq.Workplane = rect.sweep(arc).translate((0,0,0)).rotate((0,0,1),(0,0,0),180)\npart = part.translate((0.180047,-0.75003/2,0))\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.38,
+  "chamfer_distance": 4.475080635307521e-05,
+  "bbox_similarity": 0.9998965221260127,
+  "volume_ratio": 1.0042610645287118,
+  "gt_volume": 0.0016168949724315023,
+  "gen_volume": 0.0016237846662451826,
+  "gt_bbox": [
+    0.1875,
+    0.7500000000000002,
+    0.18750000000000003
+  ],
+  "gen_bbox": [
+    0.18754895685151496,
+    0.7500369978104118,
+    0.1875
+  ]
+}

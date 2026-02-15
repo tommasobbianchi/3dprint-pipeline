@@ -1,0 +1,26 @@
+{
+  "id": "00986814",
+  "category_semantic": "Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a 3D object that resembles a rectangle with dimensions of length 0.25 units, width 0.75 units, and height 0.02 units, with two small cylinders each having a diameter of 0.07 units and a height of 0.04 units placed on one side. Begin by creating a sketch of the rectangle and extrude it to the specified height. Then, draw two small circles on one end of the rectangle, ensuring they are next to each other and extrude these circles upwards by the cylinder's height to form two small cylinders on the rectangle.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 0.25\nwidth:float = 0.75\nheight:float = 0.02\ndiameter:float = 0.07\ncylinder_height:float = 0.04\npadding:float = 0\nbottom_padding:float = 0.005\nside_padding:float = 0.0275\n\ncylinder:cq.Workplane = cq.Workplane(\"XY\").cylinder(cylinder_height,diameter/2)\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .box(length, width, height)\n    .union(cylinder.translate((\n        length/2-diameter/2-side_padding,\n        width/2-diameter/2-bottom_padding,\n        height/2+cylinder_height/2)\n    ))\n    .union(cylinder.translate((\n        -(length/2-diameter/2-side_padding),\n        width/2-diameter/2-bottom_padding,\n        height/2+cylinder_height/2)\n    ))\n)\n\npart = part.translate((length/2,width/2,height/2))\n\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.427,
+  "chamfer_distance": 4.295269990658129e-05,
+  "bbox_similarity": 0.9999999925494194,
+  "volume_ratio": 0.9993570614509596,
+  "gt_volume": 0.004056315551073991,
+  "gen_volume": 0.004053707589439133,
+  "gt_bbox": [
+    0.25,
+    0.75,
+    0.06
+  ],
+  "gen_bbox": [
+    0.25,
+    0.75,
+    0.05999999865889549
+  ]
+}

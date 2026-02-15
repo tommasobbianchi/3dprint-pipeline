@@ -1,0 +1,26 @@
+{
+  "id": "00670105",
+  "category_semantic": "Moderate",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a pentagonal shape where the lower part of the pentagon is rectangular with a height of 0.2727275 units and a length of 0.477273 units. The top part of the pentagon should be a triangle with a base length of 0.204545 units. Then, extrude this pentagonal shape to create a pentagonal prism with a width of 0.75 units.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nfrom typing import List,Tuple\n\nheight:float = 0.545455/2\nlength:float = 0.477273\ntop_length:float = 0.204545\nwidth:float = 0.75\n\npts:List[Tuple[float, float]] = [\n    (0,0),\n    (0, height),\n    (top_length, height),\n    (length, 0)\n]\n\nangle:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .polyline(pts)\n    .close()\n    .extrude(width)\n)\n\npart:cq.Workplane = angle.union(angle.rotate((1,0,0),(0,0,0),180).translate((0,0,width)))\n\npart = part.rotate((0,1,0),(0,0,0),90).rotate((0,0,1),(0,0,0),180)\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.396,
+  "chamfer_distance": 9.773773360576257e-05,
+  "bbox_similarity": 0.9999995677239428,
+  "volume_ratio": 1.000000391893471,
+  "gt_volume": 0.139462827582645,
+  "gen_volume": 0.1394628822372166,
+  "gt_bbox": [
+    0.75,
+    0.5454546,
+    0.4772727
+  ],
+  "gen_bbox": [
+    0.7500000000000001,
+    0.5454549789428711,
+    0.47727298736572266
+  ]
+}

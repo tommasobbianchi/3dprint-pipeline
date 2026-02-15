@@ -1,0 +1,26 @@
+{
+  "id": "00672804",
+  "category_semantic": "Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a square-shaped object with specific dimensions. First, draw a sketch of a square with a length and width of 1.5 units each, and extrude it to a height of 0.1125 units. Next, create a very small hole in the center of the square with a diameter of 0.15 units.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 1.5\nwidth:float = 1.5\nheight:float = 0.1125\ndiameter:float = 0.15\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .box(length, width, height)\n    .cylinder(height, diameter/2, combine=\"cut\")\n)\n\npart:cq.Workplane = part.translate((0,0,height/2))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.392,
+  "chamfer_distance": 7.223280066310824e-05,
+  "bbox_similarity": 0.9999999911696821,
+  "volume_ratio": 0.99998243287513,
+  "gt_volume": 0.25114703870180805,
+  "gen_volume": 0.25114262677041843,
+  "gt_bbox": [
+    1.5,
+    1.5,
+    0.11250000000000004
+  ],
+  "gen_bbox": [
+    1.5,
+    1.5,
+    0.11249999701976776
+  ]
+}

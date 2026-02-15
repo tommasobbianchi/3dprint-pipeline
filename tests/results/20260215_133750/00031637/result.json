@@ -1,0 +1,26 @@
+{
+  "id": "00031637",
+  "category_semantic": "Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a long rectangular prism with dimensions of length 1.05964 units, width 0.56859 units, and height 0.26362 units. Then, cut out a smaller rectangular prism from the right side of the original shape. This cut-out should have the same width as the original, a length that is 1/4th of the original length (approximately 0.206758 units), and a height that is 3/4th of the original height (approximately 0.186082 units).",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 1.05964\nwidth:float = 0.56859\nheight:float =  0.26362\n\nrec:cq.Workplane = cq.Workplane(\"XY\").box(length, width, height)\n\ncut_length:float = 0.206758\ncut_height:float = 0.186082\ncut_rec:cq.Workplane = cq.Workplane(\"XY\").box(cut_length, width, cut_height)\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .union(rec)\n    .cut(cut_rec.translate((-length/2 + cut_length/2, 0, height/2 - cut_height/2)))\n)\n\npart = part.translate((-0.220185, 0.058181, height/2))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.408,
+  "chamfer_distance": 8.29549632204959e-05,
+  "bbox_similarity": 0.999992032907439,
+  "volume_ratio": 1.000026994980959,
+  "gt_volume": 0.1369516396441516,
+  "gen_volume": 0.1369553366510561,
+  "gt_bbox": [
+    1.0596363,
+    0.5685853000000001,
+    0.2636168
+  ],
+  "gen_bbox": [
+    1.0596400201320648,
+    0.5685900151729584,
+    0.263619989156723
+  ]
+}

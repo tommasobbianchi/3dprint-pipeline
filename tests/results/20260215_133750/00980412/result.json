@@ -1,0 +1,26 @@
+{
+  "id": "00980412",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a 3D shape that resembles a right-angled triangular rack used in a pool game, where the height of the triangle is more than twice its base. Start by creating a hollow right-angled triangle sketch with a base length of 0.037173 units and a height of 0.759401 units. Then, extrude this sketch to a thickness of 0.015931 units to form the 3D object.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nb_length:float = 0.037173\nb_width:float = 0.191178\nb_height:float = 0.015931\ns_height:float = 0.759401\nbase:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .box(b_length, b_width ,b_height)\n)\n\np_length:float = b_length\np_width:float = .015931\np_height:float = .764712\nplank:cq.Workplane = cq.Workplane(\"XY\").box(p_length, p_width, p_height)\n\npart:cq.Workplane = (\n    base\n    .faces(\"Z\")\n    .workplane(offset = -b_height)\n    .center(0,b_width/2-b_height/2)\n    .rect(b_length,b_height)\n    .extrude(s_height)\n).add(plank.translate((0,-p_width/2,p_height/2)).rotate((1,0,0),(0,0,0),12).translate((0,-b_width/2+0.0173,b_height/2)))\n\npart = part.translate((b_length/2+0.000301-0.00031,0.000301,-b_height/2-0.001009))\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.396,
+  "chamfer_distance": 1.924121509354724e-05,
+  "bbox_similarity": 0.9998633783552743,
+  "volume_ratio": 0.0,
+  "gt_volume": 0.0,
+  "gen_volume": 0.00100636637408803,
+  "gt_bbox": [
+    0.03717348,
+    0.19117792,
+    0.76694037
+  ],
+  "gen_bbox": [
+    0.037172998931964685,
+    0.19117800146341324,
+    0.7672444600611925
+  ]
+}

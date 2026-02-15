@@ -1,0 +1,26 @@
+{
+  "id": "00004596",
+  "category_semantic": "Moderate",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a long hollow cylinder with a height of 1.5 units, an outer diameter of 0.75 units, and an inner hole diameter of 0.3125 units. The cylinder should be oriented horizontally.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nheight:float = 1.5\ndiameter:float = 0.75\nhole_diameter:float = 0.3125\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .cylinder(height, diameter/2)\n    .faces(\">Z\")\n    .hole(hole_diameter, height)\n)\n\npart = part.rotate((0, 0, 0),(0, 1, 0), -90)\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.399,
+  "chamfer_distance": 0.00010890390908679465,
+  "bbox_similarity": 0.9998963938819038,
+  "volume_ratio": 1.0047327773627408,
+  "gt_volume": 0.5448550713424859,
+  "gen_volume": 0.5474337490901101,
+  "gt_bbox": [
+    1.5,
+    0.75,
+    0.75
+  ],
+  "gen_bbox": [
+    1.5,
+    0.7497668862342834,
+    0.75
+  ]
+}

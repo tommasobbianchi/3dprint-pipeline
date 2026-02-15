@@ -1,0 +1,26 @@
+{
+  "id": "00681547",
+  "category_semantic": "Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a 3D model of an irregular hexagonal tile. Begin by sketching a rectangle with dimensions 0.043025 units in length, 0.985934 units in width, and then cut off the top two corners to form an irregular hexagon. The cuts should be made such that the remaining top edge lengths are equal to the height of the box minus 1.19693 units, and the width of each cut from the side edges should be half of the difference between the box width and 0.563939 units. Finally, extrude this hexagonal sketch by 1.39258 units to form the 3D tile.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nfrom typing import List,Tuple\n\nbox_length:float = 0.043025\nbox_width:float = 0.985934\nbox_height:float = 1.39258\nbox:cq.Workplane = cq.Workplane(\"XY\").box(box_length,box_width,box_height)\n\ncorner_length:float = box_height - 1.19693\ncorner_width:float = (box_width - 0.563939)/2\n\npts:List[Tuple[float, float]] = [\n    (0, 0),\n    (0, corner_width),\n    (corner_length, 0)\n]\n\ncorner:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .polyline(pts)\n    .close()\n    .extrude(box_length)\n    .rotate((0,1,0),(0,0,0),-90)\n    .translate((-box_length/2,-corner_width/2,corner_length/2))\n)\n\npart:cq.Workplane = (\n    box\n    .cut(corner.translate((0,-box_width/2+corner_width/2,box_height/2-corner_length/2)))\n    .cut(corner.translate((0,-box_width/2+corner_width/2,box_height/2-corner_length/2)).rotate((0,0,1),(0,0,0),180))\n)\n\npart = part.rotate((0,1,0),(0,0,0),90).rotate((0,0,1),(0,0,0),-90).translate((0.157289,0.05371,box_length/2))\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.461,
+  "chamfer_distance": 6.300197287032574e-05,
+  "bbox_similarity": 0.9999974546776751,
+  "volume_ratio": 0.9999934377986376,
+  "gt_volume": 0.0572972079236358,
+  "gen_volume": 0.057296831927819904,
+  "gt_bbox": [
+    0.9859336000000001,
+    1.3925832,
+    0.04302521000000004
+  ],
+  "gen_bbox": [
+    0.9859339892864227,
+    1.392579972743988,
+    0.04302499815821655
+  ]
+}

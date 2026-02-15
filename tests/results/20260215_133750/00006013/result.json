@@ -1,0 +1,26 @@
+{
+  "id": "00006013",
+  "category_semantic": "Simple",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a rectangle with a length of 0.42 units and a width of 0.75 units, and then extrude it by 0.015 units.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 0.42\nwidth:float = 0.75\nextrude:float = 0.015\n\npart = cq.Workplane(\"XY\").rect(length, width).extrude(extrude)\n\npart = part.translate((length/2, width/2, -extrude)).rotate((0, 1, 0),(0, 0, 0), 90)\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.391,
+  "chamfer_distance": 5.7507509917705354e-05,
+  "bbox_similarity": 0.9999999821422592,
+  "volume_ratio": 0.9999999464267768,
+  "gt_volume": 0.004725,
+  "gen_volume": 0.004724999746866521,
+  "gt_bbox": [
+    0.015,
+    0.75,
+    0.42000000000000004
+  ],
+  "gen_bbox": [
+    0.014999999664723873,
+    0.75,
+    0.41999998688697815
+  ]
+}

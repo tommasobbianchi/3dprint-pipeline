@@ -1,0 +1,26 @@
+{
+  "id": "00032961",
+  "category_semantic": "Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create an object that resembles a corner brace plate connector. Start by sketching a rectangle with a length of 1.49973 units and a width of 0.16071 units, and add semi-circular ends to it. Then extrude this shape by 0.05357 units. Next, create two holes with a diameter of 0.080357 units, positioning each hole near the center of one of the semi-circular ends.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 1.49973\nwidth:float = 0.16071\nextrude:float = 0.05357\nslot:cq.Workplane = cq.Workplane(\"XY\").slot2D(length,width).extrude(extrude)\n\ncut_diameter:float = 0.080357\ncut_hole:cq.Workplane = cq.Workplane(\"XY\").cylinder(extrude, cut_diameter/2)\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .union(slot.translate((0, 0, -extrude/2)))\n    .cut(cut_hole.translate(((length/2 - width/2), 0, 0)))\n    .cut(cut_hole.translate((-(length/2 - width/2), 0, 0)))\n)\n\npart = part.rotate((0,0,1),(0,0,0),90).rotate((1,0,0),(0,0,0),90).translate((0, -extrude/2, 0))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.402,
+  "chamfer_distance": 1.7830407847942258e-05,
+  "bbox_similarity": 0.999981232671043,
+  "volume_ratio": 1.0001764963075426,
+  "gt_volume": 0.012071745670633521,
+  "gen_volume": 0.012073876289169982,
+  "gt_bbox": [
+    0.16071428,
+    0.05357143000000008,
+    1.4997255
+  ],
+  "gen_bbox": [
+    0.16071000695228577,
+    0.053569998592138374,
+    1.4997299909591675
+  ]
+}

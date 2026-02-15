@@ -1,0 +1,26 @@
+{
+  "id": "00984234",
+  "category_semantic": "Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a 3D object. Begin by creating a sketch of a rectangle with dimensions 0.982759 units in length and 0.124138 units in width. Next, cut out two small rectangles from the bottom left and bottom right corners of the sketch, each with a length of 0.444828 units and the same width as the main rectangle. Finally, extrude this entire sketch by 0.827586 units to form the 3D object. Adjust the final object's position by translating it to center it properly with respect to its width and adjust its height by 0.077586 units.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 0.982759\nwidth:float = 0.124138\nheight:float = 0.827586\n\nb_height:float = 0.672414\nb_length:float = 0.444828\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .box(length, width, height)\n    .faces(\"-Z\")\n    .workplane()\n    .rect(b_length,width)\n    .extrude(b_height)\n)\n\n\npart = part.translate((0,width/2,height/2-0.077586))\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.397,
+  "chamfer_distance": 5.538544365246805e-05,
+  "bbox_similarity": 0.9999996025631372,
+  "volume_ratio": 1.0000012268990135,
+  "gt_volume": 0.13809418751483885,
+  "gen_volume": 0.13809435694246128,
+  "gt_bbox": [
+    0.9827586,
+    0.12413790000000047,
+    1.5
+  ],
+  "gen_bbox": [
+    0.9827589988708496,
+    0.1241379976272583,
+    1.5
+  ]
+}

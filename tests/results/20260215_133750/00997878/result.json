@@ -1,0 +1,26 @@
+{
+  "id": "00997878",
+  "category_semantic": "Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create an object resembling a cinder block. Start by sketching a rectangle with a length of 0.448905 units and a width of 0.75 units, where the width is approximately twice the height. Next, create two symmetrical rectangular holes within the rectangle. Each hole should have rounded corners and dimensions of approximately 0.328467 units in length and 0.229927 units in width. The holes are symmetrically positioned about the vertical centerline of the rectangle, with a space of 0.104015 units between them. Extrude the sketch to a depth of 0.136861 units, which is about 1/4th the height of the rectangle, to form the 3D cinder block-like object.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 0.448905\nwidth:float = 0.75\nheight:float = 0.136861\n\nbox:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .box(length, width, height)\n)\n\nc_length:float = 0.328467\nc_width:float = 0.229927\nfillet:float = (c_length - 0.29562)/2\n\ncut_box:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .box(c_length,c_width,height)\n    .edges(\"|Z\")\n    .fillet(fillet)\n)\n\nspace:float = 0.104015\n\npart:cq.Workplane = (\n    box\n    .cut(cut_box.translate((0,c_width/2+space/2,0)))\n    .cut(cut_box.translate((0,-c_width/2-space/2,0)))\n)\n\npart = part.translate((length/2,width/2,height/2))\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.464,
+  "chamfer_distance": 7.986957063389489e-05,
+  "bbox_similarity": 0.999999179945326,
+  "volume_ratio": 1.0003696397497446,
+  "gt_volume": 0.02547018029971689,
+  "gen_volume": 0.025479595090788825,
+  "gt_bbox": [
+    0.4489051,
+    0.75,
+    0.1368613
+  ],
+  "gen_bbox": [
+    0.44890499114990234,
+    0.75,
+    0.13686099648475647
+  ]
+}

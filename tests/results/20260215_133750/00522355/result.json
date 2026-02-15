@@ -1,0 +1,26 @@
+{
+  "id": "00522355",
+  "category_semantic": "Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a large hollow cylinder with a height of 0.75 units and an outer diameter of 0.533654 units. The cylinder should have a wall thickness of 0.017308 units. Extrude this cylinder along the Z-axis. Then, create a circle at the bottom of the cylinder to close it off. Next, create a tiny hollow circle in the middle of the bottom circle with a diameter of 0.090144 units and a depth of 0.034616 units.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\ndiameter:float = 0.533654\nheight:float = 0.75\ncut_distance:float = 0.017308\ncut_diameter:float = 0.090144\n\nshelled_cylinder:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .cylinder(height, diameter/2)\n    .faces(\"Z\")\n    .shell(-cut_distance)\n)\n\npart:cq.Workplane = shelled_cylinder.faces(\"-Z\").cylinder(0.017308*2, cut_diameter/2, combine=\"cut\")\n\npart = part.translate((0,0,height/2))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.475,
+  "chamfer_distance": 0.00015588485261709277,
+  "bbox_similarity": 0.9998964246597294,
+  "volume_ratio": 1.0047301678683076,
+  "gt_volume": 0.02420823049788583,
+  "gen_volume": 0.024322739491935513,
+  "gt_bbox": [
+    0.5336538,
+    0.5336538,
+    0.75
+  ],
+  "gen_bbox": [
+    0.533653974533081,
+    0.5334881544113159,
+    0.75
+  ]
+}

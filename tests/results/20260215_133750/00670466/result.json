@@ -1,0 +1,26 @@
+{
+  "id": "00670466",
+  "category_semantic": "Moderate",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a triangular 3D object. Begin by sketching an isosceles triangle where the two angles at the base are close to 90 degrees. The base of the triangle should be approximately 0.150756 units long, and the height from the base to the opposite vertex should be about 1.5 units. Next, extrude this triangle to a height of 0.188445 units to form a three-dimensional object.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nfrom typing import List,Tuple\n\nlength:float = 1.5\nwidth:float = 0.150756\nextrude:float = 0.188445\n\npts:List[Tuple[float, float]] = [\n    (0, 0),\n    (0, width),\n    (length, 0)\n]\npart:cq.Workplane = cq.Workplane(\"XY\").polyline(pts).close().extrude(extrude)\n\npart = part.translate((-length/2, -width/2, -extrude/2)).rotate((0,0,1),(0,0,0),90)\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.369,
+  "chamfer_distance": 2.241843437211452e-05,
+  "bbox_similarity": 0.9999985783953076,
+  "volume_ratio": 1.0000042648186245,
+  "gt_volume": 0.021306820361496,
+  "gen_volume": 0.021306911231220305,
+  "gt_bbox": [
+    0.15075568,
+    1.5,
+    0.1884446
+  ],
+  "gen_bbox": [
+    0.15075600147247314,
+    1.5,
+    0.18844500184059143
+  ]
+}

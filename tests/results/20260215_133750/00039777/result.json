@@ -1,0 +1,26 @@
+{
+  "id": "00039777",
+  "category_semantic": "Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a pentagon-like object with specific dimensions and extrude it. The pentagon-like shape should have a height of 0.103604 units and a length of 0.725228 units. Each of the top two edges of the pentagon should be broken down into two edges at an obtuse angle very close to 180 degrees. The coordinates for the vertices of the pentagon-like shape are defined as follows: (0, 0), (0.725228, 0), (0.932436, 0.725228/4 + 0.0155), (1.05676, 0.725228/2), (0.932436, 0.725228 - (0.725228/4 + 0.0155)), (0.725228, 0.725228), and (0, 0.725228). The object should be extruded to the specified height and then translated and rotated for proper orientation.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nfrom typing import List, Tuple\n\nheight:float = 0.103604\nlength:float = 0.725228\n\npoints:List[Tuple[float, float]] = [\n    (0, 0),\n    (length, 0),\n    (0.932436, length/4 + 0.0155),\n    (1.05676, length/2),\n    (0.932436, length - (length/4 + 0.0155)),\n    (0.725228, length),\n    (0, length)\n]\n\nsketch:cq.Sketch = cq.Sketch().polygon(points)\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .placeSketch(sketch)\n    .extrude(height)\n).translate((-length/2,0,0))\n\npart = part.rotate((0,0,1),(0,0,0),-90).translate((-0.024772,0,0))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.372,
+  "chamfer_distance": 6.16100053216807e-05,
+  "bbox_similarity": 0.9999995580359021,
+  "volume_ratio": 1.0000198219524326,
+  "gt_volume": 0.06796934980351071,
+  "gen_volume": 0.0679706970887294,
+  "gt_bbox": [
+    0.72522817,
+    1.0567611,
+    0.10360400000000003
+  ],
+  "gen_bbox": [
+    0.7252280004322529,
+    1.0567599833011627,
+    0.10360399633646011
+  ]
+}

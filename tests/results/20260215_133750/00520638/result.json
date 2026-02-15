@@ -1,0 +1,26 @@
+{
+  "id": "00520638",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a 3D model of a complex part that includes a base box with dimensions 1.10769 units in length, 0.474725 units in width, and 0.18989 units in height. On top of this base, add a cylindrical shape with a diameter of approximately half the length of the base and a height equal to the width of the base. This cylinder should be positioned such that it partially protrudes from the base. Additionally, include a connector box with the same diameter and half the height of the cylinder, aligned centrally on top of the cylinder.\n\nFurther, subtract an inner cylinder and an inner box from the assembly where the inner cylinder has a diameter of 0.194358 units. The inner box should have dimensions equal to the diameter of the inner cylinder and should be positioned to cut through the center of the cylinder and connector.\n\nFinally, add an arm shaped like a polyline defined by points [(0, 0.316484), (-0.056, 0.483119), (length/2, 0.613244), (length/2, .434708)] and extrude this shape along the width of the base. Rotate and translate the entire assembly to align and position it as required.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nfrom typing import List, Tuple\n\nlength:float = 1.10769\nwidth:float = 0.474725\nheight:float = 0.18989\nbase:cq.Workplane = cq.Workplane(\"XY\").box(length, width, height)\n\ndiameter:float = length / 2\npadding:float = 0.056126 + 0.091513 +0.003033\n\nr_top:cq.Workplane = cq.Workplane(\"XY\").cylinder(width, diameter/2).rotate((1,0,0),(0,0,0),90)\nconnector:cq.Workplane = cq.Workplane(\"XY\").box(diameter, width, diameter/2)\n\ninner_diameter:float = 0.194358\ninner_cylinder:cq.Workplane = cq.Workplane(\"XY\").cylinder(width, inner_diameter/2).rotate((1,0,0),(0,0,0),90)\ninner_box:cq.Workplane = cq.Workplane(\"XY\").box(inner_diameter, width, inner_diameter)\n\npts:List[Tuple[float, float]] = [\n    (0, 0.316484),\n    (-0.056, 0.483119),\n    (length/2, 0.613244),\n    (length/2, .434708)\n]\n\narm:cq.Workplane = cq.Workplane(\"XY\").polyline(pts).close().extrude(width)\n\npart:cq.Workplane = (\n    base\n    .union(r_top.translate((-length/4,0,height/2 + diameter/2 - padding)))\n    .union(connector.translate((-length/4, 0, height/2 + diameter/4 - padding)))\n    .cut(inner_cylinder.translate((-length/2 + diameter/2 -0.033206, 0, height/2 + diameter/2 - padding-0.008798)))\n    .cut(inner_box.translate((-length/2 + diameter/2 -0.033206,0, height/2 + diameter/2 - padding-0.008798 - inner_diameter/2)))\n    .union(arm.rotate((1,0,0),(0,0,0),-90).translate((0, width/2, -height/2)))\n)\n\npart = part.rotate((0,1,0),(0,0,0),-90).translate((-0.658088+0.003033,-width/2,0))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.535,
+  "chamfer_distance": 0.00011857190676833586,
+  "bbox_similarity": 0.9999990098070196,
+  "volume_ratio": 0.9985182463877291,
+  "gt_volume": 0.2140884542089284,
+  "gen_volume": 0.21377122786855884,
+  "gt_bbox": [
+    0.6132441000000001,
+    0.4747252999999999,
+    1.1076924
+  ],
+  "gen_bbox": [
+    0.6132439970970154,
+    0.4747250080108643,
+    1.1076899766921997
+  ]
+}

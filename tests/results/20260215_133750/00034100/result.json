@@ -1,0 +1,26 @@
+{
+  "id": "00034100",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a rectangular block with dimensions 0.47368 units in length, 0.31579 units in width, and 0.75 units in height. Next, position a cylinder with a diameter of 0.196206 units above the midpoint of the rectangle and negatively extrude it through the block to create a circular hole. The top of the cylinder should be positioned 0.146132 units below the top surface of the rectangle. Then, create a thin slit with a width of 0.007895 units extending from the top of the circular hole to the shorter edge of the rectangle. This slit should be positioned such that it appears to have been cut with a wire-cutter, and it should extend through the entire height of the rectangle from the top surface down to a depth of 0.196132 units.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 0.47368\nwidth:float =  0.31579\nheight:float =  0.75\n\nrec:cq.Workplane = cq.Workplane(\"XY\").box(length, width, height)\n\ndiameter:float = 0.196206\ntop_padding:float = 0.146132\ncylinder:cq.Workplane = cq.Workplane(\"XY\").cylinder(width,diameter/2).rotate((1,0,0),(0, 0, 0),90)\n\n\ncut_rec_length:float = 0.007895\ncut_rec_height = top_padding + 0.05\ncut_rec:cq.Workplane = cq.Workplane(\"XY\").box(cut_rec_length, width, cut_rec_height)\n\npart:cq.Workplane = (\n    rec\n    .cut(cylinder.translate((0, 0, height/2 - diameter/2 - top_padding)))\n    .cut(cut_rec.translate((0, 0, height/2 - cut_rec_height/2)))\n)\n\npart = part.translate((0, -width/2, height/2))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.45,
+  "chamfer_distance": 0.00011993844342783459,
+  "bbox_similarity": 0.9999965118883833,
+  "volume_ratio": 1.0007976584707334,
+  "gt_volume": 0.10220985146394106,
+  "gen_volume": 0.10229138001775367,
+  "gt_bbox": [
+    0.4736842,
+    0.3157895000000002,
+    0.75
+  ],
+  "gen_bbox": [
+    0.4736799895763397,
+    0.31578999757766724,
+    0.75
+  ]
+}

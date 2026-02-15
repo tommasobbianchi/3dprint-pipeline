@@ -1,0 +1,26 @@
+{
+  "id": "00670266",
+  "category_semantic": "Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a 3D object that resembles a tag. Begin by sketching a rectangle with dimensions 1.08869 units in length and 0.870954 units in width. Round the top edges of the rectangle with a fillet of 0.217746 units. Then, extrude this shape to a height of 0.108869 units. Centered just below the top edges, incorporate a small circular cutout with a diameter of 0.195965 units, positioned at an offset of 0.228625 units from the left edge.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nlength:float = 1.08869\nwidth:float = 0.870954\nheight:float = 0.108869\ndiameter:float = 0.195965\noffset:float = 0.228625\nfillet_distance:float = 0.217746\n\n\ncylinder:cq.Workplane = cq.Workplane(\"XY\").cylinder(height, diameter/2)\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .box(length, width, height)\n    .cut(cylinder.translate((-length/2+diameter/2+offset,0,0)))\n)\n\npart = part.faces(\"<X\").edges(\"Z\").fillet(fillet_distance)\npart = part.rotate((0,1,0),(0,0,0),-90).translate((height/2,0.037745,0.229328-0.023676))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.392,
+  "chamfer_distance": 7.351110457009547e-05,
+  "bbox_similarity": 0.9999982155272483,
+  "volume_ratio": 1.0002672908076755,
+  "gt_volume": 0.09770662450614943,
+  "gen_volume": 0.09773274058872894,
+  "gt_bbox": [
+    0.1088693,
+    0.8709541000000001,
+    1.0886927
+  ],
+  "gen_bbox": [
+    0.10886900126934057,
+    0.8709539771080017,
+    1.0886900126934052
+  ]
+}

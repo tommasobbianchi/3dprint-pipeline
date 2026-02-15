@@ -1,0 +1,26 @@
+{
+  "id": "00520671",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a cylinder with a diameter of 1.5 units and extrude it to a height of 0.06 units. Next, create a second cylinder with a diameter of 0.75 units in the middle of the first one, and extrude it to a height of 0.375 units. Then, cut off a small rectangle with a length of 0.21 units and a width of 0.45 units from the first cylinder, positioning it on the right side of the second cylinder, ensuring the rectangle is placed with a padding of 0.12 units from the edge of the first cylinder.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nbase_diameter:float = 1.5\nbase_height:float = 0.06\n\ntop_diameter:float = 0.75\ntop_height:float = 0.375\n\nbase:cq.Workplane = cq.Workplane(\"XY\").circle(base_diameter/2).extrude(base_height)\ntop:cq.Workplane = cq.Workplane(\"XY\").circle(top_diameter/2).extrude(top_height) \n\ncut_length:float = 0.21\ncut_width:float = 0.45\ncut_padding:float = 0.12\ncut_rectangle:cq.Workplane = cq.Workplane(\"XY\").box(cut_length, cut_width, base_height)\n\npart:cq.Workplane = (\n    base\n    .union(top.translate((0, 0, base_height)))\n    .cut(cut_rectangle.translate((base_diameter/2 - cut_length/2 - cut_padding,0,base_height/2)))\n)\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.514,
+  "chamfer_distance": 6.157842323651929e-05,
+  "bbox_similarity": 0.9998963920549414,
+  "volume_ratio": 1.0047787713661525,
+  "gt_volume": 0.26465137756212354,
+  "gen_volume": 0.2659160859872302,
+  "gt_bbox": [
+    1.5,
+    1.5,
+    0.435
+  ],
+  "gen_bbox": [
+    1.5,
+    1.499533772468567,
+    0.4350000023841858
+  ]
+}

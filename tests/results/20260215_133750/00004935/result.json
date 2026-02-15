@@ -1,0 +1,26 @@
+{
+  "id": "00004935",
+  "category_semantic": "Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a 3D object consisting of two concentric cylindrical shapes. First, create a larger base cylinder with a diameter of 1.5 units and a height of 0.114796 units by extruding a circle. Then, create a smaller top cylinder with a diameter of 1.17857 units and a height of 0.306123 units. Position the smaller cylinder on top of the larger one by translating it vertically by the height of the base cylinder.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nbase_diameter:float = 1.5\nbase_height:float = 0.114796\n\ntop_diameter:float = 1.17857\ntop_height:float = 0.306123\n\nbase:cq.Workplane = cq.Workplane(\"XY\").circle(base_diameter/2).extrude(base_height)\ntop:cq.Workplane = cq.Workplane(\"XY\").circle(top_diameter/2).extrude(top_height) \n\npart:cq.Workplane = base.union(top.translate((0, 0, base_height)))\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.405,
+  "chamfer_distance": 7.140205551887196e-05,
+  "bbox_similarity": 0.9998959178573762,
+  "volume_ratio": 1.0046784139444995,
+  "gt_volume": 0.5341017290289869,
+  "gen_volume": 0.5366004780058574,
+  "gt_bbox": [
+    1.5,
+    1.5,
+    0.4209184
+  ],
+  "gen_bbox": [
+    1.5,
+    1.499533772468567,
+    0.4209190011024475
+  ]
+}

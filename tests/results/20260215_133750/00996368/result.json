@@ -1,0 +1,26 @@
+{
+  "id": "00996368",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a complex 3D object. Begin by creating a sketch of a rectangle with dimensions 0.399631 units in width and 0.091591 units in height. Next, attach a semi-hexagonal section to the longer edge of the rectangle. The semi-hexagonal section should start at one end of the rectangle and extend 2/3rd of the rectangle's length, with a maximum width of 0.188808 units. Finally, extrude this combined sketch by 0.133054 units to form the 3D object.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nfrom typing import List,Tuple\n\nextrude:float = 0.133054\n\npts:List[Tuple[float,float]] = [\n       (0,0),\n       (0.399631,0),\n       (0.399631,0.091591),\n       (0.399631-0.140768,0.091591),\n       (0.399631-0.140768-0.061622-0.0001,0.188808),\n       (0.399631-0.140768-0.061622-0.098345,0.188808),\n       (0,0.091591)\n]\n\nshape:cq.Workplane = cq.Workplane(\"YZ\").polyline(pts).close().extrude(extrude)\n\npart:cq.Workplane = shape.translate((0,-0.399631-0.350837,-0.091591))\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.366,
+  "chamfer_distance": 7.388289118834494e-05,
+  "bbox_similarity": 0.9996080550050975,
+  "volume_ratio": 1.0011233436182296,
+  "gt_volume": 0.007171682519316051,
+  "gen_volume": 0.007179738783106093,
+  "gt_bbox": [
+    0.1330544,
+    0.39916309999999994,
+    0.18880788999999998
+  ],
+  "gen_bbox": [
+    0.1330540031194687,
+    0.3996310234069824,
+    0.18880800157785416
+  ]
+}

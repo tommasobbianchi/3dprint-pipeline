@@ -1,0 +1,26 @@
+{
+  "id": "00524912",
+  "category_semantic": "Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create two perpendicular rectangles resembling a door and its hinge, connected at one edge. The larger rectangle should have dimensions of 0.416808 units in length, 0.033235 units in width, and be extruded to a height of 0.75 units. Position this larger rectangle in the X-Y plane. The smaller rectangle should have dimensions of 0.211685 units in length, 0.065736 units in width, and be extruded to a height of 0.411987 units. This smaller rectangle should be positioned in the Y-Z plane, centered at the same point as the larger rectangle but rotated 90 degrees around the Z-axis. The smaller rectangle should also be translated such that it is connected at one edge to the larger rectangle, with a padding of 0.0065309 units from the base of the larger rectangle. Ensure that the smaller rectangle's length and width are approximately half that of the larger rectangle.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlg_length:float = 0.416808\nlg_width:float = 0.033235\nlg_height:float = 0.75\nlg_box:cq.Workplane = cq.Workplane(\"XY\").box(lg_length, lg_width, lg_height)\n\nsm_length:float = 0.211685\nsm_width:float = 0.065736\nsm_height:float = 0.411987\nsm_box:cq.Workplane = cq.Workplane(\"XY\").box(sm_length,sm_width,sm_height).rotate((0,0,1),(0,0,0),90)\n\n\nwhere_to_find_padding:float = 0.0065309\n\npart:cq.Workplane =(\n    cq.Workplane(\"XY\")\n    .union(lg_box)\n    .union(sm_box.translate((-lg_length/2+sm_width/2,-sm_length/2-lg_width/2,where_to_find_padding)))\n)\n\npart = part.translate((-lg_length/2,lg_width/2,lg_height/2)).rotate((0,0,1),(0,0,0),180)\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.376,
+  "chamfer_distance": 7.176716603566702e-05,
+  "bbox_similarity": 0.9999992197019706,
+  "volume_ratio": 0.9974262458348625,
+  "gt_volume": 0.01616399518582293,
+  "gen_volume": 0.016122393035888156,
+  "gt_bbox": [
+    0.4168078,
+    0.24491955,
+    0.75
+  ],
+  "gen_bbox": [
+    0.41680800914764404,
+    0.24492000043392181,
+    0.75
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "00670274",
+  "category_semantic": "Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a rectangular object with specific dimensions. First, define a rectangle with a length of approximately 0.333015 units and a width of approximately 0.908225 units. The height of the rectangle should be 0.006055 units. Next, create four small square cutouts at each corner of the rectangle. Each cutout should have dimensions of 0.090822 units by 0.090822 units and should be as deep as the height of the rectangle. Ensure that these cutouts are positioned accurately at each corner to subtract from the main rectangle's volume.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 0.242193 + 0.045411*2\nwidth:float = 0.817403 + 0.045411*2\nheight:float = 0.006055\n\ncut_box_dim:float = 0.045411*2\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .box(length, width, height)\n    .edges(\"|Z\").box(cut_box_dim, cut_box_dim,height, combine=\"cut\")\n)\n\npart = part.translate((0.022705,0.295949,height/2))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.46,
+  "chamfer_distance": 3.7474564692822864e-05,
+  "bbox_similarity": 0.9999898364603214,
+  "volume_ratio": 1.0000238355982942,
+  "gt_volume": 0.0017813621701890546,
+  "gen_volume": 0.0017814046300221598,
+  "gt_bbox": [
+    0.333016,
+    0.9082254,
+    0.00605483600000001
+  ],
+  "gen_bbox": [
+    0.33301499485969543,
+    0.9082250148057938,
+    0.006054999772459269
+  ]
+}

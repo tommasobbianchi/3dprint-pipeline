@@ -1,0 +1,26 @@
+{
+  "id": "00003247",
+  "category_semantic": "Simple",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a long rectangular prism with a length of 0.3 units, a width of 0.7 units, and a height of 0.3 units.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 0.3\nwidth:float = 0.7\nheight:float = 0.3\n\npart:cq.Workplane = cq.Workplane(\"XY\").box(length, width, height)\n\npart = part.translate((length/2, -width/2, height/2))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.416,
+  "chamfer_distance": 0.0006270502386456852,
+  "bbox_similarity": 0.9777777459886338,
+  "volume_ratio": 0.9333333916134317,
+  "gt_volume": 0.06749999999999994,
+  "gen_volume": 0.06300000393390658,
+  "gt_bbox": [
+    0.3,
+    0.7500000000000003,
+    0.3
+  ],
+  "gen_bbox": [
+    0.30000001192092896,
+    0.699999988079071,
+    0.30000001192092896
+  ]
+}

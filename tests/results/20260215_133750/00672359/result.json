@@ -1,0 +1,26 @@
+{
+  "id": "00672359",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a 3D object shaped like an irregular rhombus. Begin by creating a sketch of a square with each side measuring 0.32592 units. Next, sketch a right-angle triangle and attach it to the top of the square, ensuring that one of the shorter right-angle edges aligns with the square. The right-angle edges of the triangle should match the length of the square's sides. Finally, extrude this entire sketch by 0.023387 units to form the 3D object.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nfrom typing import List,Tuple\n\nheight:float = 0.32592\nlength:float = 0.75\ntop_length:float = 0.280098\nwidth:float = 0.023387\n\npts:List[Tuple[float, float]] = [\n    (0,0),\n    (0,height),\n    (top_length,height),\n    (length,0)\n]\n\nangle:cq.Workplane = (\n    cq.Workplane(\"ZY\")\n    .polyline(pts)\n    .close()\n    .extrude(width)\n)\n\npart:cq.Workplane = angle.rotate((0,0,1),(0,0,0),180)\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.376,
+  "chamfer_distance": 3.592982414231513e-05,
+  "bbox_similarity": 0.9978673128161764,
+  "volume_ratio": 0.9995202906965616,
+  "gt_volume": 0.003927737339257258,
+  "gen_volume": 0.003925853167114154,
+  "gt_bbox": [
+    0.0233415,
+    0.3273763999999999,
+    0.75
+  ],
+  "gen_bbox": [
+    0.02338699996471405,
+    0.3259199857711792,
+    0.75
+  ]
+}

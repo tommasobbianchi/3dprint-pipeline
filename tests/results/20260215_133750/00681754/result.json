@@ -1,0 +1,26 @@
+{
+  "id": "00681754",
+  "category_semantic": "Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a 3D object that consists of a rectangular block with dimensions of length 1.09115 units, width 1.5 units, and height 0.361568 units. On top of this block, place a cylinder centered on the rectangle. The cylinder should have a diameter of 0.427203 units, which is approximately 1/4th of the rectangle's length, and should be extruded upwards by 0.271176 units. Start by creating a sketch of the rectangle and extruding it to form the block. Then, on the top face of this block, sketch a circle at the center and extrude it to form the cylinder.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 1.09115\nwidth:float = 1.5\nheight:float = 0.361568\ndiameter:float = 0.427203\nextrude:float = 0.271176\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .box(length, width, height)\n    .faces(\"Z\")\n    .workplane()\n    .circle(diameter/2)\n    .extrude(extrude)\n)\n\npart = part.translate((0,0,height/2))\n\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.431,
+  "chamfer_distance": 9.060155109914006e-05,
+  "bbox_similarity": 0.9999995153938747,
+  "volume_ratio": 1.0002878851452595,
+  "gt_volume": 0.6304593788449927,
+  "gen_volume": 0.6306408787348516,
+  "gt_bbox": [
+    1.0911504,
+    1.5,
+    0.6327433
+  ],
+  "gen_bbox": [
+    1.0911500453948975,
+    1.5,
+    0.6327440142631531
+  ]
+}

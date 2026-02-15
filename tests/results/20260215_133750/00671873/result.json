@@ -1,0 +1,26 @@
+{
+  "id": "00671873",
+  "category_semantic": "Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to generate a CAD model for a 3D object that resembles a two-step pedestal with specific dimensions. Start by creating a side profile of the pedestal using two rectangles. The first rectangle, representing the base level, should have dimensions of 0.75 units in length, 0.658737 units in width, and 0.284211 units in height. On top of this, draw a smaller rectangle for the second step with dimensions of 0.347368 units in length, matching the width of the base at 0.658737 units, and a height of 0.135789 units. Ensure that these two rectangles are connected. Finally, extrude this profile to create the 3D model of the two-step pedestal.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nbase_length:float = 0.75\nbase_width:float = 0.658737\nbase_height:float = 0.284211\nbase:cq.Workplane = cq.Workplane(\"XY\").box(base_length,base_width,base_height)\n\ntop_length:float = 0.347368\ntop_width:float = base_width\ntop_height:float = 0.135789\ntop:cq.Workplane = cq.Workplane(\"XY\").box(top_length,top_width,top_height)\n\npart:cq.Workplane = base.union(top.translate((base_length/2-top_length/2,0,base_height/2+top_height/2)))\n\npart = part.translate((base_length/2,0,base_height/2))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.387,
+  "chamfer_distance": 0.00010989591482494028,
+  "bbox_similarity": 0.9999998864645223,
+  "volume_ratio": 1.0000008726395997,
+  "gt_volume": 0.17148688030724438,
+  "gen_volume": 0.17148702995348697,
+  "gt_bbox": [
+    0.7500000000000003,
+    0.6587368,
+    0.42000000000000004
+  ],
+  "gen_bbox": [
+    0.75,
+    0.6587370038032532,
+    0.41999998688697815
+  ]
+}

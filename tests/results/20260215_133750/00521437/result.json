@@ -1,0 +1,26 @@
+{
+  "id": "00521437",
+  "category_semantic": "Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create an extruded rectangle with dimensions of approximately 0.03547 units in length, 1.27689 units in width, and 0.14188 units in height. This rectangle should be extruded to form a thin plate. On this plate, sketch two symmetric rectangles, each with dimensions of 0.03547 units in length, 0.5677508 units in width, and 0.094585 units in height. These rectangles should be extruded negatively to create two rectangular holes in the original extruded shape. Ensure that the holes are positioned such that they are slightly less than half the size of the original rectangle and are spaced apart by a padding of approximately 0.047292 units. The holes should not touch each other or any edge of the original rectangle. Translate the final part so that it is centered with an offset of 0.111555 units in the y-direction and centered in the z-direction based on the height of the rectangle.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nlength:float = 0.03547\nwidth:float = 1.27689\nheight:float = 0.14188\n\nrectangle:cq.Workplane = cq.Workplane(\"XY\").box(length, width, height)\n\ncut_width:float = 0.5677508\ncut_height:float = 0.094585\ncut_rectangle:cq.Workplane = cq.Workplane(\"XY\").box(length, cut_width, cut_height)\n\npadding:float = 0.047292\n\npart:cq.Workplane = (\n    rectangle\n    .cut(cut_rectangle.translate((0,cut_width/2+padding/2,0)))\n    .cut(cut_rectangle.translate((0,-(cut_width/2+padding/2),0)))\n)\n\npart = part.translate((length/2,-0.111555,height/2))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.392,
+  "chamfer_distance": 1.2762599126685537e-05,
+  "bbox_similarity": 0.9999848066176089,
+  "volume_ratio": 0.9994413927235967,
+  "gt_volume": 0.0026178622082139425,
+  "gen_volume": 0.0026163998513358128,
+  "gt_bbox": [
+    0.03546922000000072,
+    1.2768921,
+    0.14187690000000006
+  ],
+  "gen_bbox": [
+    0.03547000139951706,
+    1.276889979839325,
+    0.14188000559806824
+  ]
+}

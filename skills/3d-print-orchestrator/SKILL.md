@@ -333,9 +333,10 @@ BEFORE boolean operations (cut for cavities, union for standoffs). See memory #5
 
 1. Execute the Python script
 2. Verify: no errors, valid BB, volume > 0
-3. If error -> apply fix from catalog (max 5 attempts)
-4. Export .step + .stl
-5. Generate report
+3. Verify solid count: `len(result.val().Solids()) == 1` (no detached parts)
+4. If error -> apply fix from catalog (max 5 attempts)
+5. Export .step + .stl
+6. Generate report
 
 ---
 
@@ -362,6 +363,7 @@ Before delivering to the user, verify ALL these points:
 - [ ] Python script runs without errors
 - [ ] Bounding box dimensions > 0.1mm and < 500mm on all axes
 - [ ] Volume > 0 mm3
+- [ ] Single connected solid (`len(result.val().Solids()) == 1`) — no floating parts
 - [ ] .step file exported and verified
 - [ ] .stl file exported and verified
 - [ ] No `try: except: pass` in code

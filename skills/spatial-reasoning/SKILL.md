@@ -82,12 +82,17 @@ CSG PLAN:
     5. - translate([x,y,z]) cube([x,y,z])            // internal cavity
 
   Fillets/Chamfers:
-    6. - minkowski / hull / fillet where needed
+    6. fillet on PRIMITIVES before boolean ops (safe on simple geometry)
+       — if post-boolean fillet needed, use NearestToPointSelector only
 
-CRITICAL NOTE:
+CRITICAL RULES:
   - Every subtraction MUST have +0.01mm in height to avoid coincident faces
   - Operation order MATTERS: perform additions first, then subtractions
   - Through holes must pass completely through the part (+0.1mm per side)
+  - **OVERLAP**: Every union() feature MUST penetrate ≥0.1mm into the parent body
+    Face-to-face touching (zero overlap) produces DISCONNECTED solids
+  - **FILLET**: Apply fillets to each primitive BEFORE boolean union/cut
+    NEVER use .edges("|Z").fillet(r) or .faces().edges().fillet(r) after booleans
 ```
 
 ### Phase 3: Coordinate System and Print Orientation
@@ -100,6 +105,17 @@ COORDINATE SYSTEM:
   X axis: [what it represents — e.g. "width, parallel to wall"]
   Y axis: [what it represents — e.g. "depth, perpendicular to wall"]
   Z axis: [what it represents — e.g. "height, print direction"]
+
+WORKPLANE EXTRUSION DIRECTIONS (CadQuery right-hand rule):
+  | Workplane | 2D Axes | Extrusion Dir | Resulting Span       |
+  |-----------|---------|---------------|----------------------|
+  | XY        | X, Y    | +Z            | Z = 0..+depth        |
+  | XZ        | X, Z    | -Y            | Y = -depth..0        |
+  | YZ        | Y, Z    | +X            | X = 0..+depth        |
+
+  CRITICAL: If using XZ workplane (e.g. L-bracket profile), the body spans
+  Y = -depth..0. ALL features (ribs, holes, bosses) must use coordinates
+  within this range. Features at positive Y will be FLOATING/DETACHED.
 
 PRINT ORIENTATION:
   Face on XY plane (print bed): [which face — e.g. "flat base of the bracket"]
@@ -137,6 +153,14 @@ DIMENSIONAL VERIFICATION:
   Fillets:
     [] Critical internal corners have fillet r >= [value] mm  pass/fail
     [] Chamfer on assembly edges  pass/fail
+    [] Fillets applied to primitives BEFORE boolean operations  pass/fail
+    [] No broad edge selectors (.edges("|Z"), .edges()) used after booleans  pass/fail
+
+  Coordinate alignment (prevents detached parts):
+    [] All features within body's coordinate range on X axis  pass/fail
+    [] All features within body's coordinate range on Y axis  pass/fail
+    [] All features within body's coordinate range on Z axis  pass/fail
+    [] Expected solid count after assembly: 1 (no floating parts)  pass/fail
 
   Tolerances:
     [] [fit 1]: [type] — clearance [value] mm  pass/fail
@@ -239,21 +263,34 @@ CadQuery code happens in the cadquery-codegen skill, but here we show the concep
 ### Typical CadQuery Workflow
 
 ```python
-result = (
+# Step 1: Build primitive and fillet BEFORE any booleans
+body = (
     cq.Workplane("XY")       # 1. Choose work plane
     .box(W, D, H)             # 2. Base body
-    .edges("|Z").fillet(r)     # 3. Fillets on vertical edges
+    .edges("|Z").fillet(r)     # 3. Fillets on vertical edges (SAFE: no booleans yet)
+)
+
+# Step 2: Add features via workplane operations (these are safe)
+body = (
+    body
     .faces(">Z").workplane()   # 4. Select top face
-    .hole(bore_d)              # 5. Through hole (subtraction)
+    .hole(bore_d)              # 5. Through hole
     .faces("<Z").workplane()   # 6. Select bottom face
     .rect(slot_w, slot_l)      # 7. Draw rectangle
     .cutBlind(-slot_depth)     # 8. Cut blind slot
 )
+
+# Step 3: If unioning separate bodies, ensure ≥0.1mm overlap
+rib = cq.Workplane("XZ").rect(rw, rh).extrude(rt)
+rib = rib.translate((0, 0, H/2 - 1))  # overlap into body by 1mm
+body = body.union(rib)
+# DO NOT fillet after this union with .edges("|Z").fillet(r) — use NearestToPointSelector if needed
 ```
 
-**Key principle**: In CadQuery you select a face, position yourself on it with
-`.workplane()`, and operate directly on that face. Explicit translate/rotate
-are not needed to position features.
+**Key principles**:
+1. In CadQuery you select a face, position yourself with `.workplane()`, and operate directly.
+2. **Fillet primitives BEFORE boolean operations** — never after.
+3. **Union features must overlap** the parent body by ≥0.1mm (face contact = disconnected).
 
 ---
 

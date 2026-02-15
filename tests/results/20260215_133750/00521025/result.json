@@ -1,0 +1,26 @@
+{
+  "id": "00521025",
+  "category_semantic": "Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a rectangular prism with dimensions of 1 unit in length, 0.1 unit in width, and 1.25 units in height. Then, extrude this rectangle slightly. Next, create a rectangular hole within this prism. The hole should have dimensions of 0.5 units in length, 0.1 units in width (matching the width of the prism), and 0.075 units in height. Position this hole so that it is centered horizontally and placed close to the bottom of the prism, with a bottom padding of 0.25 units from the base of the prism. Ensure the entire structure is translated slightly for better positioning and visualization.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 1\nwidth:float = 0.1\nheight:float = 1.25\n\ncut_length:float = 0.5\ncut_height:float = 0.075\ncut_rectangle:cq.Workplane = cq.Workplane(\"XY\").box(cut_length, width, cut_height)\nbottom_padding:float = 0.25\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .box(length, width, height)\n    .cut(cut_rectangle.translate((0,0,-height/2+cut_height/2+bottom_padding)))\n)\n\npart = part.translate((0,-width/2,-0.125))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.391,
+  "chamfer_distance": 7.308506167751637e-05,
+  "bbox_similarity": 0.9999999950329479,
+  "volume_ratio": 1.0000000198170083,
+  "gt_volume": 0.12125000000000001,
+  "gen_volume": 0.12125000240281225,
+  "gt_bbox": [
+    1.0,
+    0.10000000000000048,
+    1.25
+  ],
+  "gen_bbox": [
+    1.0,
+    0.10000000149011612,
+    1.25
+  ]
+}

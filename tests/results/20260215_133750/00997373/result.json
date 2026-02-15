@@ -1,0 +1,26 @@
+{
+  "id": "00997373",
+  "category_semantic": "Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a 3D rectangular object with dimensions 1.5 units in length, 0.016304 units in width, and 1.22283 units in height. The object should have three cylindrical holes, each with a diameter of 0.130435 units. These holes should be aligned along the height of the rectangle, positioned towards one side, and spaced such that the center of each hole is separated by a distance of 0.195652 units from the next. The first hole should be placed 0.433378 units from the left edge of the rectangle. Ensure that the holes are centered through the width of the rectangle.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 1.5\nwidth:float = 0.016304\nheight:float = 1.22283\ndiameter:float = 0.130435\n\nleft_margin:float = 0.433378\nspacer:float = 0.195652\n\npane:cq.Workplane = cq.Workplane(\"XY\").box(length, width, height)\nhole:cq.Workplane = cq.Workplane(\"XZ\").cylinder(width, diameter/2)\n\npart:cq.Workplane = (\n    pane\n    .cut(hole.translate((-length/2 + diameter/2 + left_margin, 0, 0)))\n    .cut(hole.translate((-length/2 + diameter/2 + left_margin, 0, diameter + spacer)))\n    .cut(hole.translate((-length/2 + diameter/2 + left_margin, 0, -(diameter + spacer))))\n)\n\npart = part.translate((0, -width/2, 0))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.397,
+  "chamfer_distance": 5.946682374821541e-05,
+  "bbox_similarity": 0.9999917251982365,
+  "volume_ratio": 0.9999559100988674,
+  "gt_volume": 0.029255803597110042,
+  "gen_volume": 0.029254513711621893,
+  "gt_bbox": [
+    1.5,
+    0.01630435000000071,
+    1.222826
+  ],
+  "gen_bbox": [
+    1.5,
+    0.016303999349474907,
+    1.222830057144165
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "00997229",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a 3D object that resembles a box end wrench. Begin by creating a sketch of a long rectangle with a length of 0.848067 units and a width of 0.197368 units. Replace the ends of the rectangle with two circles, ensuring that each circle has a larger diameter than the width of the rectangle. The circle on one end should have a diameter of 0.157782 units, and the circle on the other end should have a diameter of 0.196626 units. Extrude this sketch to form the basic shape of the wrench. Finally, create two circular holes within the two circular ends of this object; the hole in the smaller circle should have a diameter of 0.094737 units, and the hole in the larger circle should also have a diameter of 0.094737 units.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 0.848067\nwidth:float = 0.197368\n\ndiameter_one:float = 0.157782\nring_one:cq.Workplane = cq.Workplane(\"XZ\").cylinder(width, diameter_one/2)\n\ncut_one_diameter:float = 0.094737\ncut_one:cq.Workplane = cq.Workplane(\"XZ\").cylinder(width, cut_one_diameter/2)\n\ndiameter_two:float = 0.196626\nring_two:cq.Workplane = cq.Workplane(\"XZ\").cylinder(width, diameter_two/2)\n\ncut_two_diameter:float = 0.094737\ncut_two:cq.Workplane = cq.Workplane(\"XZ\").cylinder(width, cut_two_diameter/2)\n\nc_length:float = length - diameter_two/2 - diameter_one/2\nc_height:float = 0.126316\nconnector:cq.Workplane = cq.Workplane(\"XY\").box(c_length,width,c_height)\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .union(connector)\n    .union(ring_one.translate((+length/2-diameter_one/2,0,0)))\n    .cut(cut_one.translate((+length/2-diameter_one/2,0,0)))\n    .union(ring_two.translate((-length/2+diameter_two/2,0,0)))\n    .cut(cut_two.translate((-length/2+diameter_two/2,0,0)))\n)\n\npart = part.translate((length/2-diameter_two/2,-width/2,0))\n\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.561,
+  "chamfer_distance": 5.5314765956189485e-05,
+  "bbox_similarity": 0.9989028903601638,
+  "volume_ratio": 0.9990550360500945,
+  "gt_volume": 0.019819200479176066,
+  "gen_volume": 0.019800472049207294,
+  "gt_bbox": [
+    0.84868421,
+    0.19736840000000072,
+    0.19700612
+  ],
+  "gen_bbox": [
+    0.8477870374917984,
+    0.19736799597740173,
+    0.1965663731098175
+  ]
+}

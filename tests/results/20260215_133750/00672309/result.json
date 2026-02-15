@@ -1,0 +1,26 @@
+{
+  "id": "00672309",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a short, cylindrical object with specific dimensions. Begin by creating a cylinder with a height of 0.6 units and a diameter of approximately 1.498046 units. Next, create a circular hole through the center of the cylinder; the hole should have a diameter of approximately 0.748126 units and extend through the entire height of the cylinder. Finally, attach a small rectangular channel to the outer edge of the cylinder. This channel should have a length of 0.188827 units, a width approximately equal to half the diameter of the cylinder, and a depth equal to the height of the cylinder. The channel should be positioned with a small padding of approximately 0.142454 units from the edge of the cylinder.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nheight:float = 0.6\ndiameter:float = 1.49414+0.003906\nhole_diameter:float = diameter - 0.372218*2 - 0.001805*2\n\ncut_box_length:float = 0.188827\ncut_box_padding:float = 0.141966 + 0.002996 - 0.002508\ncut_box:cq.Workplane = cq.Workplane(\"XY\").box(cut_box_length, diameter/2,height)\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .cylinder(height, diameter/2)\n    .faces(\">Z\")\n    .hole(hole_diameter, height)\n    .cut(cut_box.translate((0,-diameter/2-cut_box_padding,0)))\n)\n\npart = part.translate((0, 0, height/2))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.491,
+  "chamfer_distance": 9.24384052752841e-05,
+  "bbox_similarity": 0.9995739916807813,
+  "volume_ratio": 1.0009470519897374,
+  "gt_volume": 0.7653539873503687,
+  "gen_volume": 0.7660788173669424,
+  "gt_bbox": [
+    1.4967222,
+    1.4912519,
+    0.6
+  ],
+  "gen_bbox": [
+    1.4980454444885254,
+    1.4918392896652222,
+    0.6000000238418579
+  ]
+}

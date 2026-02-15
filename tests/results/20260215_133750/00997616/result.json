@@ -1,0 +1,26 @@
+{
+  "id": "00997616",
+  "category_semantic": "Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a 3D plate shaped like a pentagon. Begin by drawing a sketch of a rectangle with dimensions approximately 1.30586 units in width and 0.616516 units in height. Augment this rectangle by attaching an isosceles triangle on top, where the base of the triangle matches the width of the rectangle and extends upwards to make the total height approximately 1.25576 units. Next, modify the sketch by cutting out small triangles from the bottom-left and bottom-right corners of the rectangle, each with a base of about 0.019678 units and a height of approximately 0.101205 units. Finally, extrude the entire sketch upwards by 0.023051 units to create the 3D plate. Rotate the resulting 3D object by -90 degrees around the Z-axis and translate it to position the center at approximately (0.605354, -0.75, 0) in the 3D space.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\npts = [\n    (0,0.101205-0.002436),\n    (0.115639,0-0.002435),\n    (0.61483+0.135171-0.017388-0.002292,0-0.002435),\n    #center\n    (1.30586,0.616516),\n    (0.61483+0.135171,1.25576-0.002562),\n    (0.115639+0.019678,1.25576-0.002562),\n    (0,1.25576-0.101205+0.025816),\n]\n\npart = (\n    cq.Workplane(\"XY\")\n    .polyline(pts)\n    .close()\n    .extrude(0.023051)\n)\n\npart = part.rotate((0,0,1),(0,0,0),-90).translate((0.605354,-0.75,0))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.386,
+  "chamfer_distance": 5.031828687391845e-05,
+  "bbox_similarity": 0.9999937895630656,
+  "volume_ratio": 1.0000175973412246,
+  "gt_volume": 0.029362630685021346,
+  "gen_volume": 0.02936314738925276,
+  "gt_bbox": [
+    1.2556336,
+    1.3058589,
+    0.023050600000000046
+  ],
+  "gen_bbox": [
+    1.255632996559143,
+    1.3058599829673767,
+    0.023050999268889427
+  ]
+}

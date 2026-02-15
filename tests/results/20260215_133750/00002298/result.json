@@ -1,0 +1,26 @@
+{
+  "id": "00002298",
+  "category_semantic": "Moderate",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a rectangular prism with dimensions of length 0.75 units, width 0.28043 units, and height 0.02045 units. Then, create a smaller rectangular cut-out within this prism with dimensions of length 0.318403 units and width 0.157741 units. Position this cut-out such that it is centered along the length of the larger rectangle and offset slightly above the midpoint of its width by 0.021963 units. Finally, rotate the entire part by -90 degrees around the x-axis and adjust its position so that it is centered and aligned properly in the 3D space.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 0.75\nwidth:float = 0.28043\nheight:float = 0.02045\n\ncut_length:float = 0.318403\ncut_width:float = 0.157741\n\ncenter_offset:float = 0.011+0.010963\n\nrectangle:cq.Workplane = cq.Workplane(\"XY\").box(length,width,height)\ncut_out:cq.Workplane = cq.Workplane(\"XY\").box(cut_length,cut_width,height)\n\npart:cq.Workplane = rectangle.cut(cut_out.translate((0,center_offset,0)))\n\npart = part.rotate((1, 0, 0),(0, 0, 0), -90).translate((length/2, -height/2, width/2))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.425,
+  "chamfer_distance": 3.756606551648256e-05,
+  "bbox_similarity": 0.9999640453599863,
+  "volume_ratio": 1.000109848433412,
+  "gt_volume": 0.00327362977807506,
+  "gen_volume": 0.0032739893811777527,
+  "gt_bbox": [
+    0.75,
+    0.02044791000000071,
+    0.2804284000000001
+  ],
+  "gen_bbox": [
+    0.75,
+    0.020449999719858183,
+    0.28042998909950256
+  ]
+}

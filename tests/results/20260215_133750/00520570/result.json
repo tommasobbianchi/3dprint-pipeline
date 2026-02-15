@@ -1,0 +1,26 @@
+{
+  "id": "00520570",
+  "category_semantic": "Moderate",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a 3D isosceles trapezoid with a base width of 0.767871 meters, a top width of 1.04978 meters, a height of 0.576632 meters, and a length of 0.012814 meters. The trapezoid should be centered and rotated for proper orientation, with additional translation adjustments as specified.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nfrom typing import List,Tuple\n\nlength:float = 0.012814\nwidth:float = 0.767871 \nheight:float = 0.576632\ntop_width:float = 1.04978\n\ntop_x:float = (width - top_width)/2\n\npoints:List[Tuple[float, float]] = [\n    (0, 0),\n    (top_x, height),\n    (top_x + top_width, height),\n    (width, 0)\n]\n\nwork:cq.Workplane = (\n    cq.Workplane(\"XY\").center(-(width/2), -(height/2))\n    .polyline(points).close()\n)\n\npart:cq.Workplane = work.extrude(length).translate((0,0,0)).rotate((1,0,0),(0,0,0),-90)\n\npart = part.translate((-0.212662,0,0.024279))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.387,
+  "chamfer_distance": 4.8284137682251695e-05,
+  "bbox_similarity": 0.9999985079450991,
+  "volume_ratio": 0.9999955674055958,
+  "gt_volume": 0.006715307557348469,
+  "gen_volume": 0.006715277791113768,
+  "gt_bbox": [
+    1.0497801,
+    0.012814050000000365,
+    0.5766323
+  ],
+  "gen_bbox": [
+    1.0497799813747406,
+    0.012814000248909028,
+    0.576632022857666
+  ]
+}

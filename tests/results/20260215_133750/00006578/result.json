@@ -1,0 +1,26 @@
+{
+  "id": "00006578",
+  "category_semantic": "Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a rectangular prism with dimensions 1.5 units in length, 1.02857 units in width, and 0.17143 units in height. Then, create four small holes within the top face of the rectangle, each one positioned close to a different corner. The holes should have a diameter of 0.095635 units. Ensure that the holes are inset from the edges by 0.263507 units along the length and 0.219429 units along the width.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 1.5\nwidth:float = 1.02857\nheight:float = 0.17143\n\npadding_length:float = 0.263507\npadding_width:float = 0.219429\nhole_diameter:float = 0.095635\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .box(length,width,height).faces(\">Z\")\n    .workplane()\n    .rect(length -padding_length*2 -hole_diameter, width -padding_width*2 -hole_diameter, forConstruction=True)\n    .vertices()\n    .hole(hole_diameter)\n)\n\npart = part.translate((0, 0, height/2))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.406,
+  "chamfer_distance": 7.779177295802032e-05,
+  "bbox_similarity": 0.9999968293316476,
+  "volume_ratio": 1.0001847455458837,
+  "gt_volume": 0.2595516340156395,
+  "gen_volume": 0.25959958502395075,
+  "gt_bbox": [
+    1.5,
+    1.0285714,
+    0.17142860000000001
+  ],
+  "gen_bbox": [
+    1.5,
+    1.0285700559616089,
+    0.17143000662326813
+  ]
+}

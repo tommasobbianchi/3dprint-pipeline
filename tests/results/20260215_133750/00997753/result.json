@@ -1,0 +1,26 @@
+{
+  "id": "00997753",
+  "category_semantic": "Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a 3D object that resembles a square baking mold with specific dimensions. Begin by creating a sketch of a square with rounded corners, where the square has a length and width of 1.5 units, and the corners are filleted with a radius of 0.157235 units. Extrude this sketch to a height of 0.655147 units. Next, on the top surface of the extruded object, sketch another square centered at the same point as the original square. This inner square should have a length and width of 1.44759 units, with corners filleted by a radius of 0.13103 units. Negatively extrude this inner square by 0.655147 units to create a hollow space within the original object, effectively forming the mold. Ensure that the final object is centered properly by translating it vertically by half the height of the extrusion.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 1.5\nwidth:float = 1.5\nheight:float = 0.655147\nfillet:float = (1.5 - 1.18553)/2\n\ninner_length:float = 1.44759\ninner_width:float = 1.44759\nheight:float = 0.655147\ninner_fillet:float = (inner_length - 1.18553)/2\n\nbox:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .box(length, width, height)\n    .edges(\"|Z\")\n    .fillet(fillet)\n)\n\ncut_box:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .box(inner_length, inner_width, height)\n    .edges(\"|Z\")\n    .fillet(inner_fillet)\n)\n\npart:cq.Workplane = box.cut(cut_box)\n\npart = part.translate((0, 0, height/2))\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.454,
+  "chamfer_distance": 9.551978611284998e-05,
+  "bbox_similarity": 0.9999998900763252,
+  "volume_ratio": 1.0002694796400038,
+  "gt_volume": 0.09693432323337332,
+  "gen_volume": 0.09696044505990227,
+  "gt_bbox": [
+    1.5,
+    1.5,
+    0.6551468
+  ],
+  "gen_bbox": [
+    1.5,
+    1.5,
+    0.6551470160484314
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "00005721",
+  "category_semantic": "Simple",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a 3D model of an obtuse scalene triangle with a length of 1.5 units, a width of 0.73113 units, and an extrusion depth of 0.00472 units. The triangle should be centered and oriented with one of its angles facing upwards.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nfrom typing import List,Tuple\n\nlength:float = 1.5\nwidth:float = 0.73113\nextrude:float = 0.00472\n\npts:List[Tuple[float, float]] = [\n    (0, 0),\n    (0, width),\n    (length, 0)\n]\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .polyline(pts)\n    .close()\n    .extrude(extrude)\n)\n\npart = part.translate((-length/2, -width/2, -extrude/2)).rotate((1, 0, 0),(0, 0, 0), 90)\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.429,
+  "chamfer_distance": 2.1478490619619875e-05,
+  "bbox_similarity": 0.9997857413201108,
+  "volume_ratio": 1.0006373140722618,
+  "gt_volume": 0.00258655181436887,
+  "gen_volume": 0.0025882002602388016,
+  "gt_bbox": [
+    1.5,
+    0.004716981000000712,
+    0.731132
+  ],
+  "gen_bbox": [
+    1.5,
+    0.004720000084489584,
+    0.7311300039291382
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "00675952",
+  "category_semantic": "Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a trapezoidal prism with specific dimensions. The trapezoid should have a base length of 1.49593 units, a top length of 0.910569 units, and a height of 0.382114 units. The trapezoid should be centered and shifted slightly along the x-axis by 0.026423 units. The resulting trapezoidal face should then be extruded to a width of 0.589754 units to form the prism.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nfrom typing import List,Tuple\n\nlength:float = 1.49593\nwidth:float = 0.589754\nheight:float = 0.382114\ntop_length:float = 0.910569\n\ntop_x:float = (length - top_length)/2\nshift:float = 0.026423\n\npoints:List[Tuple[float, float]] = [\n    (0,0),\n    (top_x+shift,height),\n    (top_x+top_length+shift,height),\n    (length,0)\n]\n\nwork:cq.Workplane = (\n    cq.Workplane(\"XY\").center(-(length/2),-(height/2))\n    .polyline(points).close()\n)\n\npart:cq.Workplane = work.extrude(width).translate((0,0,0)).rotate((1,0,0),(0,0,0),-90).translate((0,0,-height/2))\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.411,
+  "chamfer_distance": 6.641757651204593e-05,
+  "bbox_similarity": 0.9999984332995584,
+  "volume_ratio": 0.9999991547280072,
+  "gt_volume": 0.2711564114697389,
+  "gen_volume": 0.2711561822688186,
+  "gt_bbox": [
+    1.495935,
+    0.5897535000000007,
+    0.38211379999999995
+  ],
+  "gen_bbox": [
+    1.4959299564361572,
+    0.5897539854049683,
+    0.38211399316787725
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "00009529",
+  "category_semantic": "Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create an abstract 3D model. Start with an extruded rectangle with a length of 1.5 units and a width of 0.55102 units, and an extrusion height of 0.08347 units. Next, place two extruded squares on the left and right side of the rectangle. The square on the right should have dimensions of 0.438776 units by 0.438776 units and an extrusion height of 0.280162 units. The square on the left should have dimensions of 0.331633 units by 0.331633 units and an extrusion height of 0.127551 units. Ensure that the surface area of the square on the left is 75% smaller than the square on the right. The larger square on the right is also extruded by twice the amount of the smaller square on the left. Finally, make sure the two squares are connected to the left and right edges of the rectangle, respectively.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nr_one_length:float = 1.5\nr_one_width:float = 0.55102\nr_one_height:float = 0.08347\nrectangle_one:cq.Workplane = cq.Workplane(\"XY\").box(r_one_length, r_one_width, r_one_height)\n\nr_two_length:float = 0.438776\nr_two_width:float = 0.413265\nr_two_height:float = 0.280162\nrectangle_two = cq.Workplane(\"XY\").box(r_two_length, r_two_width, r_two_height)\n\nr_three_length:float = .331633\nr_three_width:float = 0.382653\nr_three_height:float = 0.127551\nrectangle_three = cq.Workplane(\"XY\").box(r_three_length, r_three_width, r_three_height)\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .union(rectangle_one)\n    .union(rectangle_two.translate((r_one_length/2  -r_two_length/2, 0, r_one_height/2 + r_two_height/2)))\n    .union(rectangle_three.translate((-r_one_length/2 + r_three_length/2, 0, r_one_height/2 + r_three_height/2)))\n)\n\npart = part.translate((0, 0, r_one_height/2))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.436,
+  "chamfer_distance": 6.477253166045207e-05,
+  "bbox_similarity": 0.9975315415201881,
+  "volume_ratio": 1.0187267181735946,
+  "gt_volume": 0.13347909227527158,
+  "gen_volume": 0.13597871761837782,
+  "gt_bbox": [
+    1.5,
+    0.5510204,
+    0.3609592
+  ],
+  "gen_bbox": [
+    1.5,
+    0.5510200262069702,
+    0.3636319935321808
+  ]
+}

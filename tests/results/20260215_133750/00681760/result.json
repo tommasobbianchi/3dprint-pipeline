@@ -1,0 +1,26 @@
+{
+  "id": "00681760",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a tiered 3D object that resembles an inverted, trapezoidal prism placed on a rectangular block. Begin by defining a rectangle with dimensions 0.525 units in length, 0.75 units in width, and 0.1125 units in height. Next, create a sketch of an isosceles trapezium where the longer base is equal to the rectangle's length (0.525 units) and the shorter base is 0.3 units. The height of the trapezium should match the height of the rectangle (0.1125 units). Attach the smaller base of the trapezium to one of the longer edges of the rectangle. Finally, extrude this entire sketch by the width of the rectangle (0.75 units) to form the 3D object. Adjust the position of the trapezium by translating it so that it aligns properly with the rectangle, ensuring the entire structure is centered and correctly oriented in the 3D space.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nfrom typing import List,Tuple\n\nbox_length:float = 0.525\nbox_width:float = 0.75\nbox_height:float = 0.1125\n\nbox:cq.Workplane = cq.Workplane(\"XY\").box(box_length, box_width, box_height)\n\nlength:float = 0.3\nwidth:float = 0.589754\nheight:float = box_height\ntop_length:float = 0.525\n\ntop_x:float = (length - top_length)/2\n\npoints:List[Tuple[float, float]] = [\n    (0,0),\n    (top_x,height),\n    (top_x+top_length,height),\n    (length,0)\n]\n\ntrap:cq.Workplane = (\n    cq.Workplane(\"XZ\")\n    .polyline(points).close()\n    .extrude(box_width)\n)\n\npart:cq.Workplane = box.union(trap.translate((-length/2,box_width/2,height/2)))\n\npart = part.translate((-0.022628,-box_width/2,-box_height/2-0.015833))\n\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.412,
+  "chamfer_distance": 0.00010995943013677869,
+  "bbox_similarity": 0.9999999224568884,
+  "volume_ratio": 1.0000000756779568,
+  "gt_volume": 0.07910155593750001,
+  "gen_volume": 0.07910156192374415,
+  "gt_bbox": [
+    0.525,
+    0.7500000000000002,
+    0.22500005
+  ],
+  "gen_bbox": [
+    0.5249999910593033,
+    0.75,
+    0.22500000149011612
+  ]
+}

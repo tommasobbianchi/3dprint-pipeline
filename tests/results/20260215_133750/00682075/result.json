@@ -1,0 +1,26 @@
+{
+  "id": "00682075",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a 3D object that resembles a three-step pedestal with specific dimensions. Start by creating a side profile of the pedestal using three connected rectangles. The base level rectangle should have dimensions of 0.75 units in length and 0.5 units in width. On top of this, draw a second rectangle that is smaller, with dimensions of (0.75 - 0.25) units in length and 0.5 units in width, representing the second step. Above the second rectangle, draw a third, even smaller rectangle with dimensions of (0.75 - 0.25*2) units in length and 0.5 units in width, representing the third step. Ensure that these three rectangles are connected to form a closed shape. Extrude this profile by 0.25 units to create the 3D model of the three-step pedestal. Adjust the final position of the model by translating it to (0.375, -0.25, -0.020659).",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 0.75\nwidth:float = 0.5\nheight:float = 0.25\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .box(length, width, height)\n    .faces(\"Z\")\n    .workplane()\n    .center(height/2,0)\n    .rect(length-height,width)\n    .extrude(height)\n    .faces(\">Z\")\n    .workplane()\n    .center(height/2,0)\n    .rect(length-height*2,width)\n    .extrude(height)\n)\n\npart = part.translate((length/2,-width/2,-0.020659))\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.431,
+  "chamfer_distance": 0.00010161614394437034,
+  "bbox_similarity": 0.999999986754523,
+  "volume_ratio": 0.9999999801317845,
+  "gt_volume": 0.1875000000000001,
+  "gen_volume": 0.1874999962747097,
+  "gt_bbox": [
+    0.75,
+    0.5000000000000007,
+    0.75
+  ],
+  "gen_bbox": [
+    0.75,
+    0.5,
+    0.7499999701976776
+  ]
+}

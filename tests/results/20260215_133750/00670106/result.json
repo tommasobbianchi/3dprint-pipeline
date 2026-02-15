@@ -1,0 +1,26 @@
+{
+  "id": "00670106",
+  "category_semantic": "Simple",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a short cylinder with a diameter of 1.5 units and a height of 0.440903 units. The cylinder should be oriented such that its axis is aligned with the X-axis.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nextrude:float = 0.440903\ndiameter:float = 1.5\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .cylinder(extrude, diameter/2)\n)\n\npart = part.translate((0, 0, extrude/2)).rotate((1,0,0),(0,0,0),-90)\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.411,
+  "chamfer_distance": 7.572333551106372e-05,
+  "bbox_similarity": 0.9998960098331547,
+  "volume_ratio": 1.0046798045351601,
+  "gt_volume": 0.775189322629231,
+  "gen_volume": 0.778817057136879,
+  "gt_bbox": [
+    1.5,
+    0.4409025000000007,
+    1.5
+  ],
+  "gen_bbox": [
+    1.5,
+    0.44090300798416143,
+    1.499533772468567
+  ]
+}

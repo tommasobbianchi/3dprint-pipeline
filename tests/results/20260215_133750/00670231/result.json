@@ -1,0 +1,26 @@
+{
+  "id": "00670231",
+  "category_semantic": "Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a rectangle with a length of 0.9 units, a width of 1.5 units, and a height of 0.75 units, and then extrude it. Next, add a circular hole with a diameter of 0.45 units in the middle of the rectangle such that the hole is slightly closer to the left side, offset by 0.075 units from the center towards the left.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nlength:float = 0.9\nwidth:float = 1.5\nheight:float = 0.75\ndiameter:float = 0.45\noffset:float = 0.075\n\ncylinder:cq.Workplane = cq.Workplane(\"XY\").cylinder(height, diameter/2)\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .box(length, width, height)\n    .cut(cylinder.translate((-length/2 + diameter/2 + offset, 0, 0)))\n)\n\npart = part.translate((0.15, 0, height/2))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.414,
+  "chamfer_distance": 0.00012332398757316146,
+  "bbox_similarity": 0.9999999867545234,
+  "volume_ratio": 0.9993788205495133,
+  "gt_volume": 0.8938223477519159,
+  "gen_volume": 0.8932671236771067,
+  "gt_bbox": [
+    0.8999999999999999,
+    1.5,
+    0.75
+  ],
+  "gen_bbox": [
+    0.9000000357627869,
+    1.5,
+    0.75
+  ]
+}

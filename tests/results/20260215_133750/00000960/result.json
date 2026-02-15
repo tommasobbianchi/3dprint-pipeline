@@ -1,0 +1,26 @@
+{
+  "id": "00000960",
+  "category_semantic": "Moderate",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a rectangle with dimensions 0.75 units in length, 0.75 units in width, and 0.00195 units in height. Then, create a second smaller rectangle with dimensions 0.281257 units in length and 0.0625 units in width. This second rectangle should be positioned such that it connects to the right edge of the first rectangle, starting halfway up its height.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 0.75\nwidth:float = 0.75\nheight:float = 0.00195\n\nbox = cq.Workplane(\"XY\").box(length, width, height)\n\ncut_one_length:float = 0.281257\ncut_one_width:float = 0.0625\ncut_one = cq.Workplane(\"XY\").box(cut_one_length, cut_one_width, height)\n\ncut_two_length:float = 0.25\ncut_two_width:float = 0.333333\ncut_two = cq.Workplane(\"XY\").box(cut_two_length, cut_two_width, height)\n\npart:cq.Workplane = (\n    box\n    .cut(cut_one.translate((length/2-cut_one_length/2, width/2-cut_one_width/2,0)))\n    .cut(cut_two.translate((length/2-cut_two_length/2, -width/2+cut_two_width/2,0)))\n)\n\npart = part.rotate((0, 0, 1),(0, 0, 0), 180).translate((length/2, width/2, 0))\ncq.exporters.export(part,'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.405,
+  "chamfer_distance": 3.143195745983238e-05,
+  "bbox_similarity": 0.9994666576385498,
+  "volume_ratio": 0.9983991961267149,
+  "gt_volume": 0.0009015401367187401,
+  "gen_volume": 0.0009000969477759588,
+  "gt_bbox": [
+    0.7499999999999999,
+    0.75,
+    0.001953125
+  ],
+  "gen_bbox": [
+    0.75,
+    0.75,
+    0.0019499999471008778
+  ]
+}

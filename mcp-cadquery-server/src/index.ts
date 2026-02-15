@@ -134,21 +134,29 @@ function parseSurfaceArea(stdout: string): number | null {
   return val >= 0 ? val : null;
 }
 
+function parseSolidCount(stdout: string): number | null {
+  const match = stdout.match(/SOLIDS:(\d+)/);
+  return match ? parseInt(match[1], 10) : null;
+}
+
 // --- Measurement code snippets ---
 
 const MEASUREMENT_CODE = `
 _r = result
 _bb = _r.val().BoundingBox()
 _vol = _r.val().Volume()
+_solids = len(_r.val().Solids())
 print(f"BBOX:{_bb.xmin:.2f},{_bb.ymin:.2f},{_bb.zmin:.2f},{_bb.xmax:.2f},{_bb.ymax:.2f},{_bb.zmax:.2f}")
 print(f"SIZE:{_bb.xlen:.2f}x{_bb.ylen:.2f}x{_bb.zlen:.2f}")
 print(f"VOLUME:{_vol:.2f}")
+print(f"SOLIDS:{_solids}")
 `;
 
 const INFO_CODE = `
 _r = result
 _bb = _r.val().BoundingBox()
 _vol = _r.val().Volume()
+_solids = len(_r.val().Solids())
 try:
     _area = sum(f.Area() for f in _r.val().Faces())
 except:
@@ -157,6 +165,7 @@ print(f"BBOX:{_bb.xmin:.2f},{_bb.ymin:.2f},{_bb.zmin:.2f},{_bb.xmax:.2f},{_bb.ym
 print(f"SIZE:{_bb.xlen:.2f}x{_bb.ylen:.2f}x{_bb.zlen:.2f}")
 print(f"VOLUME:{_vol:.2f}")
 print(f"AREA:{_area:.2f}")
+print(f"SOLIDS:{_solids}")
 `;
 
 // --- MCP Server ---
@@ -230,8 +239,14 @@ server.tool(
       const { errors, warnings } = parseStderr(result.stderr);
       const boundingBox = parseBoundingBox(result.stdout);
       const volume = parseVolume(result.stdout);
+      const solidCount = parseSolidCount(result.stdout);
 
-      // valid = no errors AND bounding_box size > 0 on all axes
+      // Flag disconnected solids as an error
+      if (solidCount !== null && solidCount > 1) {
+        errors.push(`Multiple disconnected solids detected: ${solidCount} (expected 1). Features may be floating — check coordinate alignment.`);
+      }
+
+      // valid = no errors AND bounding_box size > 0 on all axes AND single solid
       const valid =
         result.exitCode === 0 &&
         errors.length === 0 &&
@@ -246,6 +261,7 @@ server.tool(
         warnings,
         bounding_box: boundingBox,
         volume_mm3: volume,
+        solid_count: solidCount,
       };
 
       return {
@@ -445,11 +461,13 @@ server.tool(
       const boundingBox = parseBoundingBox(result.stdout);
       const volume = parseVolume(result.stdout);
       const surfaceArea = parseSurfaceArea(result.stdout);
+      const solidCount = parseSolidCount(result.stdout);
 
       const response = {
         bounding_box: boundingBox,
         volume_mm3: volume,
         surface_area_mm2: surfaceArea,
+        solid_count: solidCount,
         errors,
         warnings,
         stderr: result.stderr,

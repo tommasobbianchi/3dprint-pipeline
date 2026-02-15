@@ -1,0 +1,26 @@
+{
+  "id": "00997536",
+  "category_semantic": "Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a cylindrical object with a diameter of 0.988192 units and a height of 0.75 units. Inside this cylinder, create an octagonal hole that has a diameter of 0.79436 units and extends through the entire height of the cylinder. The octagon should be a regular octagon with 8 sides. First, create a sketch of a circle with the specified diameter and extrude it to form the cylinder. Then, create a sketch of the octagon on the cylinder and negatively extrude it to create the octagonal hole within the cylinder. Ensure the octagon is properly centered and aligned within the cylinder.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\ndiameter:float = 0.988192\nheight:float = 0.75\nsides:float = 8\ninner_diameter:float = 0.79436\n\ncylinder:cq.Workplane = cq.Workplane(\"XY\").cylinder(height, diameter/2)\n\noctagon:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .polygon(sides, inner_diameter)\n    .extrude(height)\n    .translate((0, 0, -height/2))\n    .rotate((0,0,1),(0,0,0),22.5)\n)\n\npart:cq.Workplane = cylinder.cut(octagon).translate((0, 0, height/2))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.4,
+  "chamfer_distance": 0.0001212121916942936,
+  "bbox_similarity": 0.999896395687325,
+  "volume_ratio": 1.011268118921188,
+  "gt_volume": 0.23766102752224186,
+  "gen_volume": 0.24033902024329423,
+  "gt_bbox": [
+    0.9881916,
+    0.9881916,
+    0.75
+  ],
+  "gen_bbox": [
+    0.9881920218467712,
+    0.9878848791122437,
+    0.75
+  ]
+}

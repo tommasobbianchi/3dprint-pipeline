@@ -1,0 +1,26 @@
+{
+  "id": "00998300",
+  "category_semantic": "Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a skewed, T-shaped 3D object. Begin by drawing a sketch of a long vertical rectangle with dimensions 0.036 meters in length and 0.0135 meters in width, and then extrude it to a height of 0.9 meters. Next, create a sketch of a smaller horizontal rectangle with the same width of 0.0135 meters and a length of 0.24 meters, which is approximately 1/4 of the height of the vertical rectangle. Connect this horizontal rectangle to the first rectangle closer to the top of the object, specifically 0.15 meters below the top. Extrude the horizontal rectangle by the same amount as the vertical rectangle, which is 0.036 meters.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 0.036\nwidth:float = 0.0135\nheight:float = 0.9\n\npost:cq.Workplane = cq.Workplane(\"XY\").box(length, width, height)\n\ns_length:float = 0.24\ns_height:float = 0.036\nsign:cq.Workplane = cq.Workplane(\"XY\").box(s_length, width, s_height)\n\npart:cq.Workplane = post.union(sign.translate((-length/2-s_length/2,0,height/2-s_height/2-0.15)))\npart = part.translate((length/2,-width/2,-height/2+0.15)).rotate((0,0,1),(0,0,0),-90)\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.374,
+  "chamfer_distance": 8.036318605850846e-06,
+  "bbox_similarity": 0.999999980795658,
+  "volume_ratio": 0.999999983414109,
+  "gt_volume": 0.0005540399999999984,
+  "gen_volume": 0.0005540399908107514,
+  "gt_bbox": [
+    0.0135,
+    0.27599999999999997,
+    0.9
+  ],
+  "gen_bbox": [
+    0.013500000350177314,
+    0.2759999930858612,
+    0.9000000059604645
+  ]
+}

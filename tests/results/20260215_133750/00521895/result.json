@@ -1,0 +1,26 @@
+{
+  "id": "00521895",
+  "category_semantic": "Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a rectangular prism with a length of 1 unit, a width of 0.75 units, and a height of 0.75 units. Then, extrude this rectangle. Next, create a hollow cylinder with a diameter of 0.5 units and a height equal to the height of the rectangle, positioned in the center of the rectangle.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nlength:float = 1\nwidth:float = 0.75\nheight:float = 0.75\ndiameter:float = 0.5\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .box(length, width, height)\n    .cylinder(height, diameter/2, combine=\"cut\")\n)\n\npart = part.translate((0, 0, height/2))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.434,
+  "chamfer_distance": 0.00019307307229536697,
+  "bbox_similarity": 0.9885057471264368,
+  "volume_ratio": 1.0454757498288674,
+  "gt_volume": 0.3972343402591439,
+  "gen_volume": 0.41529886974020386,
+  "gt_bbox": [
+    1.0,
+    0.725,
+    0.75
+  ],
+  "gen_bbox": [
+    1.0,
+    0.75,
+    0.75
+  ]
+}

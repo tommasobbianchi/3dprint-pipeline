@@ -1,0 +1,26 @@
+{
+  "id": "00673733",
+  "category_semantic": "Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a 3D crescent-shaped object by first constructing a cylinder with a width of 0.75 units and a diameter of 0.249945 units. Then, create a second cylinder with the same dimensions but translated by 0.125404 units along the Z-axis. Subtract the second cylinder from the first to form a crescent shape, and finally, translate the resulting shape by half the width in the negative Y direction to center it.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nwidth:float = 0.75\ndiameter:float = 0.249945\npadding:float = 0.125404\n\ncylinder:cq.Workplane = cq.Workplane(\"XZ\").cylinder(width, diameter/2)\n\npart = cylinder.cut(cylinder.translate((0,0,padding)))\npart = part.translate((0,-width/2,0))\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.403,
+  "chamfer_distance": 6.230814708174454e-05,
+  "bbox_similarity": 0.9989495153081547,
+  "volume_ratio": 1.00484946757377,
+  "gt_volume": 0.0223589222092833,
+  "gen_volume": 0.022467351077521663,
+  "gt_bbox": [
+    0.2499452,
+    0.7500000000000001,
+    0.1870616
+  ],
+  "gen_bbox": [
+    0.24984583258628845,
+    0.75,
+    0.1875767484307289
+  ]
+}

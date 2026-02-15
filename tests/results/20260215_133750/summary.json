@@ -1,0 +1,56 @@
+{
+  "run_id": "20260215_133750",
+  "run_date": "2026-02-15T13:42:44.853589",
+  "mode": "code-only",
+  "total": 200,
+  "pass": 200,
+  "fail": 0,
+  "invalid_rate_pct": 0.0,
+  "execution_success_pct": 100.0,
+  "mean_chamfer_distance": 7e-05,
+  "median_chamfer_distance": 7e-05,
+  "mean_bbox_similarity": 0.99937,
+  "mean_volume_ratio": 0.9902,
+  "mean_execution_time_s": 1.42454,
+  "by_mesh_complexity": {
+    "Complex": {
+      "total": 101,
+      "pass": 101,
+      "pass_rate_pct": 100.0,
+      "mean_cd": 8e-05,
+      "mean_bbox_sim": 0.99946,
+      "mean_vol_ratio": 0.99321
+    },
+    "Simple": {
+      "total": 99,
+      "pass": 99,
+      "pass_rate_pct": 100.0,
+      "mean_cd": 7e-05,
+      "mean_bbox_sim": 0.99929,
+      "mean_vol_ratio": 0.98712
+    }
+  },
+  "by_semantic_complexity": {
+    "Simple": {
+      "total": 17,
+      "pass": 17,
+      "pass_rate_pct": 100.0
+    },
+    "Moderate": {
+      "total": 39,
+      "pass": 39,
+      "pass_rate_pct": 100.0
+    },
+    "Complex": {
+      "total": 87,
+      "pass": 87,
+      "pass_rate_pct": 100.0
+    },
+    "Very Complex": {
+      "total": 57,
+      "pass": 57,
+      "pass_rate_pct": 100.0
+    }
+  },
+  "error_types": {}
+}

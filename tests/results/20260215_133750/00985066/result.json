@@ -1,0 +1,26 @@
+{
+  "id": "00985066",
+  "category_semantic": "Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a 3D object resembling an upside-down table. Begin by sketching a block \"U\"-shaped object, ensuring that the upright columns have a slightly larger width than the horizontal section. The dimensions for the upright columns should be 0.05 meters in length and 0.35 meters in width, while the horizontal section should have a length of 1.175 meters and a width of 0.35 meters. Next, extrude this sketch to create an object resembling an inverted table, with the columns having a height of 0.725 meters and the horizontal section having a height of 0.025 meters.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 1.175\nwidth:float = 0.35\ntable_top_height:float = 0.025\n\nleg_length:float = 0.05\nleg_width:float = width\nleg_height:float = 0.725\n\ntable_top:cq.Workplane = cq.Workplane(\"XY\").box(length, width, table_top_height)\nleg:cq.Workplane = cq.Workplane(\"XY\").box(leg_length, leg_width, leg_height).translate((0, 0, -(leg_height/2)-table_top_height))\n\ndef add_leg(loc: cq.Location) -> cq.Shape:\n    global leg\n    return leg.val().located(loc) #type:ignore\n\nlegs:cq.Workplane = table_top.faces(\">Z\").workplane().rect(length - leg_length, width - leg_width, forConstruction=True).vertices().eachpoint(add_leg)\ntable:cq.Workplane = table_top.union(legs)\n\npart:cq.Workplane = table.translate((0, 0, -table_top_height/2)).rotate((1,0,0),(0,0,0),180)\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.384,
+  "chamfer_distance": 6.216934756587646e-05,
+  "bbox_similarity": 0.9999999807960719,
+  "volume_ratio": 0.9999992965110969,
+  "gt_volume": 0.035656250000000056,
+  "gen_volume": 0.035656224916223854,
+  "gt_bbox": [
+    1.175,
+    0.35,
+    0.75
+  ],
+  "gen_bbox": [
+    1.1749999523162842,
+    0.3499999940395355,
+    0.75
+  ]
+}

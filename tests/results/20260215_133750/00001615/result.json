@@ -1,0 +1,26 @@
+{
+  "id": "00001615",
+  "category_semantic": "Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a cylinder with a height of 1.5 units and a diameter of 0.6 units. Then, cut a rectangular portion out of the top of the cylinder. The portion to be removed should have a length of approximately 0.235 units (about 1/4th the diameter of the cylinder), a width equal to the diameter of the cylinder (0.6 units), and a height of approximately 0.292 units (about 1/5th the height of the cylinder). Position the cut such that it starts from the top center of the cylinder and extends downwards.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nheight:float = 1.5\ndiameter:float = 0.6\nradius:float = diameter / 2\n\ncut_length:float = diameter / 2.55\ncut_width:float = diameter \ncut_height:float = height / 5.125\n\nposition_top:float = height / 2\n\ncylinder:cq.Workplane = cq.Workplane(\"XY\").cylinder(height, radius)\ncut_portion:cq.Workplane = cq.Workplane(\"XY\").box(cut_length, cut_width, cut_height)\n\npart:cq.Workplane = cylinder.cut(cut_portion.translate((radius-cut_length/2,0,position_top - cut_height/2)))\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.472,
+  "chamfer_distance": 7.201943742375953e-05,
+  "bbox_similarity": 0.9999416536755033,
+  "volume_ratio": 1.0040003817442102,
+  "gt_volume": 0.39230125143269,
+  "gen_volume": 0.39387060619715214,
+  "gt_bbox": [
+    0.6,
+    0.6,
+    1.5
+  ],
+  "gen_bbox": [
+    0.6000000238418579,
+    0.5998950004577637,
+    1.5
+  ]
+}

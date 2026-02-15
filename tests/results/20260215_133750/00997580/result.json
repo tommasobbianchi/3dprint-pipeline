@@ -1,0 +1,26 @@
+{
+  "id": "00997580",
+  "category_semantic": "Moderate",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a 3D rectangular object with specific dimensions: a length of 1.125 units, a width of 1.5 units, and a height of 0.06 units. Within this object, create a smaller rectangular slot centered on the top face. The slot should have a length of 0.3825 units, a width of 0.7575 units, and a depth of 0.03 units. Begin by creating a sketch of the larger rectangle and extrude it to form the base object. Then, sketch the smaller rectangle on the top face of the base object and negatively extrude it to form the slot, ensuring the slot's depth is less than the height of the base object.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 1.125\nwidth:float = 1.5\nheight:float = 0.06\n\ninner_length:float = 0.3825\ninner_width:float = 0.7575\ninner_depth:float = 0.03\n\nbox:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .box(length, width, height)\n    .faces(\"Z\")\n    .rect(inner_length, inner_width)\n    .extrude(-inner_depth, combine=\"cut\")\n)\n\npart:cq.Workplane = box.translate((0, 0, height/2))\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.392,
+  "chamfer_distance": 6.753756784814573e-05,
+  "bbox_similarity": 0.9999999925494192,
+  "volume_ratio": 0.9999999802911231,
+  "gt_volume": 0.09255768749999999,
+  "gen_volume": 0.09255768567579192,
+  "gt_bbox": [
+    1.125,
+    1.5,
+    0.060000000000000046
+  ],
+  "gen_bbox": [
+    1.125,
+    1.5,
+    0.05999999865889549
+  ]
+}

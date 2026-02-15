@@ -1,0 +1,26 @@
+{
+  "id": "00006892",
+  "category_semantic": "Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a long rectangular prism with a length of 1.5 units, a width of 0.52105 units, and a height of 0.15789 units. Then, cut out a semi-circle shape from the length of the rectangular prism, where the semi-circle has a diameter of approximately 1.701232 units (calculated as half the length plus twice 0.067116 units). The semi-circle should be extruded through the height of the prism and positioned such that it cuts through the center of one of the longer faces of the prism.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 1.5\nwidth:float = 0.52105\nheight:float = 0.15789\n\nsemi_circle_diameter:float = (length/2) + 0.067116*2  \nsemi_circle_radius:float = semi_circle_diameter/2\n\nprism:cq.Workplane = cq.Workplane(\"XY\").box(length, width, height)\nsemi_circle:cq.Workplane = (\n    cq.Workplane()\n    .threePointArc((-semi_circle_radius, semi_circle_radius), (0, semi_circle_diameter))\n    .close()\n    .extrude(height)\n    .translate((0, -semi_circle_radius, -height/2))\n    .rotate((0,0,1),(0,0,0),-90)\n)\n\npart:cq.Workplane = prism.translate((0, -width/2,0)).cut(semi_circle)\n\npart = part.translate((0, -0.104805, height/2))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.399,
+  "chamfer_distance": 4.194464355935314e-05,
+  "bbox_similarity": 0.9999884472762233,
+  "volume_ratio": 0.9969292941689479,
+  "gt_volume": 0.07517556464708434,
+  "gen_volume": 0.07494472260236991,
+  "gt_bbox": [
+    1.5,
+    0.5210526,
+    0.15789470000000003
+  ],
+  "gen_bbox": [
+    1.5,
+    0.5210500285029411,
+    0.15789000689983368
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "00037494",
+  "category_semantic": "Moderate",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a rectangular pipe. Begin by creating a sketch of a square with dimensions 0.23077 by 0.23077 units in the X-Z plane and extrude it 0.75 units along the Y-axis. Next, create a sketch of a slightly smaller square, specifically 0.18462 by 0.18462 units (calculated by subtracting twice the inside padding of 0.023077 units from each dimension), centered at the same point as the original square. Extrude this smaller square negatively along the Y-axis by 0.75 units to create a hole in the original extrusion.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 0.23077\nwidth:float = 0.23077\n\ninside_padding:float = 0.023077\nextrude:float = 0.75\n\noutline:cq.Sketch = (\n    cq.Sketch()\n    .rect(length, width)\n    .rect(length - inside_padding*2, width - inside_padding*2, mode=\"s\")\n)\n\npart:cq.Workplane = cq.Workplane(\"XY\").placeSketch(outline).extrude(extrude)\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.38,
+  "chamfer_distance": 0.00012092477071728272,
+  "bbox_similarity": 0.999997669313883,
+  "volume_ratio": 1.0000074920532616,
+  "gt_volume": 0.014378688852071705,
+  "gen_volume": 0.014378796577974418,
+  "gt_bbox": [
+    0.2307692,
+    0.2307692,
+    0.75
+  ],
+  "gen_bbox": [
+    0.23077000677585602,
+    0.23077000677585602,
+    0.75
+  ]
+}

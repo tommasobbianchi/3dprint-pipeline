@@ -1,0 +1,26 @@
+{
+  "id": "00034239",
+  "category_semantic": "Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a rectangular prism with dimensions 1.5 units in length, 1.2 units in width, and 0.15 units in height. In the center of this rectangle, extrude a large circular hole with a diameter of 0.675 units. Additionally, position two smaller circular holes, each with a diameter of 0.1968 units, on the left and right sides of the large central hole. These smaller holes should be spaced 0.033 units from the edges of the rectangle.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 1.5\nwidth:float =   1.2\nheight:float =  0.15\n\nrec:cq.Workplane = cq.Workplane(\"XY\").box(length, width, height)\n\ncenter_diameter:float = 0.675\ncenter_cylinder:cq.Workplane = cq.Workplane(\"XY\").cylinder(height, center_diameter/2)\n\nside_diameter:float = 0.1968\nside_padding:float = 0.033\nside_cylinder:cq.Workplane = cq.Workplane(\"XY\").cylinder(height, side_diameter/2)\n\npart:cq.Workplane = (\n    rec\n    .cut(center_cylinder)\n    .cut(side_cylinder.translate((length/2 - side_diameter/2 - side_padding, 0, 0)))\n    .cut(side_cylinder.translate((-1*(length/2 - side_diameter/2 - side_padding), 0, 0)))\n)\n\npart = part.translate((0, 0, -height/2))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.438,
+  "chamfer_distance": 6.858681436891639e-05,
+  "bbox_similarity": 0.9999999735090468,
+  "volume_ratio": 0.9986483793186063,
+  "gt_volume": 0.20751570355897553,
+  "gen_volume": 0.20723522104233125,
+  "gt_bbox": [
+    1.5,
+    1.2,
+    0.15000000000000002
+  ],
+  "gen_bbox": [
+    1.5,
+    1.2000000476837158,
+    0.15000000596046448
+  ]
+}

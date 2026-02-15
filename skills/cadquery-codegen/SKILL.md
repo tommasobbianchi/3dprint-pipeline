@@ -25,6 +25,7 @@ Date: YYYY-MM-DD
 Description: [brief description of the part]
 """
 import cadquery as cq
+import math  # for sin/cos/radians — NEVER use cq.sin/cq.cos
 
 # === MAIN PARAMETERS ===
 width  = 40.0   # [mm] external width
@@ -41,14 +42,26 @@ inner_w = width  - 2 * wall   # [mm] internal width
 inner_d = depth  - 2 * wall   # [mm] internal depth
 inner_h = height - wall        # [mm] internal height
 
+# === HELPERS ===
+def safe_fillet(body, point, radius, label="edge"):
+    """Fillet a single edge near a known point, with graceful fallback."""
+    try:
+        return body.edges(cq.selectors.NearestToPointSelector(point)).fillet(radius)
+    except Exception:
+        try:
+            return body.edges(cq.selectors.NearestToPointSelector(point)).fillet(radius * 0.5)
+        except Exception:
+            print(f"WARNING: Could not fillet {label} at {point}, skipping")
+            return body
+
 # === CONSTRUCTION ===
 def make_body():
-    """Main body of the part."""
+    """Main body — apply fillets to primitives BEFORE booleans."""
     return (
         cq.Workplane("XY")
         .box(width, depth, height)
         .edges("|Z")
-        .fillet(fillet_r)
+        .fillet(fillet_r)  # safe: fillet on primitive before any boolean ops
     )
 
 def make_features(body):
@@ -61,13 +74,17 @@ def make_features(body):
     )
 
 def make_assembly():
-    """Assembles all parts."""
+    """Assembles all parts. Features must overlap body by ≥0.1mm."""
     body = make_body()
     body = make_features(body)
     return body
 
 # === EXPORT ===
 result = make_assembly()
+
+# Verify single solid
+n_solids = len(result.val().Solids())
+assert n_solids == 1, f"ERROR: {n_solids} disconnected solids — check feature overlap"
 
 cq.exporters.export(result, "output.step")
 cq.exporters.export(result, "output.stl")
@@ -110,10 +127,16 @@ result = cq.Workplane("XY").box(width, depth, height).edges("|Z").fillet(fillet_
 
 ### Operation Order
 1. Primitives (box, cylinder, sphere)
-2. Boolean operations (cut, union, intersect)
-3. **Fillet/chamfer AFTER booleans** — never before
-4. Secondary features (holes, pockets)
-5. Export
+2. **Fillet/chamfer on primitives BEFORE booleans** — safe on simple geometry
+3. Boolean operations (cut, union, intersect)
+4. Secondary features (holes, pockets, workplane-based cuts)
+5. **Post-boolean fillet ONLY with NearestToPointSelector** — if absolutely needed
+6. Export
+
+**CRITICAL**: Applying `.edges("|Z").fillet(r)` or `.faces(">Z").edges().fillet(r)` AFTER
+`union()`/`cut()` is the #1 cause of OCC kernel crashes. Always fillet primitives first,
+then boolean them together. If post-boolean fillet is needed, use `NearestToPointSelector`
+targeting specific known coordinates.
 
 ### Selectors
 - Use explicit face selectors: `">Z"`, `"<Z"`, `">X"`, `"<Y"`, `"|Z"`, `"#Z"`
@@ -141,11 +164,20 @@ cq.Workplane("XY").box(length, width, height, centered=(False, False, False))
 # Cylinder
 cq.Workplane("XY").cylinder(height, radius)
 
+# Cone / Tapered cylinder (NO .cylinder() with 2 radii — use makeCone or loft)
+cq.Workplane("XY").add(cq.Solid.makeCone(bottom_radius, top_radius, height))
+# or loft between two circles:
+cq.Workplane("XY").circle(bottom_r).workplane(offset=height).circle(top_r).loft()
+
 # Sphere
 cq.Workplane("XY").sphere(radius)
 
-# Wedge
+# Wedge / Triangle
 cq.Workplane("XZ").polyline([(0,0), (base,0), (0,height)]).close().extrude(depth)
+
+# Rounded rectangle (Sketch API)
+from cadquery import Sketch
+cq.Workplane("XY").placeSketch(Sketch().rect(w, h).vertices().fillet(r)).extrude(depth)
 ```
 
 ### 3.2 Face and Edge Selectors
@@ -234,17 +266,52 @@ cq.Workplane("XY").circle(r).sweep(path)
 ### 3.6 Fillet and Chamfer
 
 ```python
-# Fillet on specific edges
-.edges("|Z").fillet(radius)
+# === SAFE: Fillet on SIMPLE geometry BEFORE booleans (PREFERRED) ===
+body = cq.Workplane("XY").box(w, d, h).edges("|Z").fillet(r)  # OK on primitive
+# Then add features via boolean ops — the fillet survives
+body = body.cut(pocket)
+body = body.union(rib)
 
-# Fillet on all edges
-.edges().fillet(radius)
+# === SAFE: Fillet with NearestToPointSelector AFTER booleans ===
+# When you MUST fillet after booleans, target ONE specific edge at a time
+body = body.edges(
+    cq.selectors.NearestToPointSelector((x, y, z))
+).fillet(r)
 
-# Chamfer
-.edges("|Z").chamfer(length)
+# === DANGEROUS — ALL of these crash after union()/cut() ===
+# .edges("|Z").fillet(r)          <- selects ALL Z-parallel edges including tiny boolean artifacts
+# .edges("|X").fillet(r)          <- same problem
+# .faces(">Z").edges().fillet(r)  <- selects ALL edges on a face, including tiny ones
+# .edges().fillet(r)              <- worst: every edge on the entire body
+# .edges("|Z or |X").fillet(r)    <- broad OR selectors are fragile
+# .edges(">Z and <Z[1]").fillet(r)  <- index selectors break after booleans
 
-# Asymmetric chamfer
-.edges("|Z").chamfer(length1, length2)
+# === Chamfer (same rules apply) ===
+.edges("|Z").chamfer(length)           # safe on primitives only
+.edges("|Z").chamfer(length1, length2) # asymmetric
+
+# === Robust fillet wrapper for complex parts ===
+def safe_fillet(body, point, radius, label="edge"):
+    """Fillet a single edge near a known point, with graceful fallback."""
+    try:
+        return body.edges(
+            cq.selectors.NearestToPointSelector(point)
+        ).fillet(radius)
+    except Exception:
+        # Reduce radius by half and retry once
+        try:
+            return body.edges(
+                cq.selectors.NearestToPointSelector(point)
+            ).fillet(radius * 0.5)
+        except Exception:
+            print(f"WARNING: Could not fillet {label} at {point}, skipping")
+            return body  # skip rather than crash
+
+# === Fillet strategy for complex parts ===
+# 1. Fillet each primitive BEFORE boolean union/cut
+# 2. If post-boolean fillet is needed, use safe_fillet() with known coordinates
+# 3. NEVER use try/except to silently swallow fillet failures and continue
+#    adding more fillets — accumulated bad geometry causes OCC segfaults
 ```
 
 ### 3.7 Boolean Operations
@@ -276,6 +343,14 @@ body = part_a.intersect(part_b)
 .translate((dx, dy, dz))
 .rotate((0,0,0), (0,0,1), angle_deg)
 .mirror("XY")
+
+# IMPORTANT: Non-XY workplane extrusion directions (right-hand rule)
+#   XY workplane: extrudes in +Z (X × Y = +Z)
+#   XZ workplane: extrudes in -Y (X × Z = -Y)  <-- COMMON GOTCHA
+#   YZ workplane: extrudes in +X (Y × Z = +X)
+#
+# Example: cq.Workplane("XZ").extrude(depth) creates geometry at Y=-depth..0
+# All features (ribs, holes, etc.) on an XZ-extruded body must use NEGATIVE Y coords
 ```
 
 ### 3.9 Shell (hollowing)
@@ -356,16 +431,28 @@ fillet_r =  1.5   # [mm]
 result = cq.Workplane("XY").box(width, depth, height).edges("|Z").fillet(fillet_r)
 ```
 
-### 4.2 Fillet Before Booleans
+### 4.2 Fillet After Booleans — Use Targeted Selectors
 ```python
-# BAD — fillet before cut, risk of kernel crash
-body = cq.Workplane("XY").box(40, 30, 20).edges("|Z").fillet(2)
-body = body.cut(cq.Workplane("XY").box(10, 10, 25))
-
-# GOOD — fillet after all booleans
+# BAD — broad selector after boolean ops: OCC kernel crash on tiny edges
 body = cq.Workplane("XY").box(40, 30, 20)
 body = body.cut(cq.Workplane("XY").box(10, 10, 25))
-body = body.edges("|Z").fillet(2)
+body = body.edges("|Z").fillet(2)  # CRASHES — cut created small edges that fillet can't handle
+
+# BAD — fillet before cut also risky
+body = cq.Workplane("XY").box(40, 30, 20).edges("|Z").fillet(2)
+body = body.cut(cq.Workplane("XY").box(10, 10, 25))  # may crash or produce invalid geometry
+
+# GOOD — fillet with NearestToPointSelector after booleans
+body = cq.Workplane("XY").box(40, 30, 20)
+body = body.cut(cq.Workplane("XY").box(10, 10, 25))
+# Target only the outer corners by their known position
+for pt in [(20, 15, 10), (-20, 15, 10), (20, -15, 10), (-20, -15, 10)]:
+    body = body.edges(cq.selectors.NearestToPointSelector(pt)).fillet(2)
+
+# GOOD — fillet on a primitive BEFORE adding complex features
+body = cq.Workplane("XY").box(40, 30, 20).edges("|Z").fillet(2)  # safe on simple box
+# Now add features via workplane operations (holes, pockets) — NOT union/cut of separate bodies
+body = body.faces(">Z").workplane().hole(10)  # hole doesn't create problematic edges
 ```
 
 ### 4.3 Direct Mesh
@@ -425,6 +512,204 @@ cq.exporters.export(result, "output.step")
 cq.exporters.export(result, "output.step")
 bb = result.val().BoundingBox()
 print(f"SIZE: {bb.xlen:.2f} x {bb.ylen:.2f} x {bb.zlen:.2f} mm")
+```
+
+### 4.9 XZ Workplane Extrudes in -Y Direction
+```python
+# BAD — features at positive Y float in space (DETACHED from body)
+body = cq.Workplane("XZ").polyline(pts).close().extrude(depth)  # body at Y=-depth..0
+rib = cq.Workplane("XZ").rect(w, h).extrude(rib_t).translate((x, y_positive, z))
+body = body.union(rib)  # SILENT: 2 disconnected solids, no error!
+
+# GOOD — features use negative Y to stay within XZ-extruded body
+body = cq.Workplane("XZ").polyline(pts).close().extrude(depth)  # body at Y=-depth..0
+rib = cq.Workplane("XZ").rect(w, h).extrude(rib_t).translate((x, -y_within_body, z))
+body = body.union(rib)  # single connected solid
+```
+
+### 4.10 Union of Misaligned Parts — Features MUST Overlap by ≥0.1mm
+```python
+# === THE OVERLAP RULE ===
+# CadQuery union() requires VOLUMETRIC overlap to fuse bodies.
+# Face-to-face touching (zero overlap) produces DISCONNECTED solids.
+# Always extend features INTO the parent body by at least 0.1mm.
+
+# BAD — feature sits ON TOP of body (face contact only, zero overlap)
+body = cq.Workplane("XY").box(40, 30, 5)              # Z = 0..5
+pillar = cq.Workplane("XY").cylinder(10, 3).translate((0, 0, 10))  # Z = 5..15 — TOUCHES but no overlap
+result = body.union(pillar)  # 2 DISCONNECTED solids!
+
+# GOOD — feature penetrates INTO body by 0.5mm
+body = cq.Workplane("XY").box(40, 30, 5)              # Z = 0..5
+pillar = cq.Workplane("XY").cylinder(10.5, 3).translate((0, 0, 9.75))  # Z = 4.5..15 — overlaps body
+result = body.union(pillar)  # 1 connected solid ✓
+
+# BAD — standoffs positioned at body surface
+plate = cq.Workplane("XY").box(40, 30, 3)             # Z = 0..3
+standoff = cq.Workplane("XY").cylinder(5, 2).translate((10, 5, 5.5))  # Z = 3..8 — touches at Z=3
+result = plate.union(standoff)  # DISCONNECTED
+
+# GOOD — standoffs extend 0.5mm INTO the plate
+plate = cq.Workplane("XY").box(40, 30, 3)             # Z = 0..3
+standoff = cq.Workplane("XY").cylinder(5.5, 2).translate((10, 5, 5.25))  # Z = 2.5..8 — overlaps
+result = plate.union(standoff)  # connected ✓
+
+# BAD — hinge knuckle at plate edge (face contact only)
+plate = cq.Workplane("XY").box(40, 10, 3)             # Y = -5..5
+knuckle = cq.Workplane("XZ").cylinder(8, 3).translate((0, 5, 4))  # at Y=5 edge — no overlap
+result = plate.union(knuckle)  # DISCONNECTED
+
+# GOOD — knuckle penetrates into plate by 1mm
+plate = cq.Workplane("XY").box(40, 10, 3)             # Y = -5..5
+knuckle = cq.Workplane("XZ").cylinder(8, 3).translate((0, 4, 4))  # at Y=4, overlaps into plate
+result = plate.union(knuckle)  # connected ✓
+
+# GOOD — verify solid count after union
+result = body.union(feature)
+assert len(result.val().Solids()) == 1, "Union created disconnected solids — check overlap"
+
+# CRITICAL: When using XZ workplane, body spans Y=-depth..0
+# All features must be within Y=-depth..0 to touch the body!
+body = cq.Workplane("XZ").rect(w, h).extrude(depth)  # Y = -depth..0
+rib = cq.Workplane("XZ").rect(rw, rh).extrude(rt)    # rib at Y = -rt..0
+rib = rib.translate((x, -depth/2, z))  # center within body's Y range
+body = body.union(rib)
+```
+
+### 4.11 Broad Edge Selectors After Boolean Operations
+```python
+# BAD — ALL of these crash after union()/cut() because booleans create tiny edges
+body = main.union(feature)
+body = body.edges("|Z").fillet(r)         # selects ALL Z-parallel edges including tiny ones
+body = body.edges("|Z or |X").fillet(r)   # even worse — broader selection
+body = body.edges().fillet(r)             # worst — every single edge
+body = body.faces(">Z").edges().fillet(r) # ALSO DANGEROUS — face edges include boolean artifacts
+body = body.edges(">Z and <Z[1]").fillet(r)  # index selectors are fragile after booleans
+
+# GOOD — fillet primitives BEFORE boolean operations (PREFERRED approach)
+base = cq.Workplane("XY").box(w, d, h).edges("|Z").fillet(r)  # safe on primitive
+rib = cq.Workplane("XZ").rect(rw, rh).extrude(rt).translate((x, y, z))
+body = base.union(rib)  # fillet already applied, no post-boolean fillet needed
+
+# GOOD — if post-boolean fillet is essential, use NearestToPointSelector ONE edge at a time
+body = main.union(feature)
+corner_pt = (width/2, depth/2, height/2)
+body = body.edges(cq.selectors.NearestToPointSelector(corner_pt)).fillet(r)
+
+# GOOD — use the safe_fillet wrapper from section 3.6 for robustness
+for pt in corner_points:
+    body = safe_fillet(body, pt, r, label=f"corner at {pt}")
+```
+
+### 4.12 Common CadQuery API Mistakes
+```python
+# BAD — cutThru does not exist
+body = body.faces(">Z").workplane().rect(10, 5).cutThru()
+# GOOD — use cutThruAll
+body = body.faces(">Z").workplane().rect(10, 5).cutThruAll()
+
+# BAD — cq.sin/cq.cos don't exist in CadQuery
+import cadquery as cq
+x = radius * cq.sin(angle)
+# GOOD — use math module for trigonometry
+import math
+x = radius * math.sin(math.radians(angle_deg))
+
+# BAD — Assembly has no .val() method
+assy = cq.Assembly()
+bb = assy.val().BoundingBox()  # AttributeError!
+# GOOD — get the compound shape from assembly
+compound = assy.toCompound()
+bb = compound.BoundingBox()
+
+# BAD — .text() is unreliable and often crashes
+body = body.faces(">Z").workplane().text("Label", 10, -0.5)
+# GOOD — avoid text engraving unless explicitly requested; if needed, use simple cut patterns
+
+# BAD — cylinder() does NOT accept a top radius (no cone primitive)
+body = cq.Workplane("XY").cylinder(height, bottom_r, top_r)  # TypeError!
+# GOOD — use Solid.makeCone() for tapered cylinders/cones
+cone = cq.Workplane("XY").add(cq.Solid.makeCone(bottom_r, top_r, height))
+# GOOD — or loft between two circles
+cone = (
+    cq.Workplane("XY")
+    .circle(bottom_r)
+    .workplane(offset=height)
+    .circle(top_r)
+    .loft()
+)
+
+# BAD — .fillet() on 2D wire vertices (fillet is 3D solid operation only)
+body = cq.Workplane("XZ").rect(w, h).vertices().fillet(r)  # "Cannot find a solid"!
+# GOOD — for rounded rectangles, use Sketch API
+from cadquery import Sketch
+body = (
+    cq.Workplane("XZ")
+    .placeSketch(Sketch().rect(w, h).vertices().fillet(r))
+    .extrude(depth)
+)
+# GOOD — or use slot2D for pill shapes
+body = cq.Workplane("XZ").slot2D(length, width).extrude(depth)
+
+# BAD — missing .rect() before .extrude() (no pending wire)
+body = body.faces(">Y").workplane().center(x, z).extrude(depth)  # "No pending wires"!
+# GOOD — always draw geometry before extruding
+body = body.faces(">Y").workplane().center(x, z).rect(w, h).extrude(depth)
+
+# BAD — polyline with coincident consecutive points (zero-length edge)
+pts = [(0, 0), (10, 0), (10, 0), (10, 5)]  # (10,0) repeated!
+body = cq.Workplane("XY").polyline(pts).close().extrude(d)  # BRep_API: command not done!
+# GOOD — ensure all consecutive points are distinct
+pts = [(0, 0), (10, 0), (10, 5)]  # no repeated consecutive points
+
+# NOTE: loft() requires compatible wire profiles on parallel workplanes
+# NOTE: sweep() requires a single continuous path wire
+# Both are advanced operations — prefer extrude + boolean when possible
+```
+
+### 4.13 Silent try/except on Fillet — Causes OCC Segfaults
+```python
+# BAD — silently swallowing fillet failures corrupts OCC internal state
+# Later fillet/boolean calls segfault because geometry is invalid
+for edge in edges_to_fillet:
+    try:
+        body = body.edges(selector).fillet(r)
+    except:
+        pass  # DANGEROUS: body may be in corrupted state!
+# body.fillet(r2)  # SEGFAULT — OCC state is corrupted from prior silent failures
+
+# GOOD — use safe_fillet() wrapper that retries with smaller radius or skips cleanly
+for pt in fillet_points:
+    body = safe_fillet(body, pt, r, label=f"edge at {pt}")
+
+# GOOD — if fillet fails, stop and adjust the design (don't continue with corrupted geometry)
+```
+
+### 4.14 Many Sequential Boolean Unions — Geometry Degrades
+```python
+# BAD — 20 sequential union() calls accumulate numerical errors
+gear = cq.Workplane("XY").cylinder(h, hub_r)
+for angle in range(0, 360, 18):
+    tooth = make_tooth().rotate((0, 0, 0), (0, 0, 1), angle)
+    gear = gear.union(tooth)  # after 10+ unions, geometry may be non-manifold
+
+# GOOD — collect all teeth into one compound first, then single union
+teeth = cq.Workplane("XY")
+for angle in range(0, 360, 18):
+    tooth = make_tooth().rotate((0, 0, 0), (0, 0, 1), angle)
+    teeth = teeth.union(tooth)
+gear = hub.union(teeth)  # fewer boolean operations on the main body
+
+# GOOD — use polarArray when possible (single boolean, much faster)
+gear = (
+    cq.Workplane("XY")
+    .circle(outer_r)
+    .extrude(h)
+    .faces(">Z").workplane()
+    .polarArray(pitch_r, 0, 360, n_teeth)
+    .rect(tooth_w, tooth_h)
+    .cutThruAll()  # subtractive approach: cut tooth gaps from a cylinder
+)
 ```
 
 ### 4.8 Undocumented Parameters

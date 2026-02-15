@@ -1,0 +1,26 @@
+{
+  "id": "00852000",
+  "category_semantic": "Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a square with a length and width of 0.830095 units and extrude it to a height of 0.1703531 units. Without removing the top of the square, hollow out the inside of the shape by cutting a smaller square from it, with dimensions 0.676879 units by 0.676879 units and a depth of 0.105467 units. Centered at the bottom of the square, create a small circle with a diameter of 0.327945 units that is extruded to a height slightly less than the square, specifically 0.105467 units. Next, create four smaller circles each with a diameter of 0.25606 units and a height of 0.094448 units. These circles should be symmetrically positioned and slightly less extruded than the square. Position these circles on top of the square, with each circle located near a corner.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nb_length:float = 0.830095\nb_width:float = 0.830095\nb_height:float = 0.1703531\n\nbase:cq.Workplane = cq.Workplane(\"XY\").box(b_length, b_width, b_height)\n\nc_length:float = 0.676879\nc_width:float = 0.676879\nc_height:float = 0.105467\ncut_base:cq.Workplane = cq.Workplane(\"XY\").box(c_length, c_width, c_height)\n\ntube_diameter:float = 0.327945\ntube:cq.Workplane = cq.Workplane(\"XY\").cylinder(c_height, tube_diameter/2)\n\nstud_diameter:float = 0.25606\nstud_height:float = 0.094448\nstud:cq.Workplane = cq.Workplane(\"XY\").cylinder(stud_height, stud_diameter/2)\n\ndef add_stud(loc) -> cq.Shape:\n    global stud\n    global stud_height\n    return stud.translate((0,0,stud_height/2)).val().located(loc) #type: ignore\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .add(base)\n    .cut(cut_base.translate((0,0,-b_height/2+c_height/2)))\n    .union(tube.translate((0,0,-b_height/2+c_height/2)))\n    .faces(\">Z\")\n    .edges()\n    .toPending()\n    .offset2D(-0.21+0.003551)\n    .vertices()\n    .eachpoint(add_stud, combine=True)\n)\n\npart = part.translate((0.080095,-0.079879,b_height/2))\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.46,
+  "chamfer_distance": 0.00011343750613543499,
+  "bbox_similarity": 0.9997751477304968,
+  "volume_ratio": 0.9997725858434824,
+  "gt_volume": 0.09742239827211907,
+  "gen_volume": 0.09740024303959009,
+  "gt_bbox": [
+    0.8300951,
+    0.8300951,
+    0.26497980000000004
+  ],
+  "gen_bbox": [
+    0.8300949931144714,
+    0.8300950229167938,
+    0.26480111479759216
+  ]
+}

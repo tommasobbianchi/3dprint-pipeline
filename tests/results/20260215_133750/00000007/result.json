@@ -1,0 +1,26 @@
+{
+  "id": "00000007",
+  "category_semantic": "Simple",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a 3D model by extruding a circular sketch. The circle should have a radius of 0.75 units and the extrusion should be 0.20923 units high.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nradius:float = 1.5/2\nheight:float = 0.20923\n\nsketch:cq.Sketch = cq.Sketch().circle(radius)\npart:cq.Workplane = cq.Workplane(\"XY\").placeSketch(sketch).extrude(height)\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.394,
+  "chamfer_distance": 6.343014216800857e-05,
+  "bbox_similarity": 0.9998949509004712,
+  "volume_ratio": 1.004682996196326,
+  "gt_volume": 0.36786401597478724,
+  "gen_volume": 0.36958672176236235,
+  "gt_bbox": [
+    1.5,
+    1.5,
+    0.2092291
+  ],
+  "gen_bbox": [
+    1.5,
+    1.499533772468567,
+    0.20923000574111938
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "00039365",
+  "category_semantic": "Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a complex 3D object. Begin by sketching a parallelogram defined by the points [(0.6147, 0), (1.500795, 0), (0.886095, 0.354438), (0, 0.354438)] and extruding it to a height of 0.425326 units. Then, draw a square inside this extruded parallelogram with dimensions 0.306589 units by 0.25874 units. Following that, negatively extrude the square (remove material) to create a square-shaped hole going through the extruded parallelogram, aligning the square centrally within the parallelogram and ensuring the hole spans the entire height of the parallelogram.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nfrom typing import List, Tuple\n\nlength:float = 0.886095\nwidth:float = 0.354438\noffset:float = 0.6147\nextrude:float = .425326\n\npoints:List[Tuple[float, float]] = [\n    (offset + 0, 0),\n    (length + offset, 0),\n    (length, width),\n    (0, width)\n]\n\nsketch:cq.Sketch = cq.Sketch().polygon(points)\n\ncut_length:float = 0.306589\ncut_width:float = 0.25874\ncut_box:cq.Workplane = cq.Workplane(\"XY\").box(cut_length, cut_width, extrude)\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .placeSketch(sketch)\n    .extrude(extrude)\n    .translate((-(length + offset)/2, -width/2, -extrude/2))\n    .cut(cut_box)\n).rotate((1,0,0),(0,0,0), 90)\n\npart = part.translate((0,-extrude/2,0))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.429,
+  "chamfer_distance": 5.701714794378954e-05,
+  "bbox_similarity": 0.9998230983046462,
+  "volume_ratio": 1.0000001289831175,
+  "gt_volume": 0.09984054393440427,
+  "gen_volume": 0.09984055681214887,
+  "gt_bbox": [
+    1.5,
+    0.4253257000000007,
+    0.354438
+  ],
+  "gen_bbox": [
+    1.5007950067520142,
+    0.42532598972320557,
+    0.35443800687789917
+  ]
+}

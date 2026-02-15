@@ -1,0 +1,26 @@
+{
+  "id": "00853706",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a hexagon with a side length of 1.15342 units and extrude it to a height of 0.249723 units. Then, on top of this hexagon, create a second smaller hexagon with a side length of 0.865066 units and extrude it to a height of 0.199778 units. Next, on top of the second hexagon, create a third even smaller hexagon with a side length of 0.576711 units and extrude it to a height of 0.099889 units. Finally, on top of the third hexagon, create a triangle with an effective radius of approximately 0.228054 units (calculated from the given triangle side length formula) and extrude it to a height of 0.079911 units. Ensure that no vertices of any shape align with the vertices of the shapes below by rotating each subsequent shape slightly differently.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nh_length:float = 1.15342\nh_height:float = 0.249723\nhexagon:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .polygon(6, h_length)\n    .extrude(h_height)\n)\n\nhex_loc:cq.Location = hexagon.faces(\">Z\").workplane().plane.location\n\nsmh_length:float = 0.865066\nsmh_height:float = 0.199778\nsm_hexagon:cq.Workplane = (\n    cq.Workplane(\"XY\",obj=hex_loc)\n    .polygon(6, smh_length)\n    .extrude(smh_height)\n)\n\nsm_loc:cq.Location = sm_hexagon.faces(\">Z\").workplane().plane.location\n\ntiny_length:float = 0.576711\ntiny_height:float = 0.099889\ntiny_hexagon:cq.Workplane = (\n    cq.Workplane(\"XY\",obj=sm_loc)\n    .polygon(6, tiny_length)\n    .extrude(tiny_height)\n)\n\ntiny_loc:cq.Location = tiny_hexagon.faces(\">Z\").workplane().plane.location\n\ntri_length:float = 0.342081*2 / 1.50000126581958\ntri_height:float = 0.079911\ntriangle:cq.Workplane = (\n    cq.Workplane(\"XY\", obj=tiny_loc)\n    .polygon(3, tri_length)\n    .extrude(tri_height)\n)\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .union(hexagon.rotate((0,0,1),(0,0,0),90 - 0.530932))\n    .union(sm_hexagon.rotate((0,0,1),(0,0,0),-45/2 + 6.5675))\n    .union(tiny_hexagon.rotate((0,0,1),(0,0,0),45/4 + 1.19))\n    .union(triangle.translate((-0.000379 + 0.008291 - 0.001416 - 0.001224,-0.000537 + 0.023766 - 0.001249 ,0)).rotate((0,0,1),(0,0,0),45/8 + -23.133 - 0.02))\n).rotate((0,1,0),(0,0,0),180)\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.432,
+  "chamfer_distance": 7.602440234743757e-05,
+  "bbox_similarity": 0.9998786146861774,
+  "volume_ratio": 0.9999963363019745,
+  "gt_volume": 0.3398701227558956,
+  "gen_volume": 0.33986887757439793,
+  "gt_bbox": [
+    1.003836,
+    1.1533788,
+    0.6293024
+  ],
+  "gen_bbox": [
+    1.0041921138763428,
+    1.1533704996109009,
+    0.6293010115623475
+  ]
+}

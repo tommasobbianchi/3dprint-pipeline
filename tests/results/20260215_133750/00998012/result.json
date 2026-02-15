@@ -1,0 +1,26 @@
+{
+  "id": "00998012",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a complex, rectangular 3D object with specific dimensions. Start by creating a rectangle with a length of 0.9375 units, a width of 1.5 units, and a height of 0.375 units, and then extrude it to form the base block. Next, design an \"L\"-shaped sketch with one arm having a length of 0.234375 units and a height of 0.328125 units, and the other arm using the length of the base rectangle (0.9375 units). Position this \"L\"-shaped sketch on top of the rectangle, aligning it with one of the corners of the rectangle. Extrude this sketch upwards to create an L-shaped block on top of the rectangular block. Ensure the entire structure is centered by translating it vertically by half the height of the base block.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength = 0.9375\nwidth = 1.5\nheight = 0.375\n\nbase = (\n    cq.Workplane(\"XY\")\n    .box(length, width, height)\n)\n\na_length = 0.234375\na_height = 0.328125\narm = cq.Workplane(\"XY\").box(a_length, length, a_height)\n\npart = (\n    base\n    .union(arm.translate((-length/2+a_length/2,width/2-length/2,height/2+a_height/2)))\n    .union(arm.rotate((0,0,1),(0,0,0),90).translate((0,width/2-a_length/2,height/2+a_height/2)))\n)\n\npart = part.translate((0,0,height/2))\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.444,
+  "chamfer_distance": 0.00010293348988245842,
+  "bbox_similarity": 1.0,
+  "volume_ratio": 1.0,
+  "gt_volume": 0.6535148620605469,
+  "gen_volume": 0.6535148620605469,
+  "gt_bbox": [
+    0.9375,
+    1.5,
+    0.703125
+  ],
+  "gen_bbox": [
+    0.9375,
+    1.5,
+    0.703125
+  ]
+}

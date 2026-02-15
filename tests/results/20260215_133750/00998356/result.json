@@ -1,0 +1,26 @@
+{
+  "id": "00998356",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to generate a triangular 3D object with specific dimensions and features. Begin by sketching an isosceles triangle with a base length of approximately 1.19143 units and a height from the base to the top vertex of approximately 0.85714 units. Round the edges of the two bottom corners of the triangle using a radius of 0.094286 units for the inner circle and an outer diameter of 0.214604 units for the rounding. Cut off the top corner of the triangle with a straight line to create a flat edge near the top, positioned at a height of approximately 0.85714 units from the base. Near each corner of the triangle, sketch a small circular hole with a diameter of 0.094286 units. Extrude this sketch to a height of 0.085714 units to form the 3D object. Additionally, cut a rectangular section from the top flat edge and a cylindrical hole near the base center to refine the shape. Rotate and translate the final object to align and position it as required.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength = 1.19143\nheight = 0.085714\n\ndiameter = 0.094286\nouter_diameter = 0.094286 + 0.060159*2\n\n\nsketch = (\n    cq.Sketch()\n    .push([\n        (-length/2-diameter/2,0),\n        (length/2+diameter/2,0),\n        (0,length/2.8552+diameter/2)\n    ])\n    .circle(outer_diameter/2)\n    .wires()\n    .hull()\n    .push([\n        (-length/2-diameter/2,0),\n        (length/2+diameter/2,0),\n    ])\n    .circle(diameter/2, mode=\"s\")\n)\n\ncut_box = cq.Workplane(\"XY\").box(0.3,0.3,height)\ncut_hole = cq.Workplane(\"XY\").cylinder(height, 0.102857/2)\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .placeSketch(sketch)\n    .extrude(height)\n    .cut(cut_box.translate((0,length/2.8552+0.3/1.35-0.001094,height/2)))\n    .cut(cut_hole.translate((0,0.325506,height/2)))\n)\n\npart = part.rotate((0,0,1),(0,0,0),-90).translate((0.48581-0.008832,0,0))\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.523,
+  "chamfer_distance": 3.851239662199549e-05,
+  "bbox_similarity": 0.9998290644783623,
+  "volume_ratio": 1.0006729976518063,
+  "gt_volume": 0.051871568241484194,
+  "gen_volume": 0.05190647768510622,
+  "gt_bbox": [
+    0.59571424,
+    1.4995954,
+    0.08571429000000004
+  ],
+  "gen_bbox": [
+    0.5957374395802617,
+    1.5003008842468262,
+    0.08571399748325348
+  ]
+}

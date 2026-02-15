@@ -1,0 +1,26 @@
+{
+  "id": "00998698",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create an inverted desk with hexagonal legs. Begin by drawing a rectangular sketch with dimensions 0.5 units by 0.433013 units. From each corner of this rectangle, cut out four small right-angle triangles to create an octagonal surface. Next, extrude this sketch upwards by a small amount, specifically 0.125 units. Then, draw two large, regular hexagons, each with a diameter of 0.5 units, placed symmetrically on opposite ends of the octagonal surface. Ensure that these hexagons are the same size and align perfectly with each end of the surface. Finally, extrude these hexagons outwards by 0.75 units to form two hexagonal columns that appear to protrude from the horizontal surface.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\ndiameter = 0.5\nwidth = 0.433013\nspacer = 0.155128\nsides = 6\nheight = 0.75\n\nhexes = (\n    cq.Sketch()\n    .push([(0,0),(width+spacer,-0.018963)])\n    .regularPolygon(diameter/2,sides)\n)\n\nhex_base = (\n    cq.Sketch()\n    .push([(0,0),(width+spacer,-0.018963)])\n    .regularPolygon(diameter/2,sides)\n    .wires()\n    .hull()\n)\n\nhexagans = (\n    cq.Workplane(\"XY\")\n    .placeSketch(hexes)\n    .extrude(height)\n)\n\nbase = (\n    cq.Workplane(\"XY\")\n    .placeSketch(hex_base)\n    .extrude(0.125)\n)\n\npart = (\n    cq.Workplane(\"XY\")\n    .union(hexagans)\n    .union(base)\n)\n\n\npart = part.rotate((0,0,1),(0,0,0),30+180).translate((00.339552,-0.348832,0))\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.448,
+  "chamfer_distance": 9.281492048651693e-05,
+  "bbox_similarity": 0.9998483784470725,
+  "volume_ratio": 1.0000001417766746,
+  "gt_volume": 0.2600309500308495,
+  "gen_volume": 0.26003098689717286,
+  "gt_bbox": [
+    1.0,
+    0.743269,
+    0.75
+  ],
+  "gen_bbox": [
+    0.9998635351657867,
+    0.7435056567192078,
+    0.75
+  ]
+}

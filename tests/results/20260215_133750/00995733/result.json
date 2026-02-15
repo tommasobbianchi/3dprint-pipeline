@@ -1,0 +1,26 @@
+{
+  "id": "00995733",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create an L-shaped 3D object with specific dimensions. Begin by drawing a sketch that resembles an L, where the horizontal section of the \"L\" is significantly smaller than the vertical section. The vertical section should be slightly curved. The dimensions for the horizontal section are approximately 0.024896 units in length. The vertical section starts with a spline curve from the end of the horizontal section, curving to a length of approximately 0.752339 units, and then continues with a straight line. The entire sketch should then be extruded to a depth of 0.018672 units to create the 3D object.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nextrude:float = 0.018672\n\nresult:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .lineTo(0.024896, 0)#base\n    .spline([\n        (0.024896, 0.000001),\n        (0.024896 - 0.041612-0.055993, 0.752339-0.002339)\n    ], includeCurrent=True)\n    .lineTo(0.024896 - 0.041612 - 0.055993 - 0.060246, 0.752339-0.002339)\n    .lineTo(0.024896 - 0.041612 - 0.055993 - 0.060246,0.752339-0.002339 -0.018672)\n    .lineTo(0.024896 - 0.041612 - 0.055993 - 0.060246 + 0.040456 , 0.752339-0.002339-0.018672)\n    .spline([\n        (0.024896 - 0.041612 -0.055993 - 0.060246+0.040456 , 0.752339-0.002339-0.018672-0.00001),\n        #(0.018634- 0.055-.01, 0.375),\n        #(0.018634- 0.055, 0.275),\n        (0,0.00001)\n    ], includeCurrent=True)\n    .close()\n    .extrude(extrude)\n)\n\ncut_block:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .union(result.translate((-0.0248961,0,0)))\n    .cut(cq.Workplane(\"XY\").box(.1,.1,.1).translate((-.1/2+0.024896 - 0.041612 - 0.055993 - 0.060246 + 0.040456,.1/2+0.752339-0.002339-0.018672,0)))\n)\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .union(result)\n    .cut(cut_block)\n)\n\npart = part.rotate((1,0,0),(0,0,0),-90).rotate((0,0,1),(0,0,0),180).translate((-0.146345,-extrude,0))\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.585,
+  "chamfer_distance": 9.31370954873606e-06,
+  "bbox_similarity": 0.9994898562716443,
+  "volume_ratio": 0.9877451358228667,
+  "gt_volume": 0.00036580230808701627,
+  "gen_volume": 0.000361319450485728,
+  "gt_bbox": [
+    0.15809126,
+    0.018672199999999986,
+    0.75
+  ],
+  "gen_bbox": [
+    0.15785100031644106,
+    0.018672000616788864,
+    0.75
+  ]
+}

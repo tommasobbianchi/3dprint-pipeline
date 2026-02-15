@@ -1,0 +1,26 @@
+{
+  "id": "00522404",
+  "category_semantic": "Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create an object that resembles a pillar. Begin by creating a square base on the X-Z plane with dimensions 0.307377 units by 0.307377 units. Extrude this square by 0.012295 units along the Y-axis. Next, sketch a smaller rectangle centered at the same location as the square, with the same length of 0.307377 units but approximately half its width, around 0.184426 units. Extrude this smaller rectangle by a significant amount, specifically 0.737705 units along the Y-axis, to form the main body of the pillar.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nbase_length:float = 0.307377\nbase_width:float = 0.307377\nbase_height:float = 0.012295\nbase:cq.Workplane = cq.Workplane(\"XY\").box(base_length, base_width, base_height)\n\nplinth_length:float = 0.307377\nplinth_width:float = 0.184426\nplinth_height:float = 0.737705\nplinth:cq.Workplane = cq.Workplane(\"XY\").box(plinth_length, plinth_width, plinth_height)\n\npart:cq.Workplane = base.union(plinth.translate((0, 0, base_height/2 + plinth_height/2)))\n\npart = part.translate((0,0,base_height/2))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.478,
+  "chamfer_distance": 7.805345631733596e-05,
+  "bbox_similarity": 0.9999999770447419,
+  "volume_ratio": 0.9999987769195452,
+  "gt_volume": 0.04298094230629477,
+  "gen_volume": 0.042980889737144305,
+  "gt_bbox": [
+    0.307377,
+    0.307377,
+    0.75
+  ],
+  "gen_bbox": [
+    0.30737701058387756,
+    0.30737701058387756,
+    0.75
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "00984033",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a rectangular plate with specific dimensions and circular holes. First, define a rectangle with a length of 1.5 units, a width of 0.017559 units, and a height of 0.546823 units. Next, cut out three circular holes from the rectangle, each with a diameter of 0.301003 units. Position these holes symmetrically near the top left corner of the rectangle, aligned along the rectangle's length. The first hole should be placed such that its center is at a distance of 0.446488 units from the left edge of the rectangle and 0.050167 units from the top edge. Subsequent holes should be spaced apart by the diameter of the holes plus an additional 0.050167 units along the length of the rectangle. Rotate the final part 180 degrees around the Z-axis for the correct orientation.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 1.5\nwidth:float = 0.017559\nheight:float = 0.546823\n\ndiameter:float = 0.301003\ntop_padding:float = 0.050167\n\nhole = cq.Workplane(\"XZ\").cylinder(width,diameter/2).translate((length/2-diameter/2-0.446488,0,height/2-diameter/2-top_padding))\nbox = cq.Workplane(\"XY\").box(length, width, height)\n\npart:cq.Workplane = (\n    box\n    .cut(hole)\n    .cut(hole.translate((-diameter-0.050167,0,0)))\n    .cut(hole.translate((-diameter*2-0.050167*2,0,0)))\n)\n\npart = part.translate((0,width/2,-height/2)).rotate((0,0,1),(0,0,0),180)\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.468,
+  "chamfer_distance": 3.3437460573915424e-05,
+  "bbox_similarity": 0.9999908916567756,
+  "volume_ratio": 0.9985039048669303,
+  "gt_volume": 0.010672740199759253,
+  "gen_volume": 0.010656772765089875,
+  "gt_bbox": [
+    1.5,
+    0.01755853000000071,
+    0.5468227000000001
+  ],
+  "gen_bbox": [
+    1.5,
+    0.017558999359607787,
+    0.5468230247497559
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "00681053",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a 3D object that resembles an open book. Start by drawing two rectangles, each with dimensions 0.46077 units in length, 0.75 units in width, and 0.048077 units in height. These rectangles should connect to form an obtuse angle, creating the appearance of an open book. Extrude this sketch so that there is only one edge where the rectangles connect, simulating the spine of the book. Use transformations to position and orient the rectangles correctly to achieve the desired shape.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 0.46077\nwidth:float = 0.75\nheight:float = 0.048077\n\nrectangle:cq.Workplane = cq.Workplane(\"XY\").box(length, width, height)\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .union(rectangle.translate((-length/2,0,-height/2)))\n    .union(rectangle.translate((length/2,0,-height/2)).rotate((0,1,0),(0,0,0),-60))\n).translate((length,0,height)).rotate((0,1,0),(0,0,0),30).translate((-0.75/2,-width/2,0))\n\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.457,
+  "chamfer_distance": 7.517153570049217e-05,
+  "bbox_similarity": 0.9999998502739872,
+  "volume_ratio": 1.0000019078916766,
+  "gt_volume": 0.032227734000599965,
+  "gen_volume": 0.03222779548762542,
+  "gt_bbox": [
+    0.798077,
+    0.7500000000000003,
+    0.2720208
+  ],
+  "gen_bbox": [
+    0.7980770468711853,
+    0.75,
+    0.27202090620994573
+  ]
+}

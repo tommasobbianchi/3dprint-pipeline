@@ -1,0 +1,26 @@
+{
+  "id": "00521217",
+  "category_semantic": "Moderate",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a large cylinder with a diameter of 0.059646 units and a height of 0.750036 units. Then, extrude this cylinder. Next, create a smaller, longer cylinder on the bottom of the first cylinder with a diameter that is half of the first cylinder (approximately 0.029823 units) and a length that is five times the length of the first cylinder (approximately 3.75018 units).",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nbase_diameter:float = 0.059646\nbase_height:float = 0.750036\n\ntop_diameter:float = 0.11752\ntop_height:float = 0.09375\n\nbase:cq.Workplane = cq.Workplane(\"XY\").circle(base_diameter/2).extrude(base_height)\ntop:cq.Workplane = cq.Workplane(\"XY\").circle(top_diameter/2).extrude(top_height) \n\npart:cq.Workplane = base.union(top.translate((0, 0, base_height)))\n\npart = part.translate((0, 0, -base_height))\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.413,
+  "chamfer_distance": 1.7071573932648768e-05,
+  "bbox_similarity": 0.999086819494443,
+  "volume_ratio": 0.99129318087689,
+  "gt_volume": 0.0030967347961201007,
+  "gen_volume": 0.003069772086378042,
+  "gt_bbox": [
+    0.11751968,
+    0.11751968,
+    0.84375
+  ],
+  "gen_bbox": [
+    0.11730831488966942,
+    0.11741410940885544,
+    0.8437860012054443
+  ]
+}

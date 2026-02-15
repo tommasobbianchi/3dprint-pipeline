@@ -1,0 +1,26 @@
+{
+  "id": "00017291",
+  "category_semantic": "Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create two shapes that touch each other. The first shape is a large cube with dimensions 0.747683 units for length, width, and height. The second shape is a right triangular prism, which is 1/4th the size of the cube, with a base length and height of 0.498375 units and an extrusion length equal to the cube's length. The triangular prism should be positioned such that two of its edges align with the edges of the cube.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\nfrom typing import List,Tuple\n\nbox_length:float = 0.747683\nbox_width:float = 0.747683\nbox_height:float = 0.747683\nbox:cq.Workplane = cq.Workplane(\"XY\").box(box_length, box_width, box_height)\n\ntriangle_length:float = 0.498375\ntriangle_width:float = 0.498375\ntriangle_extrude:float = box_length\n\npts:List[Tuple[float, float]] = [\n    (0, 0),\n    (0, triangle_width),\n    (triangle_length ,0)\n]\ntriangle:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .polyline(pts)\n    .close()\n    .extrude(triangle_extrude)\n)\n\npart:cq.Workplane = (\n    box\n    .union(triangle.rotate((0,1,0),(0,0,0),90).translate((-box_length/2, -box_width/2, -box_height/2)))\n)\n\npart = part.translate((box_length/2, -box_width/2, box_height/2)).rotate((0, 0, 1),(0, 0, 0),180)\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.409,
+  "chamfer_distance": 8.657687695811704e-05,
+  "bbox_similarity": 0.9988097941626808,
+  "volume_ratio": 0.9992195359307078,
+  "gt_volume": 0.5112299717579892,
+  "gen_volume": 0.5108309751338869,
+  "gt_bbox": [
+    1.495726,
+    0.7499999000000007,
+    0.747863
+  ],
+  "gen_bbox": [
+    1.4953659772872925,
+    0.7476829886436464,
+    0.7476829886436462
+  ]
+}

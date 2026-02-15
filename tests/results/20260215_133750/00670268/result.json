@@ -1,0 +1,26 @@
+{
+  "id": "00670268",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Complex",
+  "prompt": "Write Python code using CADQuery to create a cylindrical 3D object consisting of three cylinders. Start by creating a large cylinder with a height of 0.75 units and a diameter of 0.470339 units. Next, add a smaller cylinder protruding from one of the circular bases of the large cylinder, positioned slightly below the center. This second cylinder should have a height of 0.082627 units (which is 1/8th the height of the first cylinder) and a diameter of 0.152542 units (which is 1/4th the diameter of the first cylinder). Finally, create a third cylinder that is concentric with the second cylinder and protrudes outward. This third cylinder should have a height of 0.190678 units (twice the height of the second cylinder) and a diameter of 0.075981 units (half the diameter of the second cylinder). Adjust the positioning of the second and third cylinders using a padding of 0.247881 units from the edge of the first cylinder. Rotate the entire assembly by -90 degrees around the Y-axis to orient it as desired.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nbase_height:float = 0.75\nbase_diameter:float = 0.470339\nbase_cylinder:cq.Workplane = cq.Workplane(\"XY\").cylinder(base_height, base_diameter/2)\n\nmid_height:float = 0.082627\nmid_diameter:float = 0.152542\nmid_cylinder:cq.Workplane = cq.Workplane(\"XY\").cylinder(mid_height, mid_diameter/2)\n\ntop_height:float = 0.190678\ntop_diameter:float = 0.075981\ntop_cylinder:cq.Workplane = cq.Workplane(\"XY\").cylinder(top_height, top_diameter/2)\n\npadding:float = 0.247881\n\npart:cq.Workplane = (\n    cq.Workplane(\"XY\")\n    .add(base_cylinder.translate((0,0,0)))\n    .add(mid_cylinder.translate((-base_diameter/2 + mid_diameter/2 + padding, 0, base_height/2 + mid_height/2)))\n    .add(top_cylinder.translate((-base_diameter/2 + mid_diameter/2 + padding, 0 ,base_height/2 + mid_height + top_height/2)))\n)\n\npart = part.translate((0,0,-base_height/2)).rotate((0,1,0),(0,0,0),-90)\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.477,
+  "chamfer_distance": 8.312126271690852e-05,
+  "bbox_similarity": 0.9998963677466107,
+  "volume_ratio": 1.0045288376738821,
+  "gt_volume": 0.13201719916555055,
+  "gen_volume": 0.1326150836307319,
+  "gt_bbox": [
+    1.0233051,
+    0.470339,
+    0.470339
+  ],
+  "gen_bbox": [
+    1.0233049988746643,
+    0.4701928198337555,
+    0.47033900022506714
+  ]
+}

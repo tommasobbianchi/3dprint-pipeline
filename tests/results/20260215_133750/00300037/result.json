@@ -1,0 +1,26 @@
+{
+  "id": "00300037",
+  "category_semantic": "Very Complex",
+  "category_mesh": "Simple",
+  "prompt": "Write Python code using CADQuery to create a complex 3D object. Begin by drawing a U-shaped sketch, rectangular in form, with dimensions 0.75 units in length and 0.199115 units in width, on the X-Y plane. Extrude this sketch along the Z-axis by 0.165929 units. Subsequently, create two square sketches positioned at the bottom left and bottom right corners of the U-shaped object. The squares should have dimensions of 0.126106 units by 0.225664 units. Ensure that the square on the left slightly overlaps with the U's bottom left corner, and the square on the right slightly overlaps with the U's bottom right corner. Extrude both squares along the Z-axis to the same extent as the original U-shaped object, which is 0.165929 units.",
+  "mode": "code-only",
+  "generated_code": "import cadquery as cq\n\nlength:float = 0.75\nwidth:float = 0.199115\n\ncut_rec_length:float = 0.232301\ncut_rec_width:float = 0.112832\n\nadd_rec_length:float = 0.126106 \nadd_rec_width:float = 0.225664\n\nextrude:float = 0.165929\n\nsketch:cq.Sketch = (\n    cq.Sketch()\n    .rect(length,width)\n    .push([(0,-cut_rec_width/2)])\n    .rect(cut_rec_length, cut_rec_width, mode=\"s\")\n    .push([(-(0.165929/2+add_rec_length/2),width/2+add_rec_width/2), (0.165929/2+add_rec_length/2,width/2+add_rec_width/2)])\n    .rect(add_rec_length, add_rec_width, mode=\"a\")\n)\n\npart = cq.Workplane(\"XY\").placeSketch(sketch).extrude(extrude)\n\npart = part.translate((length/2,width/2,0)).rotate((1,0,0),(0,0,0),-90)\ncq.exporters.export(part, 'Ground_Truth.stl')",
+  "execution_success": true,
+  "execution_error": null,
+  "execution_time_s": 1.398,
+  "chamfer_distance": 8.9982694269366e-05,
+  "bbox_similarity": 0.9999994520675932,
+  "volume_ratio": 1.0171260575055725,
+  "gt_volume": 0.029873977239747707,
+  "gen_volume": 0.03038560069187579,
+  "gt_bbox": [
+    0.75,
+    0.16592920000000072,
+    0.42477880000000007
+  ],
+  "gen_bbox": [
+    0.75,
+    0.16592900454998022,
+    0.4247789978981018
+  ]
+}
