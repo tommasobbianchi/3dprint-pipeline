@@ -148,11 +148,13 @@
     uploadStatus.textContent = "Uploading to Onshape...";
 
     try {
+      const fname = lastResult.filename || "output.step";
       const result = await OnshapeAPI.uploadSTEP(
         lastResult.step_base64,
-        lastResult.filename || "output.step"
+        fname
       );
-      uploadStatus.textContent = "Import started! A new Part Studio tab will appear shortly.";
+      const tabName = fname.replace(/\.step$/i, "");
+      uploadStatus.textContent = `Imported! Look for the new "${tabName}" tab at the bottom.`;
     } catch (e) {
       uploadStatus.textContent = "Upload failed: " + e.message;
     } finally {
