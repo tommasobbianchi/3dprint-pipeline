@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from .config import FRONTEND_DIR
-from .routers import health, materials, generate
+from .routers import health, materials, generate, onshape_upload
 
 app = FastAPI(title="3dprint-pipeline Onshape Extension", version="0.1.0")
 
@@ -26,6 +26,7 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(materials.router)
 app.include_router(generate.router)
+app.include_router(onshape_upload.router)
 
 # Serve frontend static files (must be last — catches all unmatched routes)
 if FRONTEND_DIR.exists():

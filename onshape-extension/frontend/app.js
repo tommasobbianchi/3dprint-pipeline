@@ -17,9 +17,6 @@
   const downloadStlBtn = document.getElementById("download-stl-btn");
   const uploadBtn = document.getElementById("upload-onshape-btn");
   const uploadStatus = document.getElementById("upload-status");
-  const apiKeySetup = document.getElementById("api-key-setup");
-  const saveKeysBtn = document.getElementById("save-keys-btn");
-  const skipKeysBtn = document.getElementById("skip-keys-btn");
 
   let lastResult = null;
 
@@ -30,13 +27,8 @@
   async function init() {
     await loadMaterials();
 
-    // Show API key setup if in Onshape iframe but no keys
-    if (OnshapeAPI.getContext() && !OnshapeAPI.hasKeys()) {
-      apiKeySetup.style.display = "block";
-    }
-
-    // Show upload button if we have Onshape context + keys
-    if (OnshapeAPI.getContext() && OnshapeAPI.hasKeys()) {
+    // Show upload button if running inside Onshape iframe
+    if (OnshapeAPI.getContext()) {
       uploadBtn.style.display = "inline-block";
     }
   }
@@ -160,27 +152,12 @@
         lastResult.step_base64,
         lastResult.filename || "output.step"
       );
-      uploadStatus.textContent = "Uploaded successfully! Part will appear after translation.";
+      uploadStatus.textContent = "Import started! A new Part Studio tab will appear shortly.";
     } catch (e) {
       uploadStatus.textContent = "Upload failed: " + e.message;
     } finally {
       uploadBtn.disabled = false;
     }
-  });
-
-  // --- API Key Setup ---
-  saveKeysBtn.addEventListener("click", () => {
-    const ak = document.getElementById("access-key").value.trim();
-    const sk = document.getElementById("secret-key").value.trim();
-    if (ak && sk) {
-      OnshapeAPI.saveKeys(ak, sk);
-      apiKeySetup.style.display = "none";
-      uploadBtn.style.display = "inline-block";
-    }
-  });
-
-  skipKeysBtn.addEventListener("click", () => {
-    apiKeySetup.style.display = "none";
   });
 
   // --- Keyboard shortcut ---

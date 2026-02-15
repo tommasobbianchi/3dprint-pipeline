@@ -23,6 +23,13 @@ CLAUDE_TIMEOUT = int(os.environ.get("CLAUDE_TIMEOUT", "120"))  # [s]
 # CadQuery execution
 EXEC_TIMEOUT = int(os.environ.get("EXEC_TIMEOUT", "60"))  # [s]
 
+# Onshape API keys (loaded from file)
+ONSHAPE_KEYS_FILE = Path(os.environ.get(
+    "ONSHAPE_KEYS_FILE",
+    Path.home() / ".config" / "onshape-cadgen" / "api-keys.txt",
+))
+ONSHAPE_API_BASE = os.environ.get("ONSHAPE_API_BASE", "https://cad.onshape.com/api/v6")
+
 # Server
 HOST = os.environ.get("HOST", "0.0.0.0")
 PORT = int(os.environ.get("PORT", "8420"))

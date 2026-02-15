@@ -1,38 +1,10 @@
 /**
- * Onshape REST API helper — blob upload for STEP files.
+ * Onshape integration helper — upload via backend proxy.
  *
- * Auth: Basic (API key pair) stored in localStorage.
  * Onshape injects URL params: documentId, workspaceOrVersionId, elementId
+ * Upload goes through our backend (avoids CORS issues with Onshape API).
  */
 const OnshapeAPI = (() => {
-  const BASE = "https://cad.onshape.com/api/v6";
-
-  function getKeys() {
-    const ak = localStorage.getItem("onshape_access_key");
-    const sk = localStorage.getItem("onshape_secret_key");
-    if (ak && sk) return { accessKey: ak, secretKey: sk };
-    return null;
-  }
-
-  function saveKeys(accessKey, secretKey) {
-    localStorage.setItem("onshape_access_key", accessKey);
-    localStorage.setItem("onshape_secret_key", secretKey);
-  }
-
-  function clearKeys() {
-    localStorage.removeItem("onshape_access_key");
-    localStorage.removeItem("onshape_secret_key");
-  }
-
-  function hasKeys() {
-    return getKeys() !== null;
-  }
-
-  function getAuthHeader() {
-    const keys = getKeys();
-    if (!keys) return null;
-    return "Basic " + btoa(keys.accessKey + ":" + keys.secretKey);
-  }
 
   /** Get Onshape context from URL params (injected by Onshape iframe). */
   function getContext() {
@@ -46,37 +18,30 @@ const OnshapeAPI = (() => {
   }
 
   /**
-   * Upload STEP file as a blob element in the Onshape document.
-   * Returns the translation status URL or throws.
+   * Upload STEP file to Onshape via the backend proxy.
+   * The backend has the API keys and calls Onshape server-side.
    */
   async function uploadSTEP(stepBase64, filename) {
-    const auth = getAuthHeader();
-    if (!auth) throw new Error("No Onshape API keys configured");
-
     const ctx = getContext();
     if (!ctx) throw new Error("No Onshape document context (not in iframe?)");
 
-    // Decode base64 to blob
-    const bytes = Uint8Array.from(atob(stepBase64), c => c.charCodeAt(0));
-    const blob = new Blob([bytes], { type: "application/octet-stream" });
-
-    const formData = new FormData();
-    formData.append("file", blob, filename);
-
-    const url = `${BASE}/blobelements/d/${ctx.documentId}/w/${ctx.workspaceId}`;
-    const resp = await fetch(url, {
+    const resp = await fetch("/api/upload-to-onshape", {
       method: "POST",
-      headers: { "Authorization": auth },
-      body: formData,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        step_base64: stepBase64,
+        filename: filename,
+        document_id: ctx.documentId,
+        workspace_id: ctx.workspaceId,
+      }),
     });
 
-    if (!resp.ok) {
-      const text = await resp.text();
-      throw new Error(`Onshape upload failed (${resp.status}): ${text}`);
+    const data = await resp.json();
+    if (!data.success) {
+      throw new Error(data.error || "Upload failed");
     }
-
-    return await resp.json();
+    return data;
   }
 
-  return { getKeys, saveKeys, clearKeys, hasKeys, getContext, uploadSTEP };
+  return { getContext, uploadSTEP };
 })();
