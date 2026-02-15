@@ -13,6 +13,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://cad.onshape.com",
+        "https://nativedev.tail7d3518.ts.net",
         "http://localhost:3000",
         "http://localhost:8420",
     ],
