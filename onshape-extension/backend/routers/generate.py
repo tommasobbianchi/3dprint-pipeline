@@ -9,6 +9,7 @@ from fastapi import APIRouter
 from ..services.skill_loader import load_system_prompt
 from ..services.claude_service import (
     generate_cadquery_code, modify_cadquery_code, lookup_dimensions,
+    validate_shape_visually,
 )
 from ..services.reference_loader import find_matching_references
 from ..services.cadquery_service import execute_and_export
@@ -86,6 +87,7 @@ class GenerateResponse(BaseModel):
     model: str | None = None
     code: str | None = None
     attempts: int = 1
+    visual_check: dict | None = None
 
 
 async def _enrich_prompt(prompt: str) -> str:
@@ -144,29 +146,19 @@ async def generate(req: GenerateRequest):
     code = claude_result["code"]
     last_error = None
     last_metrics = None
+    exec_ok = None
+    total_attempts = 0
 
     # Step 2: Execute with auto-retry loop
     for attempt in range(MAX_AUTO_RETRIES + 1):
         exec_result = await execute_and_export(code)
+        total_attempts = attempt + 1
 
         if exec_result["success"]:
             if attempt > 0:
                 log.info("Auto-retry succeeded on attempt %d", attempt + 1)
-
-            slug = req.prompt[:40].lower().replace(" ", "_")
-            slug = "".join(c for c in slug if c.isalnum() or c == "_")
-            filename = f"{slug}.step"
-
-            return GenerateResponse(
-                success=True,
-                step_base64=exec_result["step_base64"],
-                stl_base64=exec_result["stl_base64"],
-                filename=filename,
-                metrics=exec_result["metrics"],
-                model=claude_result["model"],
-                code=code,
-                attempts=attempt + 1,
-            )
+            exec_ok = exec_result
+            break
 
         last_error = exec_result["error"]
         last_metrics = exec_result["metrics"]
@@ -183,15 +175,66 @@ async def generate(req: GenerateRequest):
                 system_prompt, code, fix_instruction, req.material
             )
             if fix_result["error"] or not fix_result["code"]:
-                # Claude itself failed to fix — stop retrying
                 break
             code = fix_result["code"]
 
+    if not exec_ok:
+        return GenerateResponse(
+            success=False,
+            error=last_error,
+            metrics=last_metrics,
+            model=claude_result["model"],
+            code=code,
+            attempts=total_attempts,
+        )
+
+    # Step 3: Visual shape validation (new generations only)
+    visual_check = None
+    if not req.previous_code and exec_ok.get("svg_iso"):
+        log.info("Running visual shape validation")
+        visual_check = await validate_shape_visually(
+            req.prompt,
+            exec_ok["svg_iso"],
+            exec_ok["svg_front"],
+            exec_ok["metrics"],
+        )
+        log.info(
+            "Visual check: confidence=%s category=%s valid=%s",
+            visual_check.get("confidence"),
+            visual_check.get("category"),
+            visual_check.get("valid"),
+        )
+
+        # Visual retry: if shape is wrong and we have a critique, fix once
+        if not visual_check["valid"] and visual_check.get("critique"):
+            log.info("Visual retry: %s", visual_check["critique"])
+            fix_result = await modify_cadquery_code(
+                system_prompt, code, visual_check["critique"], req.material
+            )
+            if fix_result.get("code"):
+                retry_exec = await execute_and_export(fix_result["code"])
+                total_attempts += 1
+                if retry_exec["success"]:
+                    log.info("Visual retry succeeded")
+                    code = fix_result["code"]
+                    exec_ok = retry_exec
+                    visual_check["retried"] = True
+                else:
+                    log.info("Visual retry failed — keeping original shape")
+                    visual_check["retried"] = False
+
+    slug = req.prompt[:40].lower().replace(" ", "_")
+    slug = "".join(c for c in slug if c.isalnum() or c == "_")
+    filename = f"{slug}.step"
+
     return GenerateResponse(
-        success=False,
-        error=last_error,
-        metrics=last_metrics,
+        success=True,
+        step_base64=exec_ok["step_base64"],
+        stl_base64=exec_ok["stl_base64"],
+        filename=filename,
+        metrics=exec_ok["metrics"],
         model=claude_result["model"],
         code=code,
-        attempts=MAX_AUTO_RETRIES + 1,
+        attempts=total_attempts,
+        visual_check=visual_check,
     )

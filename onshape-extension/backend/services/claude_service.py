@@ -240,6 +240,140 @@ async def modify_cadquery_code(
         }
 
 
+SHAPE_VALIDATION_PROMPT = """You are a 3D shape validator. You receive SVG wireframe views of a generated 3D-printable part and the original design request. Determine if the shape correctly represents what was requested.
+
+ORIGINAL REQUEST: {prompt}
+
+BOUNDING BOX: {size_x:.1f} x {size_y:.1f} x {size_z:.1f} mm
+VOLUME: {volume:.0f} mm³
+
+ISOMETRIC VIEW (SVG):
+{svg_iso}
+
+FRONT VIEW (SVG):
+{svg_front}
+
+Answer in EXACTLY this format (one line each, no extra text):
+CATEGORY: <object type — e.g. bracket, enclosure, stool, gear, tube, plate, phone_case, mount, spacer, or "custom">
+MATCH: <YES or NO — does the shape match the request?>
+MISSING: <comma-separated list of missing/wrong features, or NONE>
+PROPORTIONS: <OK, or list of proportion issues>
+CONFIDENCE: <1-10 integer>
+FIX: <one-line fix instruction if CONFIDENCE < 7, otherwise NONE>
+"""
+
+
+def _parse_validation_response(response: str) -> dict:
+    """Parse the structured validation response into a dict."""
+    result = {
+        "valid": True,
+        "confidence": 10,
+        "category": None,
+        "match": True,
+        "missing": None,
+        "proportions": None,
+        "critique": None,
+        "error": None,
+    }
+
+    for line in response.splitlines():
+        line = line.strip()
+        if line.startswith("CATEGORY:"):
+            result["category"] = line.split(":", 1)[1].strip().lower()
+        elif line.startswith("MATCH:"):
+            val = line.split(":", 1)[1].strip().upper()
+            result["match"] = val.startswith("YES")
+        elif line.startswith("MISSING:"):
+            val = line.split(":", 1)[1].strip()
+            if val.upper() != "NONE":
+                result["missing"] = val
+        elif line.startswith("PROPORTIONS:"):
+            val = line.split(":", 1)[1].strip()
+            if val.upper() != "OK":
+                result["proportions"] = val
+        elif line.startswith("CONFIDENCE:"):
+            try:
+                result["confidence"] = int(line.split(":", 1)[1].strip())
+            except ValueError:
+                pass
+        elif line.startswith("FIX:"):
+            val = line.split(":", 1)[1].strip()
+            if val.upper() != "NONE":
+                result["critique"] = val
+
+    result["valid"] = result["confidence"] >= 7 and result["match"]
+
+    # Build critique from missing + proportions if FIX line was empty
+    if not result["valid"] and not result["critique"]:
+        parts = []
+        if result["missing"]:
+            parts.append(f"Missing features: {result['missing']}")
+        if result["proportions"]:
+            parts.append(f"Proportion issues: {result['proportions']}")
+        if parts:
+            result["critique"] = ". ".join(parts)
+
+    return result
+
+
+async def validate_shape_visually(
+    prompt: str,
+    svg_iso: str,
+    svg_front: str,
+    metrics: dict,
+) -> dict:
+    """Validate a generated 3D shape by sending SVG views to Claude.
+
+    Returns dict with: valid, confidence, category, match, missing,
+    proportions, critique, error
+    """
+    size = metrics.get("size") or [0, 0, 0]
+    volume = metrics.get("volume") or 0
+
+    full_prompt = SHAPE_VALIDATION_PROMPT.format(
+        prompt=prompt,
+        size_x=size[0], size_y=size[1], size_z=size[2],
+        volume=volume,
+        svg_iso=svg_iso or "(not available)",
+        svg_front=svg_front or "(not available)",
+    )
+
+    env = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}
+
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            CLAUDE_CLI,
+            "--print",
+            "--model", CLAUDE_MODEL,
+            "--tools", "",
+            "--no-session-persistence",
+            stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            env=env,
+        )
+        stdout, stderr = await asyncio.wait_for(
+            proc.communicate(input=full_prompt.encode()), timeout=60
+        )
+        response = stdout.decode().strip()
+
+        if proc.returncode != 0 or not response:
+            log.warning("Visual validation failed (exit %d)", proc.returncode)
+            return {"valid": True, "confidence": 0, "category": None,
+                    "critique": None, "error": "validation call failed"}
+
+        return _parse_validation_response(response)
+
+    except asyncio.TimeoutError:
+        log.warning("Visual validation timed out")
+        return {"valid": True, "confidence": 0, "category": None,
+                "critique": None, "error": "validation timed out"}
+    except Exception as e:
+        log.warning("Visual validation error: %s", e)
+        return {"valid": True, "confidence": 0, "category": None,
+                "critique": None, "error": str(e)}
+
+
 async def lookup_dimensions(user_prompt: str) -> str | None:
     """Fast Claude call to look up real-world dimensions for objects in the prompt.
 

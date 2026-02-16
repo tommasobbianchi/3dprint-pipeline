@@ -130,7 +130,24 @@
       html += `<b>Solids:</b> <span>${m.solid_count}</span><br>`;
     }
     if (data.attempts && data.attempts > 1) {
-      html += `<b>Auto-fixed:</b> <span>succeeded on attempt ${data.attempts}</span>`;
+      html += `<b>Auto-fixed:</b> <span>succeeded on attempt ${data.attempts}</span><br>`;
+    }
+    if (data.visual_check) {
+      const vc = data.visual_check;
+      const conf = vc.confidence || 0;
+      const color = conf >= 7 ? "#38a169" : conf >= 4 ? "#d69e2e" : "#e53e3e";
+      const icon = vc.valid ? "\u2713" : "\u2717";
+      html += `<b>Shape check:</b> <span class="vc-badge" style="color:${color}">${icon} ${conf}/10</span>`;
+      if (vc.category) {
+        html += ` <span>${vc.category}</span>`;
+      }
+      if (vc.retried) {
+        html += ` <span class="vc-retry">visual retry applied</span>`;
+      }
+      html += "<br>";
+      if (vc.missing && !vc.valid) {
+        html += `<span class="vc-note">Missing: ${vc.missing}</span><br>`;
+      }
     }
     metricsEl.innerHTML = html;
 

@@ -27,6 +27,23 @@ _out = _os.environ.get("OUT_DIR", ".")
 import cadquery as _cq
 _cq.exporters.export(result, _os.path.join(_out, "output.step"))
 _cq.exporters.export(result, _os.path.join(_out, "output.stl"))
+
+# === SVG PREVIEWS (for visual validation) ===
+try:
+    _cq.exporters.export(result, _os.path.join(_out, "preview_iso.svg"),
+        exportType='SVG', opt={
+            "projectionDir": (1, -1, 0.5),
+            "width": 400, "height": 400,
+            "showAxes": False, "strokeWidth": 0.5,
+        })
+    _cq.exporters.export(result, _os.path.join(_out, "preview_front.svg"),
+        exportType='SVG', opt={
+            "projectionDir": (0, -1, 0),
+            "width": 400, "height": 400,
+            "showAxes": False, "strokeWidth": 0.5,
+        })
+except Exception:
+    pass  # SVG export is optional — don't fail the build
 """
 
 
@@ -85,6 +102,8 @@ async def execute_and_export(code: str) -> dict:
                 "success": False,
                 "step_base64": None,
                 "stl_base64": None,
+                "svg_iso": None,
+                "svg_front": None,
                 "metrics": None,
                 "error": f"Execution timed out after {EXEC_TIMEOUT}s",
             }
@@ -94,6 +113,8 @@ async def execute_and_export(code: str) -> dict:
                 "success": False,
                 "step_base64": None,
                 "stl_base64": None,
+                "svg_iso": None,
+                "svg_front": None,
                 "metrics": None,
                 "error": stderr[:500] if stderr else "CadQuery execution failed",
             }
@@ -106,6 +127,8 @@ async def execute_and_export(code: str) -> dict:
                 "success": False,
                 "step_base64": None,
                 "stl_base64": None,
+                "svg_iso": None,
+                "svg_front": None,
                 "metrics": metrics,
                 "error": f"Expected 1 solid, got {metrics['solid_count']}",
             }
@@ -126,14 +149,28 @@ async def execute_and_export(code: str) -> dict:
                 "success": False,
                 "step_base64": None,
                 "stl_base64": None,
+                "svg_iso": None,
+                "svg_front": None,
                 "metrics": metrics,
                 "error": "STEP file not produced",
             }
+
+        # Read SVG previews (optional — may not exist if export failed)
+        svg_iso = None
+        svg_front = None
+        svg_iso_path = Path(tmpdir) / "preview_iso.svg"
+        svg_front_path = Path(tmpdir) / "preview_front.svg"
+        if svg_iso_path.exists():
+            svg_iso = svg_iso_path.read_text()
+        if svg_front_path.exists():
+            svg_front = svg_front_path.read_text()
 
         return {
             "success": True,
             "step_base64": step_b64,
             "stl_base64": stl_b64,
+            "svg_iso": svg_iso,
+            "svg_front": svg_front,
             "metrics": metrics,
             "error": None,
         }

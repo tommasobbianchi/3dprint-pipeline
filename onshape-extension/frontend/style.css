@@ -183,3 +183,18 @@ pre {
   background: #eef4fb;
   border-radius: 4px;
 }
+
+.vc-badge {
+  font-weight: 700;
+}
+
+.vc-retry {
+  font-size: 11px;
+  color: #d69e2e;
+  font-style: italic;
+}
+
+.vc-note {
+  font-size: 11px;
+  color: #888;
+}
