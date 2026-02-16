@@ -27,13 +27,60 @@
   // Determine backend URL (same origin when served by FastAPI)
   const API_BASE = "";
 
+  // --- Persistent state (survives tab switches in Onshape) ---
+  const ctx = OnshapeAPI.getContext();
+  const STORAGE_KEY = ctx ? "cadgen_" + ctx.documentId : null;
+
+  function saveState() {
+    if (!STORAGE_KEY) return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        code: lastCode,
+        prompt: lastPrompt,
+        result: lastResult,
+        derivedFeatureId: lastDerivedFeatureId,
+        sourceElementId: lastSourceElementId,
+      }));
+    } catch (e) { /* quota exceeded — ignore */ }
+  }
+
+  function loadState() {
+    if (!STORAGE_KEY) return false;
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return false;
+      const s = JSON.parse(raw);
+      if (s.code) {
+        lastCode = s.code;
+        lastPrompt = s.prompt;
+        lastResult = s.result;
+        lastDerivedFeatureId = s.derivedFeatureId || null;
+        lastSourceElementId = s.sourceElementId || null;
+        return true;
+      }
+    } catch (e) { /* corrupt data — ignore */ }
+    return false;
+  }
+
+  function clearState() {
+    if (STORAGE_KEY) localStorage.removeItem(STORAGE_KEY);
+  }
+
   // --- Init ---
   async function init() {
     await loadMaterials();
 
     // Show upload button if running inside Onshape iframe
-    if (OnshapeAPI.getContext()) {
+    if (ctx) {
       uploadBtn.style.display = "inline-block";
+    }
+
+    // Restore state from previous session (survives tab switches)
+    if (loadState()) {
+      enterModifyMode();
+      if (lastResult && lastResult.success) {
+        showResult(lastResult);
+      }
     }
   }
 
@@ -95,6 +142,7 @@
         lastCode = data.code;
         if (!lastPrompt) lastPrompt = prompt;
         enterModifyMode();
+        saveState();
       }
 
       if (data.success) {
@@ -186,20 +234,40 @@
   });
 
   // --- Onshape Upload ---
+  let lastDerivedFeatureId = null;
+  let lastSourceElementId = null;
+
   uploadBtn.addEventListener("click", async () => {
     if (!lastResult || !lastResult.step_base64) return;
 
     uploadBtn.disabled = true;
-    uploadStatus.textContent = "Uploading to Onshape...";
+    uploadStatus.textContent = "Importing into Part Studio...";
 
     try {
       const fname = lastResult.filename || "output.step";
       const result = await OnshapeAPI.uploadSTEP(
         lastResult.step_base64,
-        fname
+        fname,
+        lastDerivedFeatureId,
+        lastSourceElementId
       );
-      const tabName = fname.replace(/\.step$/i, "");
-      uploadStatus.textContent = `Imported! Look for the new "${tabName}" tab at the bottom.`;
+      if (result.derived_feature_id) {
+        lastDerivedFeatureId = result.derived_feature_id;
+        lastSourceElementId = result.source_element_id || null;
+        uploadStatus.textContent = "Imported into current Part Studio!";
+      } else if (result.element_id) {
+        // Fallback: geometry in a new tab
+        lastDerivedFeatureId = null;
+        lastSourceElementId = null;
+        const tabName = fname.replace(/\.step$/i, "");
+        uploadStatus.textContent = `Imported! Look for the "${tabName}" tab.`;
+      } else {
+        uploadStatus.textContent = "Imported!";
+      }
+      if (result.error) {
+        uploadStatus.textContent += " (" + result.error + ")";
+      }
+      saveState();
     } catch (e) {
       uploadStatus.textContent = "Upload failed: " + e.message;
     } finally {
@@ -224,6 +292,9 @@
     lastCode = null;
     lastPrompt = null;
     lastResult = null;
+    lastDerivedFeatureId = null;
+    lastSourceElementId = null;
+    clearState();
     generateBtn.textContent = "Generate";
     promptEl.placeholder = "e.g. 30mm cube with a 10mm center through-hole";
     promptEl.value = "";
