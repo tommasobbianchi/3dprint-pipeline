@@ -175,9 +175,18 @@ cq.Workplane("XY").sphere(radius)
 # Wedge / Triangle
 cq.Workplane("XZ").polyline([(0,0), (base,0), (0,height)]).close().extrude(depth)
 
-# Rounded rectangle (Sketch API)
+# Rounded rectangle (Sketch API) — USE FOR ALL CONSUMER PRODUCTS
 from cadquery import Sketch
 cq.Workplane("XY").placeSketch(Sketch().rect(w, h).vertices().fillet(r)).extrude(depth)
+
+# Pill-shaped slot (rounded ends) — USE FOR ALL BUTTON/PORT CUTOUTS
+cq.Workplane("YZ").center(x, y).slot2D(length, width).extrude(depth)
+
+# IMPORTANT: For consumer products (cases, covers, handles, grips):
+#   → Main body profile: ALWAYS Sketch().rect().vertices().fillet(), NEVER .box()
+#   → Cutouts/openings: ALWAYS slot2D() or Sketch().rect().vertices().fillet(), NEVER .box()
+#   → Horizontal edges: ALWAYS fillet with .edges("<Z").fillet(r) AND .edges(">Z").fillet(r)
+#   → A consumer product with sharp edges looks unfinished
 ```
 
 ### 3.2 Face and Edge Selectors
@@ -361,6 +370,24 @@ body = part_a.intersect(part_b)
 
 # Shell outward
 .faces(">Z").shell(wall_thickness)
+
+# === CRITICAL: shell() creates complex edges — same fillet danger as union()/cut() ===
+# After .shell(), NEVER apply broad edge selectors like .edges("|Z").fillet(r)
+# The shell operation splits edges and creates thin wall corners that fillet cannot handle.
+
+# BAD — fillet after shell crashes OCC kernel
+body = cq.Workplane("XY").box(w, d, h).faces(">Z").shell(-wall)
+body = body.edges("|Z").fillet(r)  # CRASHES — shell created complex edge topology
+
+# GOOD — fillet the solid BEFORE shelling
+body = cq.Workplane("XY").box(w, d, h).edges("|Z").fillet(r)  # safe on solid
+body = body.faces(">Z").shell(-wall)  # shell preserves the fillets
+
+# GOOD — for enclosures/cases: build outer shell as solid, then subtract a cavity
+outer = cq.Workplane("XY").box(w, d, h).edges("|Z").fillet(r)  # fillet on solid
+cavity = cq.Workplane("XY").workplane(offset=wall).box(w-2*wall, d-2*wall, h)
+cavity = cavity.edges("|Z").fillet(r - wall)  # fillet cavity too
+body = outer.cut(cavity)  # hollow it out via subtraction — geometry stays clean
 ```
 
 ### 3.10 Assembly

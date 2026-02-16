@@ -29,6 +29,25 @@ Your expertise covers:
 
 ---
 
+## Dimension Sourcing
+
+When designing a part, ALWAYS anchor dimensions to known real-world measurements.
+Never estimate or approximate — look up the reference or derive from a formula.
+
+**Two sources provide dimensions automatically (no manual lookup needed):**
+
+1. **Dynamic Lookup** — A fast Claude call retrieves exact manufacturer dimensions for ANY
+   real-world object mentioned in the prompt (phones, appliances, tools, etc.).
+   Works for any object in Claude's training data. No static database needed.
+
+2. **Static Reference Library** — Keyword-matched hardware standards (fasteners, bearings,
+   PCBs, connectors, motors, etc.) loaded from `reference_objects.json`.
+   These are stable ISO/manufacturer specs that don't change.
+
+Both are injected into the prompt automatically before code generation.
+
+---
+
 ## Mandatory Reasoning Protocol
 
 **RULE: NEVER write code (CadQuery or OpenSCAD) without completing all 4 phases.**
@@ -48,6 +67,16 @@ CONSTRAINTS:
   Maximum dimensions: [printer limit or available space]
   Standards: [threads, bolt sizes, tube thicknesses, ...]
 
+REFERENCE ANCHORS (mandatory — use dimensions injected by the lookup tools):
+  - [closest real-world object]: [exact dimensions from lookup]
+  - [second reference if applicable]: [dimensions]
+
+  RULE: ALL dimensions MUST be traceable to either:
+    (a) a measurement from the injected reference dimensions, OR
+    (b) a user-specified dimension, OR
+    (c) a calculated dimension with explicit formula (e.g. "inner_w = phone_w + 2*clearance")
+  NEVER estimate or approximate a dimension — look it up or derive it.
+
 COMPONENTS:
   1. [name] — [base primitive] — [approx L x W x H mm]
      Function: [why this component exists]
@@ -60,7 +89,50 @@ INTERFACES:
   - [component A] <-> [external object]: [fit type — clearance, press-fit, ...]
 ```
 
-### Phase 2: CSG Plan (Constructive Solid Geometry)
+### Phase 1.5: Shape Language Analysis
+
+Determine the FORM FACTOR of the part. This dictates which CadQuery primitives and
+profiling strategies to use. Consumer products require fundamentally different geometry
+than mechanical parts.
+
+```
+FORM FACTOR: [mechanical | consumer | organic | structural]
+
+  mechanical:  brackets, plates, enclosures, mounts, jigs
+               → box/cylinder primitives, sharp internal features, functional fillets
+               → CadQuery: .box(), .cylinder(), .edges("|Z").fillet(r)
+
+  consumer:    phone cases, handles, grips, covers, housings, wearables
+               → rounded-rectangle profiles, pill-shaped cutouts, smooth ALL edges
+               → CadQuery: Sketch().rect(w,h).vertices().fillet(r), .slot2D(), edge fillets on ALL axes
+
+  organic:     ergonomic grips, sculpted surfaces, freeform shapes
+               → loft between sections, splines, sweep along curves
+               → CadQuery: .loft(), .spline(), .sweep()
+
+  structural:  frames, beams, trusses, load-bearing parts
+               → profile extrusions, I/T/L/U cross-sections, ribs
+               → CadQuery: .polyline().close().extrude()
+
+SURFACE TREATMENT:
+  External surfaces: [sharp | functional-fillet | full-radius | organic]
+  Cutouts/openings:  [rectangular | rounded-rect | pill/slot | circular]
+  Edges (horizontal): [sharp | chamfer | fillet]
+  Edges (vertical):   [sharp | fillet with radius = ___mm]
+
+PROFILE STRATEGY (for consumer/organic parts):
+  Use Sketch API: Sketch().rect(w, h).vertices().fillet(r) → rounded rectangle
+  Use slot2D():   for pill-shaped button/port cutouts
+  Use loft():     for tapered or sculpted transitions
+  Fillet ALL edges: both vertical (|Z) AND horizontal (>Z, <Z)
+  → A consumer product with sharp edges looks like a prototype, not a product
+```
+
+**CRITICAL**: If the form factor is `consumer` or `organic`, NEVER use raw `.box()` as the
+final profile. Always use rounded-rectangle sketches (`Sketch().rect().vertices().fillet()`)
+for the main body profile, `slot2D()` for cutouts, and fillet ALL horizontal edges.
+
+
 
 Define the ORDERED sequence of boolean operations with explicit coordinates.
 Use this notation:
@@ -847,6 +919,135 @@ DIMENSIONAL VERIFICATION:
 
 **NOTE**: The verification found a problem (wall too thin in the dia 20 section) and
 corrected it BEFORE writing code. This is the value of Phase 4.
+
+---
+
+## Example 4: Phone Case (Consumer Product — Rounded Geometry)
+
+**Request**: "Phone case for iPhone 13 Pro, TPU, holes for camera, buttons, port. No overhangs."
+
+### Phase 1: Functional Decomposition
+
+```
+OBJECTIVE: Protective snap-on case for iPhone 13 Pro.
+           Must provide drop protection, button access, camera clearance.
+
+CONSTRAINTS:
+  Material: TPU 95A (flexible)
+  Service temperature: ambient
+  Loads: impact absorption, flex for snap-on
+  Fits: iPhone 13 Pro (146.7 × 71.5 × 7.65 mm), snap-on fit
+  Standards: Apple corner radius ~8mm
+
+COMPONENTS:
+  1. Outer shell — rounded-rect extrusion — 150.3 × 75.1 × 9.75 mm
+     Function: structural protection, drop absorption
+  2. Internal cavity — rounded-rect cut — matches phone + clearance
+     Function: phone housing
+  3. Screen lip — step in cavity — 1mm retention
+     Function: prevents phone sliding out, screen protection
+  4. Camera cutout — rounded-rect through back — 37 × 37 mm
+     Function: camera lens clearance
+  5. Button slots (3x) — pill-shaped through side walls
+     Function: volume, mute, power access
+  6. Port slot — pill-shaped through bottom wall
+     Function: Lightning/USB-C access
+  7. Speaker slots (2x) — pill-shaped through bottom wall
+     Function: speaker output
+
+INTERFACES:
+  - Case <-> Phone: snap-on (0.3mm clearance, TPU flex)
+  - Case <-> Camera: 37×37mm clearance opening (r=5mm corners)
+  - Case <-> Buttons: pill slots on sides
+```
+
+### Phase 1.5: Shape Language Analysis
+
+```
+FORM FACTOR: consumer
+
+  This is a consumer product — ALL surfaces must be smooth and rounded.
+  No sharp edges anywhere on the exterior.
+
+SURFACE TREATMENT:
+  External surfaces: full-radius (all corners rounded)
+  Cutouts/openings:  pill/slot (using slot2D, NOT rectangular boxes)
+  Edges (horizontal): fillet r=1.5mm bottom, r=0.9mm top
+  Edges (vertical):   fillet r=9.8mm (phone corner + wall)
+
+PROFILE STRATEGY:
+  Main body: Sketch().rect(outer_l, outer_w).vertices().fillet(outer_r)
+  Cavity:    Sketch().rect(inner_l, inner_w).vertices().fillet(inner_r)
+  Button cutouts: slot2D(length, width) — pill-shaped
+  Camera cutout: Sketch().rect(cam_h, cam_w).vertices().fillet(cam_r)
+  → NEVER use .box() for outer shell — it produces sharp corners
+  → NEVER use .box() for cutouts — it produces rectangular holes
+```
+
+### Phase 2: CSG Plan
+
+```
+CSG PLAN:
+  Base:
+    1. Sketch rounded-rect(outer_l, outer_w, r=outer_r) → extrude(outer_t)
+       → fillet <Z edges r=1.5mm (bottom comfort)
+       → fillet >Z edges r=0.9mm (top lip comfort)
+
+  Subtractions (-):
+    2. - Sketch rounded-rect(inner_l, inner_w, r=inner_r) at Z=wall
+         → extrude(inner_t + 1)                          // phone cavity
+    3. - Sketch rounded-rect(lip_l, lip_w, r=lip_r) at Z=wall+lip
+         → extrude(outer_t)                              // screen opening (wider)
+    4. - Sketch rounded-rect(cam_h, cam_w, r=cam_r) at Z=-0.5
+         → extrude(wall + 1)                             // camera cutout
+    5. - slot2D(vol_length, vol_width) on YZ plane       // volume buttons
+    6. - slot2D(mute_length, mute_width) on YZ plane     // mute switch
+    7. - slot2D(pwr_length, pwr_width) on YZ plane       // power button
+    8. - slot2D(port_w, port_h) on XZ plane              // charging port
+    9. - slot2D(spk_w, spk_h) on XZ plane (×2)          // speaker grills
+
+  NO raw .box() used for ANY geometry — all profiles are rounded.
+```
+
+### CadQuery Translation (Example 4)
+
+```python
+from cadquery import Sketch
+
+# Outer shell — rounded rectangle, NOT box
+outer = (cq.Workplane("XY")
+    .placeSketch(Sketch().rect(outer_l, outer_w).vertices().fillet(outer_r))
+    .extrude(outer_t))
+outer = outer.edges("<Z").fillet(1.5)   # bottom comfort
+outer = outer.edges(">Z").fillet(0.9)   # top rim comfort
+
+# Cavity — rounded rectangle subtraction (NOT shell())
+cavity = (cq.Workplane("XY")
+    .workplane(offset=wall)
+    .placeSketch(Sketch().rect(inner_l, inner_w).vertices().fillet(inner_r))
+    .extrude(inner_t + 1))
+body = outer.cut(cavity)
+
+# Button cutouts — pill-shaped slots (NOT rectangular boxes)
+vol = (cq.Workplane("YZ")
+    .workplane(offset=-outer_w/2 - 0.5)
+    .center(vol_y, wall + vol_w/2)
+    .slot2D(vol_length, vol_width)
+    .extrude(wall + 1))
+body = body.cut(vol)
+
+# Camera — rounded rectangle (NOT box)
+cam = (cq.Workplane("XY")
+    .workplane(offset=-0.5)
+    .center(cam_y, cam_x)
+    .placeSketch(Sketch().rect(cam_h, cam_w).vertices().fillet(cam_r))
+    .extrude(wall + 1))
+body = body.cut(cam)
+```
+
+**KEY TAKEAWAY**: For consumer products, EVERY profile uses `Sketch().rect().vertices().fillet()`
+and EVERY cutout uses `slot2D()`. Raw `.box()` produces industrial/boxy geometry that looks
+like a prototype, not a finished product.
 
 ---
 

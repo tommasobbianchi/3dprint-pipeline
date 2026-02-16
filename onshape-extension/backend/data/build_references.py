@@ -1,0 +1,446 @@
+#!/usr/bin/env python3
+"""Build reference_objects.json from curated hardware standards.
+
+Contains ONLY stable standards (fasteners, bearings, PCBs, connectors, motors,
+enclosure defaults). Consumer objects (phones, appliances, etc.) are handled by
+the dynamic dimension lookup tool (lookup_dimensions in claude_service.py).
+
+Sources:
+- ISO 4762 (socket head cap screws)
+- ISO 4032 (hex nuts)
+- ISO 7089 (washers)
+- Manufacturer datasheets (PCBs, connectors, motors)
+
+Run: python build_references.py
+Output: reference_objects.json
+"""
+import json
+from pathlib import Path
+
+OUTPUT = Path(__file__).parent / "reference_objects.json"
+
+# ---------------------------------------------------------------------------
+# Curated: PCBs, connectors, motors, bearings, enclosure defaults
+# (These are stable standards that don't change)
+# ---------------------------------------------------------------------------
+
+PCBS = [
+    {"name": "Raspberry Pi 5", "length_mm": 85.0, "width_mm": 56.0, "height_mm": 17.0,
+     "mounting_holes": "M2.5", "hole_pattern_mm": "58x49", "notes": "4x M2.5 mounting holes"},
+    {"name": "Raspberry Pi 4B", "length_mm": 85.0, "width_mm": 56.0, "height_mm": 17.0,
+     "mounting_holes": "M2.5", "hole_pattern_mm": "58x49", "notes": "4x M2.5 mounting holes"},
+    {"name": "Raspberry Pi 3B+", "length_mm": 85.0, "width_mm": 56.0, "height_mm": 17.0,
+     "mounting_holes": "M2.5", "hole_pattern_mm": "58x49", "notes": "4x M2.5 mounting holes"},
+    {"name": "Raspberry Pi Zero 2W", "length_mm": 65.0, "width_mm": 30.0, "height_mm": 5.0,
+     "mounting_holes": "M2.5", "hole_pattern_mm": "58x23", "notes": "4x M2.5 mounting holes"},
+    {"name": "Raspberry Pi Pico", "length_mm": 51.0, "width_mm": 21.0, "height_mm": 3.9,
+     "mounting_holes": "M2", "hole_pattern_mm": "47x11.4", "notes": "4x M2 mounting holes, micro-USB"},
+    {"name": "Arduino Uno R3", "length_mm": 68.6, "width_mm": 53.4, "height_mm": 14.0,
+     "mounting_holes": "M3", "hole_pattern_mm": "66x51", "notes": "4x mounting holes"},
+    {"name": "Arduino Nano", "length_mm": 45.0, "width_mm": 18.0, "height_mm": 18.0,
+     "notes": "2.54mm pin pitch, 2x15 pins, mini-USB or USB-C"},
+    {"name": "Arduino Mega 2560", "length_mm": 101.6, "width_mm": 53.3, "height_mm": 15.0,
+     "mounting_holes": "M3", "notes": "4x mounting holes"},
+    {"name": "ESP32 DevKit V1", "length_mm": 55.0, "width_mm": 28.0, "height_mm": 12.0,
+     "notes": "2.54mm pin pitch, 2x19 pins, micro-USB"},
+    {"name": "ESP32-S3 DevKitC", "length_mm": 69.2, "width_mm": 25.5, "height_mm": 10.0,
+     "notes": "2.54mm pin pitch, USB-C"},
+    {"name": "ESP8266 NodeMCU", "length_mm": 58.0, "width_mm": 31.0, "height_mm": 13.0,
+     "notes": "2.54mm pin pitch, 2x15 pins, micro-USB"},
+    {"name": "STM32 Blue Pill", "length_mm": 53.0, "width_mm": 23.0, "height_mm": 13.0,
+     "notes": "2.54mm pin pitch, 2x20 pins, micro-USB"},
+    {"name": "Teensy 4.1", "length_mm": 60.3, "width_mm": 18.0, "height_mm": 8.0,
+     "notes": "2.54mm pin pitch, micro-USB"},
+    {"name": "Adafruit Feather", "length_mm": 50.8, "width_mm": 22.86, "height_mm": 7.0,
+     "mounting_holes": "M2.5", "notes": "Standard Feather form factor"},
+    {"name": "BeagleBone Black", "length_mm": 86.4, "width_mm": 54.6, "height_mm": 15.0,
+     "mounting_holes": "M3", "notes": "4x M3 mounting holes, mini-USB + USB-A"},
+    {"name": "Jetson Nano Developer Kit", "length_mm": 100.0, "width_mm": 80.0, "height_mm": 29.0,
+     "mounting_holes": "M3", "hole_pattern_mm": "86x58", "notes": "4x M3 mounting holes"},
+    {"name": "Orange Pi 5", "length_mm": 100.0, "width_mm": 62.0, "height_mm": 17.0,
+     "mounting_holes": "M2.5", "notes": "4x M2.5 mounting holes, USB-C power"},
+]
+
+CONNECTORS = [
+    {"name": "USB-C connector", "width_mm": 8.25, "height_mm": 2.4,
+     "cutout_width_mm": 12.0, "cutout_height_mm": 6.5, "cutout_radius_mm": 1.5},
+    {"name": "USB-A connector", "width_mm": 12.0, "height_mm": 4.5,
+     "cutout_width_mm": 15.0, "cutout_height_mm": 7.0},
+    {"name": "Micro-USB connector", "width_mm": 6.85, "height_mm": 1.8,
+     "cutout_width_mm": 10.0, "cutout_height_mm": 4.0},
+    {"name": "USB-B connector", "width_mm": 12.0, "height_mm": 10.5,
+     "cutout_width_mm": 15.0, "cutout_height_mm": 13.0},
+    {"name": "Mini-USB connector", "width_mm": 6.8, "height_mm": 1.8,
+     "cutout_width_mm": 10.0, "cutout_height_mm": 4.5},
+    {"name": "Lightning connector", "width_mm": 6.7, "height_mm": 1.5,
+     "cutout_width_mm": 10.0, "cutout_height_mm": 4.0},
+    {"name": "3.5mm audio jack", "diameter_mm": 3.5,
+     "cutout_diameter_mm": 6.0},
+    {"name": "Ethernet RJ45", "width_mm": 16.0, "height_mm": 13.5,
+     "cutout_width_mm": 18.0, "cutout_height_mm": 15.0},
+    {"name": "HDMI Type A", "width_mm": 14.0, "height_mm": 4.55,
+     "cutout_width_mm": 17.0, "cutout_height_mm": 7.0},
+    {"name": "Mini-HDMI (Type C)", "width_mm": 10.42, "height_mm": 2.42,
+     "cutout_width_mm": 13.0, "cutout_height_mm": 5.0},
+    {"name": "Micro-HDMI (Type D)", "width_mm": 6.4, "height_mm": 2.8,
+     "cutout_width_mm": 9.0, "cutout_height_mm": 5.0},
+    {"name": "DisplayPort", "width_mm": 16.1, "height_mm": 4.76,
+     "cutout_width_mm": 19.0, "cutout_height_mm": 7.0},
+    {"name": "VGA connector (DE-15)", "width_mm": 30.0, "height_mm": 11.0,
+     "cutout_width_mm": 33.0, "cutout_height_mm": 14.0},
+    {"name": "SD card slot", "width_mm": 24.0, "height_mm": 2.1,
+     "notes": "Card: 24x32x2.1mm"},
+    {"name": "Micro-SD card slot", "width_mm": 11.0, "height_mm": 1.0,
+     "notes": "Card: 11x15x1mm"},
+    {"name": "SIM card slot (Nano)", "width_mm": 12.3, "height_mm": 0.67,
+     "notes": "Card: 12.3x8.8x0.67mm"},
+    {"name": "DC barrel jack 5.5x2.1", "diameter_mm": 8.0, "inner_diameter_mm": 5.5,
+     "cutout_diameter_mm": 8.5, "notes": "5.5mm outer, 2.1mm pin"},
+    {"name": "DC barrel jack 5.5x2.5", "diameter_mm": 8.0, "inner_diameter_mm": 5.5,
+     "cutout_diameter_mm": 8.5, "notes": "5.5mm outer, 2.5mm pin"},
+    {"name": "XT60 connector", "width_mm": 16.0, "height_mm": 8.0,
+     "cutout_width_mm": 18.0, "cutout_height_mm": 10.0},
+    {"name": "JST-XH 2-pin", "width_mm": 7.5, "height_mm": 5.75,
+     "notes": "2.5mm pitch"},
+    {"name": "Dupont 2.54mm header (1-pin)", "width_mm": 2.54, "height_mm": 2.54,
+     "notes": "Standard 0.1 inch pitch"},
+]
+
+FASTENERS = [
+    # Metric socket head cap screws (ISO 4762)
+    {"name": "M2 socket head cap screw", "thread_dia_mm": 2.0, "head_dia_mm": 3.8, "head_height_mm": 2.0,
+     "through_hole_mm": 2.4, "close_fit_hole_mm": 2.2, "socket_mm": 1.5},
+    {"name": "M2.5 socket head cap screw", "thread_dia_mm": 2.5, "head_dia_mm": 4.5, "head_height_mm": 2.5,
+     "through_hole_mm": 2.9, "close_fit_hole_mm": 2.7, "socket_mm": 2.0},
+    {"name": "M3 socket head cap screw", "thread_dia_mm": 3.0, "head_dia_mm": 5.5, "head_height_mm": 3.0,
+     "through_hole_mm": 3.4, "close_fit_hole_mm": 3.2, "socket_mm": 2.5},
+    {"name": "M4 socket head cap screw", "thread_dia_mm": 4.0, "head_dia_mm": 7.0, "head_height_mm": 4.0,
+     "through_hole_mm": 4.5, "close_fit_hole_mm": 4.3, "socket_mm": 3.0},
+    {"name": "M5 socket head cap screw", "thread_dia_mm": 5.0, "head_dia_mm": 8.5, "head_height_mm": 5.0,
+     "through_hole_mm": 5.5, "close_fit_hole_mm": 5.3, "socket_mm": 4.0},
+    {"name": "M6 socket head cap screw", "thread_dia_mm": 6.0, "head_dia_mm": 10.0, "head_height_mm": 6.0,
+     "through_hole_mm": 6.6, "close_fit_hole_mm": 6.4, "socket_mm": 5.0},
+    {"name": "M8 socket head cap screw", "thread_dia_mm": 8.0, "head_dia_mm": 13.0, "head_height_mm": 8.0,
+     "through_hole_mm": 9.0, "close_fit_hole_mm": 8.4, "socket_mm": 6.0},
+    {"name": "M10 socket head cap screw", "thread_dia_mm": 10.0, "head_dia_mm": 16.0, "head_height_mm": 10.0,
+     "through_hole_mm": 11.0, "close_fit_hole_mm": 10.5, "socket_mm": 8.0},
+    # Hex nuts (ISO 4032)
+    {"name": "M2 hex nut", "thread_dia_mm": 2.0, "across_flats_mm": 4.0, "height_mm": 1.6,
+     "pocket_af_mm": 4.6},
+    {"name": "M2.5 hex nut", "thread_dia_mm": 2.5, "across_flats_mm": 5.0, "height_mm": 2.0,
+     "pocket_af_mm": 5.6},
+    {"name": "M3 hex nut", "thread_dia_mm": 3.0, "across_flats_mm": 5.5, "height_mm": 2.4,
+     "pocket_af_mm": 6.2},
+    {"name": "M4 hex nut", "thread_dia_mm": 4.0, "across_flats_mm": 7.0, "height_mm": 3.2,
+     "pocket_af_mm": 7.7},
+    {"name": "M5 hex nut", "thread_dia_mm": 5.0, "across_flats_mm": 8.0, "height_mm": 4.0,
+     "pocket_af_mm": 8.7},
+    {"name": "M6 hex nut", "thread_dia_mm": 6.0, "across_flats_mm": 10.0, "height_mm": 5.0,
+     "pocket_af_mm": 10.8},
+    {"name": "M8 hex nut", "thread_dia_mm": 8.0, "across_flats_mm": 13.0, "height_mm": 6.5,
+     "pocket_af_mm": 14.0},
+    # Washers (ISO 7089)
+    {"name": "M2 washer", "inner_dia_mm": 2.2, "outer_dia_mm": 5.0, "thickness_mm": 0.3},
+    {"name": "M2.5 washer", "inner_dia_mm": 2.7, "outer_dia_mm": 6.0, "thickness_mm": 0.5},
+    {"name": "M3 washer", "inner_dia_mm": 3.2, "outer_dia_mm": 7.0, "thickness_mm": 0.5},
+    {"name": "M4 washer", "inner_dia_mm": 4.3, "outer_dia_mm": 9.0, "thickness_mm": 0.8},
+    {"name": "M5 washer", "inner_dia_mm": 5.3, "outer_dia_mm": 10.0, "thickness_mm": 1.0},
+    {"name": "M6 washer", "inner_dia_mm": 6.4, "outer_dia_mm": 12.0, "thickness_mm": 1.6},
+    {"name": "M8 washer", "inner_dia_mm": 8.4, "outer_dia_mm": 16.0, "thickness_mm": 1.6},
+    # Heat-set inserts (typical values for FDM)
+    {"name": "M2 heat-set insert", "thread_dia_mm": 2.0, "pilot_hole_mm": 3.2, "depth_mm": 4.0,
+     "boss_dia_mm": 6.0},
+    {"name": "M2.5 heat-set insert", "thread_dia_mm": 2.5, "pilot_hole_mm": 3.6, "depth_mm": 5.0,
+     "boss_dia_mm": 7.0},
+    {"name": "M3 heat-set insert", "thread_dia_mm": 3.0, "pilot_hole_mm": 4.2, "depth_mm": 6.0,
+     "boss_dia_mm": 8.0},
+    {"name": "M4 heat-set insert", "thread_dia_mm": 4.0, "pilot_hole_mm": 5.6, "depth_mm": 8.0,
+     "boss_dia_mm": 10.0},
+    {"name": "M5 heat-set insert", "thread_dia_mm": 5.0, "pilot_hole_mm": 6.4, "depth_mm": 10.0,
+     "boss_dia_mm": 12.0},
+]
+
+BEARINGS = [
+    # 600 series (miniature/small deep groove ball bearings)
+    {"name": "604 bearing", "inner_dia_mm": 4.0, "outer_dia_mm": 12.0, "width_mm": 4.0},
+    {"name": "605 bearing", "inner_dia_mm": 5.0, "outer_dia_mm": 14.0, "width_mm": 5.0},
+    {"name": "606 bearing", "inner_dia_mm": 6.0, "outer_dia_mm": 17.0, "width_mm": 6.0},
+    {"name": "607 bearing", "inner_dia_mm": 7.0, "outer_dia_mm": 19.0, "width_mm": 6.0},
+    {"name": "608 bearing (skateboard)", "inner_dia_mm": 8.0, "outer_dia_mm": 22.0, "width_mm": 7.0,
+     "press_fit_bore_mm": 22.0},
+    {"name": "609 bearing", "inner_dia_mm": 9.0, "outer_dia_mm": 24.0, "width_mm": 7.0},
+    # 6000 series
+    {"name": "6000 bearing", "inner_dia_mm": 10.0, "outer_dia_mm": 26.0, "width_mm": 8.0},
+    {"name": "6001 bearing", "inner_dia_mm": 12.0, "outer_dia_mm": 28.0, "width_mm": 8.0},
+    {"name": "6002 bearing", "inner_dia_mm": 15.0, "outer_dia_mm": 32.0, "width_mm": 9.0},
+    {"name": "6003 bearing", "inner_dia_mm": 17.0, "outer_dia_mm": 35.0, "width_mm": 10.0},
+    {"name": "6004 bearing", "inner_dia_mm": 20.0, "outer_dia_mm": 42.0, "width_mm": 12.0},
+    {"name": "6005 bearing", "inner_dia_mm": 25.0, "outer_dia_mm": 47.0, "width_mm": 12.0},
+    # 6200 series
+    {"name": "6200 bearing", "inner_dia_mm": 10.0, "outer_dia_mm": 30.0, "width_mm": 9.0},
+    {"name": "6201 bearing", "inner_dia_mm": 12.0, "outer_dia_mm": 32.0, "width_mm": 10.0},
+    {"name": "6202 bearing", "inner_dia_mm": 15.0, "outer_dia_mm": 35.0, "width_mm": 11.0},
+    {"name": "6203 bearing", "inner_dia_mm": 17.0, "outer_dia_mm": 40.0, "width_mm": 12.0},
+    {"name": "6204 bearing", "inner_dia_mm": 20.0, "outer_dia_mm": 47.0, "width_mm": 14.0},
+    {"name": "6205 bearing", "inner_dia_mm": 25.0, "outer_dia_mm": 52.0, "width_mm": 15.0},
+    # Linear bearings
+    {"name": "LM8UU linear bearing", "inner_dia_mm": 8.0, "outer_dia_mm": 15.0, "length_mm": 24.0},
+    {"name": "LM10UU linear bearing", "inner_dia_mm": 10.0, "outer_dia_mm": 19.0, "length_mm": 29.0},
+    {"name": "LM12UU linear bearing", "inner_dia_mm": 12.0, "outer_dia_mm": 21.0, "length_mm": 30.0},
+    # Flanged bearings
+    {"name": "F608 flanged bearing", "inner_dia_mm": 8.0, "outer_dia_mm": 22.0, "width_mm": 7.0,
+     "flange_dia_mm": 25.0, "flange_thickness_mm": 1.5},
+    {"name": "F625 flanged bearing", "inner_dia_mm": 5.0, "outer_dia_mm": 16.0, "width_mm": 5.0,
+     "flange_dia_mm": 18.0, "flange_thickness_mm": 1.0},
+]
+
+MOTORS = [
+    {"name": "NEMA 14 stepper", "face_mm": 35.2, "bolt_pattern_mm": 26.0,
+     "bolt_size": "M3", "shaft_dia_mm": 5.0, "notes": "Body length varies 20-52mm"},
+    {"name": "NEMA 17 stepper", "face_mm": 42.3, "bolt_pattern_mm": 31.0,
+     "bolt_size": "M3", "shaft_dia_mm": 5.0, "notes": "Body length varies 20-60mm. Most common 3D printer motor."},
+    {"name": "NEMA 23 stepper", "face_mm": 56.4, "bolt_pattern_mm": 47.14,
+     "bolt_size": "M5", "shaft_dia_mm": 6.35, "notes": "Body length varies 41-112mm"},
+    {"name": "NEMA 34 stepper", "face_mm": 86.0, "bolt_pattern_mm": 69.6,
+     "bolt_size": "M5", "shaft_dia_mm": 14.0, "notes": "Body length varies 66-150mm"},
+    {"name": "540 DC motor", "diameter_mm": 35.8, "length_mm": 50.0,
+     "shaft_dia_mm": 3.175, "notes": "Common hobby motor"},
+    {"name": "775 DC motor", "diameter_mm": 42.0, "length_mm": 66.0,
+     "shaft_dia_mm": 5.0, "notes": "High-torque hobby motor"},
+    {"name": "28BYJ-48 stepper", "diameter_mm": 28.0, "height_mm": 20.0,
+     "shaft_dia_mm": 5.0, "mounting_hole_spacing_mm": 35.0,
+     "notes": "5V geared stepper, common in Arduino projects"},
+    {"name": "MG996R servo", "length_mm": 40.7, "width_mm": 19.7, "height_mm": 42.9,
+     "mounting_hole_spacing_mm": 49.5, "notes": "Standard size servo, M3 mounting"},
+    {"name": "SG90 micro servo", "length_mm": 22.2, "width_mm": 11.8, "height_mm": 31.0,
+     "mounting_hole_spacing_mm": 27.8, "notes": "Micro servo, M2 mounting"},
+]
+
+STORAGE_MEDIA = [
+    {"name": "3.5 inch HDD", "length_mm": 146.0, "width_mm": 101.6, "height_mm": 25.4,
+     "mounting_holes": "M3", "notes": "UNC 6-32 bottom, M3 side holes"},
+    {"name": "2.5 inch SSD/HDD", "length_mm": 100.0, "width_mm": 69.85, "height_mm": 7.0,
+     "mounting_holes": "M3", "notes": "7mm standard, 9.5mm thick variant exists"},
+    {"name": "M.2 2280 SSD", "length_mm": 80.0, "width_mm": 22.0, "height_mm": 3.5,
+     "mounting_holes": "M2", "notes": "2280 = 22mm wide, 80mm long"},
+    {"name": "M.2 2242 SSD", "length_mm": 42.0, "width_mm": 22.0, "height_mm": 3.5,
+     "mounting_holes": "M2"},
+    {"name": "5.25 inch drive bay", "width_mm": 148.0, "height_mm": 42.0, "depth_mm": 170.0,
+     "notes": "Standard optical drive bay"},
+    {"name": "3.5 inch drive bay", "width_mm": 101.6, "height_mm": 25.4, "depth_mm": 146.0},
+]
+
+DISPLAYS = [
+    {"name": "0.96 inch OLED (SSD1306)", "width_mm": 27.3, "height_mm": 27.8,
+     "active_area_mm": "21.7x10.9", "mounting_holes": "M2", "hole_pattern_mm": "23.5x23.5"},
+    {"name": "1.3 inch OLED (SH1106)", "width_mm": 35.0, "height_mm": 33.5,
+     "active_area_mm": "29.4x14.7", "mounting_holes": "M2"},
+    {"name": "2.4 inch TFT (ILI9341)", "width_mm": 42.7, "height_mm": 60.1,
+     "active_area_mm": "36.7x49.0"},
+    {"name": "3.5 inch TFT (RPi)", "width_mm": 56.0, "height_mm": 85.0,
+     "notes": "Matches Raspberry Pi form factor"},
+    {"name": "7 inch RPi touchscreen", "width_mm": 194.0, "height_mm": 110.0, "depth_mm": 20.0,
+     "active_area_mm": "155x86", "mounting_holes": "M4"},
+    {"name": "16x2 LCD (HD44780)", "width_mm": 80.0, "height_mm": 36.0, "depth_mm": 12.0,
+     "active_area_mm": "64.5x16.0", "mounting_holes": "M2.5"},
+    {"name": "20x4 LCD (HD44780)", "width_mm": 98.0, "height_mm": 60.0, "depth_mm": 12.0,
+     "active_area_mm": "77x25.2", "mounting_holes": "M2.5"},
+]
+
+BATTERIES = [
+    {"name": "18650 Li-Ion cell", "diameter_mm": 18.6, "length_mm": 65.2,
+     "notes": "Protected cells may be up to 69.5mm long"},
+    {"name": "21700 Li-Ion cell", "diameter_mm": 21.7, "length_mm": 70.2},
+    {"name": "14500 Li-Ion cell (AA size)", "diameter_mm": 14.5, "length_mm": 50.5},
+    {"name": "AA battery", "diameter_mm": 14.5, "length_mm": 50.5,
+     "notes": "IEC LR6, 1.5V"},
+    {"name": "AAA battery", "diameter_mm": 10.5, "length_mm": 44.5,
+     "notes": "IEC LR03, 1.5V"},
+    {"name": "CR2032 coin cell", "diameter_mm": 20.0, "thickness_mm": 3.2,
+     "notes": "3V lithium"},
+    {"name": "9V battery (PP3)", "length_mm": 48.5, "width_mm": 26.5, "height_mm": 17.5},
+    {"name": "LiPo 1S 500mAh (typical)", "length_mm": 43.0, "width_mm": 30.0, "thickness_mm": 6.0,
+     "notes": "Dimensions vary by manufacturer"},
+]
+
+ENCLOSURE_DEFAULTS = [
+    {"name": "Phone case (TPU)", "wall_mm": "1.5-2.0", "lip_mm": 1.0, "clearance_mm": 0.3,
+     "notes": "Match phone corner_r, fillet all edges"},
+    {"name": "Electronics enclosure (PLA)", "wall_mm": "1.6-2.0", "lip_mm": 1.2, "clearance_mm": 0.3,
+     "fillet_mm": "2-4"},
+    {"name": "Project box (PETG)", "wall_mm": "2.0-2.5", "lip_mm": 1.5, "clearance_mm": 0.4,
+     "fillet_mm": "3-5"},
+    {"name": "Weatherproof box (ASA)", "wall_mm": "2.5-3.0", "lip_mm": 2.0, "clearance_mm": 0.3,
+     "fillet_mm": "3-5"},
+    {"name": "Rugged enclosure (PC)", "wall_mm": "2.5-3.5", "lip_mm": 2.5, "clearance_mm": 0.3,
+     "fillet_mm": "4-6"},
+]
+
+MECHANICAL_INTERFACES = [
+    {"name": "19 inch rack unit (1U)", "width_mm": 482.6, "height_mm": 44.45,
+     "notes": "EIA-310 standard, mounting holes: M6 or 10-32"},
+    {"name": "DIN rail TS35", "width_mm": 35.0, "depth_mm": 7.5,
+     "notes": "IEC 60715, mounting clip snap-fit"},
+    {"name": "DIN rail TS15", "width_mm": 15.0, "depth_mm": 5.5,
+     "notes": "Miniature DIN rail"},
+    {"name": "Vesa 75x75 mount", "pattern_mm": "75x75", "bolt_size": "M4",
+     "notes": "FDMI standard, 4x M4 bolts"},
+    {"name": "Vesa 100x100 mount", "pattern_mm": "100x100", "bolt_size": "M4",
+     "notes": "FDMI standard, 4x M4 bolts"},
+    {"name": "GoPro mount (2-prong)", "width_mm": 15.0, "height_mm": 15.0,
+     "hole_dia_mm": 5.0, "notes": "Thumb screw M5"},
+    {"name": "Tripod mount (1/4-20 UNC)", "thread_dia_mm": 6.35, "tpi": 20,
+     "notes": "Standard camera tripod thread"},
+    {"name": "T-slot 2020 extrusion", "width_mm": 20.0, "slot_width_mm": 6.0,
+     "bore_dia_mm": 4.2, "notes": "Standard aluminum extrusion, M5 T-nuts"},
+    {"name": "T-slot 2040 extrusion", "width_mm": 20.0, "height_mm": 40.0, "slot_width_mm": 6.0,
+     "notes": "20x40mm, M5 T-nuts"},
+    {"name": "T-slot 3030 extrusion", "width_mm": 30.0, "slot_width_mm": 8.0,
+     "bore_dia_mm": 5.5, "notes": "M6 T-nuts"},
+    {"name": "Smooth rod 8mm", "diameter_mm": 8.0, "notes": "Common linear motion rod, LM8UU bearing"},
+    {"name": "Smooth rod 10mm", "diameter_mm": 10.0, "notes": "LM10UU bearing"},
+    {"name": "Smooth rod 12mm", "diameter_mm": 12.0, "notes": "LM12UU bearing"},
+    {"name": "GT2 timing belt", "pitch_mm": 2.0, "width_mm": 6.0,
+     "notes": "Standard 3D printer belt, 6mm or 9mm wide"},
+    {"name": "GT2 20T pulley", "outer_dia_mm": 16.0, "bore_dia_mm": 5.0,
+     "width_mm": 16.0, "notes": "20 teeth, 5mm bore for NEMA 17 shaft"},
+]
+
+COMMON_PIPES_TUBES = [
+    {"name": "1/2 inch PVC pipe (Schedule 40)", "outer_dia_mm": 21.3, "inner_dia_mm": 15.8,
+     "wall_mm": 2.77},
+    {"name": "3/4 inch PVC pipe (Schedule 40)", "outer_dia_mm": 26.7, "inner_dia_mm": 20.9,
+     "wall_mm": 2.87},
+    {"name": "1 inch PVC pipe (Schedule 40)", "outer_dia_mm": 33.4, "inner_dia_mm": 26.6,
+     "wall_mm": 3.38},
+    {"name": "6mm OD brass/aluminum tube", "outer_dia_mm": 6.0, "inner_dia_mm": 4.0, "wall_mm": 1.0},
+    {"name": "8mm OD brass/aluminum tube", "outer_dia_mm": 8.0, "inner_dia_mm": 6.0, "wall_mm": 1.0},
+    {"name": "10mm OD brass/aluminum tube", "outer_dia_mm": 10.0, "inner_dia_mm": 8.0, "wall_mm": 1.0},
+    {"name": "Bowden tube (PTFE, 3D printer)", "outer_dia_mm": 4.0, "inner_dia_mm": 2.0,
+     "notes": "1.75mm filament path"},
+    {"name": "Bowden tube (PTFE, 3mm)", "outer_dia_mm": 6.0, "inner_dia_mm": 4.0,
+     "notes": "2.85/3mm filament path"},
+]
+
+
+def build_database() -> dict:
+    """Build the complete reference database."""
+    db = {
+        "_meta": {
+            "version": "2.0.0",
+            "description": "Reference Object Library — stable hardware standards only. "
+                           "Consumer objects (phones, etc.) use dynamic lookup.",
+            "sources": [
+                "ISO 4762 (socket head cap screws)",
+                "ISO 4032 (hex nuts)",
+                "ISO 7089 (washers)",
+                "Manufacturer datasheets (PCBs, connectors, motors)",
+            ],
+        },
+        "categories": {},
+    }
+
+    db["categories"]["pcbs_microcontrollers"] = {
+        "description": "Single-board computers, microcontrollers, dev boards",
+        "keywords": ["raspberry", "pi", "rpi", "arduino", "esp32", "esp8266",
+                     "stm32", "teensy", "feather", "beaglebone", "jetson",
+                     "nano", "uno", "mega", "pico", "pcb", "board", "microcontroller",
+                     "enclosure", "case", "mount", "holder"],
+        "items": PCBS,
+    }
+
+    db["categories"]["connectors_ports"] = {
+        "description": "USB, HDMI, audio, and other connectors",
+        "keywords": ["usb", "usb-c", "usb-a", "micro-usb", "mini-usb", "lightning",
+                     "hdmi", "mini-hdmi", "micro-hdmi", "displayport", "vga",
+                     "audio", "jack", "3.5mm", "headphone",
+                     "ethernet", "rj45", "sd", "micro-sd", "sim",
+                     "barrel", "dc", "xt60", "jst", "dupont", "header", "connector", "port",
+                     "charging", "power"],
+        "items": CONNECTORS,
+    }
+
+    db["categories"]["fasteners"] = {
+        "description": "Metric screws, nuts, washers, and heat-set inserts",
+        "keywords": ["screw", "bolt", "nut", "washer", "insert", "heat-set", "heat set",
+                     "m2", "m3", "m4", "m5", "m6", "m8", "m10",
+                     "fastener", "mounting", "thread", "socket", "hex", "cap"],
+        "items": FASTENERS,
+    }
+
+    db["categories"]["bearings"] = {
+        "description": "Ball bearings, linear bearings, flanged bearings",
+        "keywords": ["bearing", "608", "6001", "6200", "6201", "6202", "6203",
+                     "linear", "lm8uu", "lm10uu", "lm12uu", "flanged",
+                     "skateboard", "roller", "shaft", "axle", "spindle"],
+        "items": BEARINGS,
+    }
+
+    db["categories"]["motors_servos"] = {
+        "description": "Stepper motors, DC motors, servos",
+        "keywords": ["motor", "stepper", "nema", "nema17", "nema23", "nema14",
+                     "servo", "sg90", "mg996", "dc motor", "28byj",
+                     "actuator", "drive", "gearbox"],
+        "items": MOTORS,
+    }
+
+    db["categories"]["storage_media"] = {
+        "description": "Hard drives, SSDs, drive bays",
+        "keywords": ["hdd", "ssd", "hard drive", "m.2", "nvme", "sata",
+                     "drive bay", "5.25", "3.5", "2.5", "caddy", "dock"],
+        "items": STORAGE_MEDIA,
+    }
+
+    db["categories"]["displays"] = {
+        "description": "OLED, TFT, LCD displays for electronics projects",
+        "keywords": ["display", "oled", "tft", "lcd", "screen", "monitor",
+                     "ssd1306", "ili9341", "hd44780", "touchscreen"],
+        "items": DISPLAYS,
+    }
+
+    db["categories"]["batteries"] = {
+        "description": "Common battery sizes and form factors",
+        "keywords": ["battery", "cell", "18650", "21700", "14500", "aa", "aaa",
+                     "cr2032", "coin", "lipo", "li-ion", "lithium", "9v",
+                     "battery holder", "battery case", "power bank"],
+        "items": BATTERIES,
+    }
+
+    db["categories"]["enclosure_defaults"] = {
+        "description": "Standard wall thickness, lip, clearance for enclosures",
+        "keywords": ["enclosure", "case", "box", "housing", "cover", "shell",
+                     "lid", "container", "wall", "lip"],
+        "items": ENCLOSURE_DEFAULTS,
+    }
+
+    db["categories"]["mechanical_interfaces"] = {
+        "description": "Rack mounts, DIN rail, extrusions, pulleys, rods",
+        "keywords": ["rack", "din", "rail", "vesa", "gopro", "tripod",
+                     "t-slot", "2020", "2040", "3030", "extrusion",
+                     "rod", "smooth rod", "linear", "gt2", "belt", "pulley",
+                     "mount", "bracket"],
+        "items": MECHANICAL_INTERFACES,
+    }
+
+    db["categories"]["pipes_tubes"] = {
+        "description": "PVC pipes, metal tubes, Bowden tubes",
+        "keywords": ["pipe", "tube", "pvc", "bowden", "ptfe", "brass",
+                     "aluminum", "conduit", "hose", "fitting", "adapter",
+                     "coupler", "reducer"],
+        "items": COMMON_PIPES_TUBES,
+    }
+
+    return db
+
+
+if __name__ == "__main__":
+    db = build_database()
+
+    total = sum(len(cat["items"]) for cat in db["categories"].values())
+    print(f"\nTotal reference objects: {total}")
+    for name, cat in db["categories"].items():
+        print(f"  {name}: {len(cat['items'])} items")
+
+    OUTPUT.write_text(json.dumps(db, indent=2, ensure_ascii=False))
+    print(f"\nWritten to {OUTPUT}")
+    print(f"File size: {OUTPUT.stat().st_size / 1024:.1f} KB")

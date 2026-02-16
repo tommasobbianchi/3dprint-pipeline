@@ -14,11 +14,14 @@
       <label for="prompt">Describe your part</label>
       <textarea id="prompt" rows="4" placeholder="e.g. 30mm cube with a 10mm center through-hole"></textarea>
 
+      <div id="mode-indicator" style="display:none"></div>
+
       <div class="row">
         <div class="field">
           <label for="material">Material</label>
           <select id="material"><option value="PLA">PLA</option></select>
         </div>
+        <button id="start-new-btn" class="btn btn-ghost" style="display:none">Start New</button>
         <button id="generate-btn" class="btn btn-primary">Generate</button>
       </div>
     </div>

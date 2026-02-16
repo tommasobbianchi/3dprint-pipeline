@@ -17,8 +17,12 @@
   const downloadStlBtn = document.getElementById("download-stl-btn");
   const uploadBtn = document.getElementById("upload-onshape-btn");
   const uploadStatus = document.getElementById("upload-status");
+  const startNewBtn = document.getElementById("start-new-btn");
+  const modeIndicator = document.getElementById("mode-indicator");
 
   let lastResult = null;
+  let lastCode = null;
+  let lastPrompt = null;
 
   // Determine backend URL (same origin when served by FastAPI)
   const API_BASE = "";
@@ -64,17 +68,34 @@
     generateBtn.disabled = true;
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 180000); // 3 min timeout
+
+      const payload = {
+        prompt: prompt,
+        material: materialEl.value,
+      };
+      if (lastCode) {
+        payload.previous_code = lastCode;
+      }
+
       const resp = await fetch(API_BASE + "/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt: prompt,
-          material: materialEl.value,
-        }),
+        body: JSON.stringify(payload),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
 
       const data = await resp.json();
       lastResult = data;
+
+      // Store code for iterative refinement (even on failure)
+      if (data.code) {
+        lastCode = data.code;
+        if (!lastPrompt) lastPrompt = prompt;
+        enterModifyMode();
+      }
 
       if (data.success) {
         showResult(data);
@@ -82,7 +103,11 @@
         showError(data.error || "Generation failed");
       }
     } catch (e) {
-      showError("Network error: " + e.message);
+      if (e.name === "AbortError") {
+        showError("Generation timed out (>3 min). Try a simpler prompt.");
+      } else {
+        showError("Network error: " + e.message + ". Try again.");
+      }
     } finally {
       statusEl.style.display = "none";
       progressFill.className = "";
@@ -102,7 +127,10 @@
       html += `<b>Volume:</b> <span>${m.volume.toFixed(0)} mm&sup3;</span><br>`;
     }
     if (m && m.solid_count) {
-      html += `<b>Solids:</b> <span>${m.solid_count}</span>`;
+      html += `<b>Solids:</b> <span>${m.solid_count}</span><br>`;
+    }
+    if (data.attempts && data.attempts > 1) {
+      html += `<b>Auto-fixed:</b> <span>succeeded on attempt ${data.attempts}</span>`;
     }
     metricsEl.innerHTML = html;
 
@@ -161,6 +189,35 @@
       uploadBtn.disabled = false;
     }
   });
+
+  // --- Mode switching ---
+  function enterModifyMode() {
+    generateBtn.textContent = "Modify";
+    promptEl.placeholder = 'Modify: e.g. "make walls 3mm thick"';
+    promptEl.value = "";
+    startNewBtn.style.display = "inline-block";
+    if (lastPrompt) {
+      const truncated = lastPrompt.length > 50 ? lastPrompt.slice(0, 50) + "..." : lastPrompt;
+      modeIndicator.textContent = "Modifying: \"" + truncated + "\"";
+      modeIndicator.style.display = "block";
+    }
+  }
+
+  function enterGenerateMode() {
+    lastCode = null;
+    lastPrompt = null;
+    lastResult = null;
+    generateBtn.textContent = "Generate";
+    promptEl.placeholder = "e.g. 30mm cube with a 10mm center through-hole";
+    promptEl.value = "";
+    startNewBtn.style.display = "none";
+    modeIndicator.style.display = "none";
+    resultEl.style.display = "none";
+    errorEl.style.display = "none";
+    uploadStatus.textContent = "";
+  }
+
+  startNewBtn.addEventListener("click", enterGenerateMode);
 
   // --- Keyboard shortcut ---
   promptEl.addEventListener("keydown", (e) => {
