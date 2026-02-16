@@ -53,10 +53,10 @@ FILLET SAFETY (most common crash cause):
 - For hollowing: fillet the solid box first, THEN shell(), or use outer.cut(cavity) approach
 - If post-boolean fillet is essential, use NearestToPointSelector targeting ONE specific edge
 
-THREAD GENERATION (CadQuery has no .thread() — use helical sweep):
-- Use cq.Wire.makeHelix(pitch, height, radius) to create the helix path
-- Sweep a 60° V-profile along the helix, then intersect() with a cylinder to trim
-- For internal threads: build threaded rod, then cut() from body
+THREAD GENERATION (CadQuery has no .thread() — use OCC BRepOffsetAPI_MakePipeShell):
+- NEVER use cq.Solid.sweep() — it twists the V-profile, producing malformed threads
+- Use BRepOffsetAPI_MakePipeShell + gp_Dir(0,0,1) binormal + core.union(thread) pattern
+- Core radius = r_minor + 0.05mm (overlap required for clean boolean)
 - Common pitches: M3=0.5, M4=0.7, M5=0.8, M6=1.0, M8=1.25, M10=1.5, M12=1.75, M16=2.0, M20=2.5
 
 EXISTING CODE:
@@ -83,31 +83,44 @@ FILLET SAFETY (most common crash cause):
 - For hollowing: fillet the solid box first, THEN shell(), or use outer.cut(cavity) approach
 - If post-boolean fillet is essential, use NearestToPointSelector targeting ONE specific edge
 
-THREAD GENERATION (CadQuery has no .thread() — use helical sweep):
-- Use cq.Wire.makeHelix(pitch, height, radius) to create the helix path
-- Sweep a 60° V-profile (ISO metric) along the helix
-- Generate extra helix length (+2*pitch), then intersect() with a cylinder to trim cleanly
-- For internal threads (threaded holes): build the threaded rod, then cut() it from the body
+THREAD GENERATION (CadQuery has no .thread() — use OCC BRepOffsetAPI_MakePipeShell):
+- NEVER use cq.Solid.sweep() for threads — it twists the V-profile, producing malformed geometry
+- ALWAYS use BRepOffsetAPI_MakePipeShell with gp_Dir(0,0,1) binormal to keep profile radially oriented
+- Core cylinder must be r_minor + 0.05mm to ensure boolean overlap (coincident surfaces fail)
 
-ISO metric thread pattern:
+ISO metric thread pattern (builds a centered threaded rod):
 ```
 import math
+from OCP.BRepOffsetAPI import BRepOffsetAPI_MakePipeShell
+from OCP.gp import gp_Dir
+
 H = pitch * math.sqrt(3) / 2
 r_major = d_nominal / 2
 r_minor = r_major - 5 * H / 8
 r_pitch = (r_major + r_minor) / 2
-extra = pitch
-helix = cq.Wire.makeHelix(pitch, length + 2 * extra, r_pitch)
+
+# Centered helix from -length/2 to +length/2
+helix = cq.Wire.makeHelix(pitch, length, r_pitch, center=cq.Vector(0, 0, -length / 2))
 profile = (cq.Workplane("XZ")
     .moveTo(r_minor, -pitch / 4)
     .lineTo(r_major, 0)
     .lineTo(r_minor, pitch / 4)
     .close().wires().val())
-thread_solid = cq.Solid.sweep(profile, [], helix)
-core = cq.Workplane("XY").cylinder(length + 2 * extra, r_minor)
-threaded = core.union(cq.Workplane().newObject([thread_solid]))
-threaded = threaded.intersect(cq.Workplane("XY").cylinder(length, r_major + 1))
+
+# Sweep with Z-axis binormal — keeps V-profile radially flat
+builder = BRepOffsetAPI_MakePipeShell(helix.wrapped)
+builder.SetMode(gp_Dir(0, 0, 1))
+builder.Add(profile.wrapped, False, False)
+builder.Build()
+builder.MakeSolid()
+thread_shape = cq.Shape.cast(builder.Shape())
+
+# Core with 0.05mm overlap for clean boolean (coincident surfaces fail)
+core = cq.Workplane("XY").cylinder(length, r_minor + 0.05)
+threaded_rod = core.union(cq.Workplane().newObject([thread_shape]).translate((0, 0, -length / 2)))
 ```
+For internal threads: build the rod, then body.cut(threaded_rod).
+For external threads: threaded_rod IS the bolt shaft.
 Common pitches: M3=0.5, M4=0.7, M5=0.8, M6=1.0, M8=1.25, M10=1.5, M12=1.75, M16=2.0, M20=2.5
 
 User request:
