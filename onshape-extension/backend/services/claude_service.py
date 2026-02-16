@@ -53,6 +53,12 @@ FILLET SAFETY (most common crash cause):
 - For hollowing: fillet the solid box first, THEN shell(), or use outer.cut(cavity) approach
 - If post-boolean fillet is essential, use NearestToPointSelector targeting ONE specific edge
 
+THREAD GENERATION (CadQuery has no .thread() — use helical sweep):
+- Use cq.Wire.makeHelix(pitch, height, radius) to create the helix path
+- Sweep a 60° V-profile along the helix, then intersect() with a cylinder to trim
+- For internal threads: build threaded rod, then cut() from body
+- Common pitches: M3=0.5, M4=0.7, M5=0.8, M6=1.0, M8=1.25, M10=1.5, M12=1.75, M16=2.0, M20=2.5
+
 EXISTING CODE:
 ```python
 {code}
@@ -76,6 +82,33 @@ FILLET SAFETY (most common crash cause):
 - NEVER use .edges("|Z").fillet(r) after union(), cut(), or shell() — OCC kernel WILL crash
 - For hollowing: fillet the solid box first, THEN shell(), or use outer.cut(cavity) approach
 - If post-boolean fillet is essential, use NearestToPointSelector targeting ONE specific edge
+
+THREAD GENERATION (CadQuery has no .thread() — use helical sweep):
+- Use cq.Wire.makeHelix(pitch, height, radius) to create the helix path
+- Sweep a 60° V-profile (ISO metric) along the helix
+- Generate extra helix length (+2*pitch), then intersect() with a cylinder to trim cleanly
+- For internal threads (threaded holes): build the threaded rod, then cut() it from the body
+
+ISO metric thread pattern:
+```
+import math
+H = pitch * math.sqrt(3) / 2
+r_major = d_nominal / 2
+r_minor = r_major - 5 * H / 8
+r_pitch = (r_major + r_minor) / 2
+extra = pitch
+helix = cq.Wire.makeHelix(pitch, length + 2 * extra, r_pitch)
+profile = (cq.Workplane("XZ")
+    .moveTo(r_minor, -pitch / 4)
+    .lineTo(r_major, 0)
+    .lineTo(r_minor, pitch / 4)
+    .close().wires().val())
+thread_solid = cq.Solid.sweep(profile, [], helix)
+core = cq.Workplane("XY").cylinder(length + 2 * extra, r_minor)
+threaded = core.union(cq.Workplane().newObject([thread_solid]))
+threaded = threaded.intersect(cq.Workplane("XY").cylinder(length, r_major + 1))
+```
+Common pitches: M3=0.5, M4=0.7, M5=0.8, M6=1.0, M8=1.25, M10=1.5, M12=1.75, M16=2.0, M20=2.5
 
 User request:
 """
@@ -252,6 +285,8 @@ ISOMETRIC VIEW (SVG):
 
 FRONT VIEW (SVG):
 {svg_front}
+
+IMPORTANT: Thread features (helical thread geometry) appear as dense overlapping curves in wireframe SVGs. If the request mentions threads and you see complex helical/dense curves around a hole or cylinder, the threads ARE present — do NOT mark them as missing. A cylindrical hole with surrounding helical curves = threaded hole.
 
 Answer in EXACTLY this format (one line each, no extra text):
 CATEGORY: <object type — e.g. bracket, enclosure, stool, gear, tube, plate, phone_case, mount, spacer, or "custom">
