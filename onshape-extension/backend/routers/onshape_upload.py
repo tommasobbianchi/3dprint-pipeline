@@ -88,7 +88,7 @@ class UploadResponse(BaseModel):
 async def _poll_translation(client: httpx.AsyncClient, auth, translation_id: str) -> dict | None:
     """Poll translation status until DONE or FAILED. Returns result or None."""
     url = f"{ONSHAPE_API_BASE}/translations/{translation_id}"
-    for _ in range(30):  # max 60s (30 * 2s)
+    for _ in range(45):  # max 90s (45 * 2s)
         await asyncio.sleep(2)
         try:
             resp = await client.get(url, auth=auth, headers={"Accept": "application/json"})
@@ -283,6 +283,12 @@ async def upload_to_onshape(req: UploadRequest):
     because the Derived feature maintains a live reference. On re-upload,
     the old source + old Derived feature are cleaned up first.
     """
+    log.info(
+        "Upload request: doc=%s ws=%s element_id=%s derived_fid=%s source_eid=%s",
+        req.document_id, req.workspace_id, req.element_id,
+        req.derived_feature_id, req.source_element_id,
+    )
+
     ak, sk = _load_onshape_keys()
 
     try:

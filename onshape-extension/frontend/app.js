@@ -29,6 +29,10 @@
 
   // --- Persistent state (survives tab switches in Onshape) ---
   const ctx = OnshapeAPI.getContext();
+  // Ensure elementId is read (workaround for aggressive browser caching of onshape-api.js)
+  if (ctx && !ctx.elementId) {
+    ctx.elementId = new URLSearchParams(window.location.search).get("elementId");
+  }
   const STORAGE_KEY = ctx ? "cadgen_" + ctx.documentId : null;
 
   function saveState() {
@@ -238,19 +242,34 @@
   let lastSourceElementId = null;
 
   uploadBtn.addEventListener("click", async () => {
-    if (!lastResult || !lastResult.step_base64) return;
+    if (!lastResult || !lastResult.step_base64 || !ctx) return;
 
     uploadBtn.disabled = true;
     uploadStatus.textContent = "Importing into Part Studio...";
 
     try {
       const fname = lastResult.filename || "output.step";
-      const result = await OnshapeAPI.uploadSTEP(
-        lastResult.step_base64,
-        fname,
-        lastDerivedFeatureId,
-        lastSourceElementId
-      );
+
+      // Direct fetch (bypasses onshape-api.js cache issues with elementId)
+      const resp = await fetch("/api/upload-to-onshape", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          step_base64: lastResult.step_base64,
+          filename: fname,
+          document_id: ctx.documentId,
+          workspace_id: ctx.workspaceId,
+          element_id: ctx.elementId || null,
+          derived_feature_id: lastDerivedFeatureId || null,
+          source_element_id: lastSourceElementId || null,
+        }),
+      });
+
+      const result = await resp.json();
+      if (!result.success) {
+        throw new Error(result.error || "Upload failed");
+      }
+
       if (result.derived_feature_id) {
         lastDerivedFeatureId = result.derived_feature_id;
         lastSourceElementId = result.source_element_id || null;

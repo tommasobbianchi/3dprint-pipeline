@@ -1,10 +1,15 @@
 """FastAPI entry point — CORS, routers, static file serving."""
+import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from .config import FRONTEND_DIR
 from .routers import health, materials, generate, onshape_upload
+
+# Configure logging so app-level logs appear in uvicorn/journalctl output
+logging.basicConfig(level=logging.INFO, format="%(name)s %(levelname)s: %(message)s")
 
 app = FastAPI(title="3dprint-pipeline Onshape Extension", version="0.1.0")
 
