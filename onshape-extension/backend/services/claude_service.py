@@ -116,8 +116,9 @@ builder.MakeSolid()
 thread_shape = cq.Shape.cast(builder.Shape())
 
 # Core with 0.05mm overlap for clean boolean (coincident surfaces fail)
+# IMPORTANT: both cylinder() and makeHelix(center=...) are already centered — do NOT translate either
 core = cq.Workplane("XY").cylinder(length, r_minor + 0.05)
-threaded_rod = core.union(cq.Workplane().newObject([thread_shape]).translate((0, 0, -length / 2)))
+threaded_rod = core.union(cq.Workplane().newObject([thread_shape]))
 ```
 For internal threads: build the rod, then body.cut(threaded_rod).
 For external threads: threaded_rod IS the bolt shaft.
