@@ -11,17 +11,17 @@ network) to the Jarvis Onshape MCP server hosted on **nativedev**.
 
 ## Configure the MCP bridge
 
-`mcp-remote` is the recommended npm wrapper that bridges stdio (what Claude
-Code speaks) to SSE (what the remote Jarvis server speaks).
+`uvx mcp-proxy` (Python, sparfenyuk/mcp-proxy) is the bridge: stdio in (what
+Claude Code speaks) ↔ SSE out (what the remote Jarvis server speaks). It
+does NOT require OAuth, unlike `mcp-remote`. Requires `uv` installed
+locally (`brew install uv` or the official installer).
 
 ### Option A — global (all projects)
 
-Edit `~/.claude.json` and add the entry (or use `claude mcp add`):
-
 ```bash
 claude mcp add --scope user onshape \
-  --command npx \
-  --args "-y mcp-remote https://nativedev.tail7d3518.ts.net:10001/sse"
+  --command uvx \
+  --args "mcp-proxy https://nativedev.tail7d3518.ts.net:10001/sse"
 ```
 
 ### Option B — project-scoped
@@ -32,8 +32,8 @@ In a repo, create `.mcp.json`:
 {
   "mcpServers": {
     "onshape": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote", "https://nativedev.tail7d3518.ts.net:10001/sse"]
+      "command": "uvx",
+      "args": ["mcp-proxy", "https://nativedev.tail7d3518.ts.net:10001/sse"]
     }
   }
 }

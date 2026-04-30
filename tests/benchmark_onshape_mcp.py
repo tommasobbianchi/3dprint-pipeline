@@ -181,8 +181,8 @@ def _build_mcp_config(sse_url: str, tmp_dir: Path) -> Path:
     cfg = {
         "mcpServers": {
             "onshape": {
-                "command": "npx",
-                "args": ["-y", "mcp-remote", sse_url],
+                "command": "uvx",
+                "args": ["mcp-proxy", sse_url],
             }
         }
     }
@@ -199,6 +199,7 @@ def _run_claude(prompt: str, mcp_config: Path, model: str, timeout: int) -> tupl
         "--print",
         "--model", model,
         "--mcp-config", str(mcp_config),
+        "--allowedTools", "mcp__onshape__*",
         "--no-session-persistence",
         prompt,
     ]

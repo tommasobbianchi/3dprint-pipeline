@@ -32,8 +32,8 @@ with `mcp-remote`:
 
 ```bash
 claude mcp add --scope user onshape \
-  --command npx \
-  --args "-y mcp-remote https://nativedev.tail7d3518.ts.net:10001/sse"
+  --command uvx \
+  --args "mcp-proxy https://nativedev.tail7d3518.ts.net:10001/sse"
 ```
 
 Verify with `/mcp` → `onshape` should be **connected** with ~60 tools.
