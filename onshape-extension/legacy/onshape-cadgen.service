@@ -1,11 +1,11 @@
 [Unit]
-Description=3dprint-pipeline Onshape Extension Backend
+Description=3dprint-pipeline Onshape Extension Backend (legacy CadQuery iframe — DEPRECATED)
 After=network.target
 
 [Service]
 Type=simple
 User=tommaso
-WorkingDirectory=/home/tommaso/projects/3dprint-pipeline/onshape-extension
+WorkingDirectory=/home/tommaso/projects/3dprint-pipeline/onshape-extension/legacy
 ExecStart=/home/tommaso/.local/bin/uvicorn backend.app:app --host 127.0.0.1 --port 8420
 Restart=on-failure
 RestartSec=5

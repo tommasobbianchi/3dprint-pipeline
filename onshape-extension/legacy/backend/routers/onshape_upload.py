@@ -259,9 +259,17 @@ async def _add_derived_feature(
         data = resp.json()
         feat = data.get("feature", {})
         fid = feat.get("featureId")
-        status = data.get("featureState", {}).get("featureStatus")
-        log.info("Derived feature added: id=%s status=%s", fid, status)
-        return fid
+        feature_state = data.get("featureState", {})
+        status = feature_state.get("featureStatus")
+        feature_error = feature_state.get("featureError")
+        if status == "ERROR":
+            log.warning(
+                "Derived feature ERROR: id=%s error=%r full_state=%s",
+                fid, feature_error, feature_state,
+            )
+        else:
+            log.info("Derived feature added: id=%s status=%s", fid, status)
+        return fid if status != "ERROR" else None
     except Exception as e:
         log.warning("Add derived feature error: %s", e)
         return None
