@@ -1,0 +1,16 @@
+[Unit]
+Description=Jarvis Onshape MCP server (SSE) for user %i
+After=network.target
+
+[Service]
+Type=simple
+User=%i
+EnvironmentFile=/home/%i/.config/onshape-mcp/jarvis.env
+ExecStart=/home/%i/projects/jarvis-onshape-mcp/.venv/bin/onshape-mcp --sse --port ${MCP_PORT}
+Restart=on-failure
+RestartSec=5
+Environment=HOME=/home/%i
+Environment=PATH=/home/%i/.local/bin:/usr/bin:/bin
+
+[Install]
+WantedBy=multi-user.target
