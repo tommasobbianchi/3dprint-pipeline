@@ -1,0 +1,6 @@
+# Command: claude --print --model sonnet --mcp-config /tmp/3dpp_bench/mcp_bench.json --allowedTools mcp__onshape__* --session-id b4b6183b-0f62-4549-ac4e-ed90e238b05d <prompt>
+# Prompt: 'Use the onshape MCP tools. Target document_id=6003910ddd44aad0b3997402, workspace_id=e2cb5def5a78ac411873b343, element_id=ff6f88ba6ec28d55713dfbc6.\n\nTask: Design a snap-fit enclosure: outer 80×60×40 mm, walls 2 mm. Bottom shell with a 1 mm lip; top lid with matching 1 mm groove for press-fit assembly.'
+# Session ID: b4b6183b-0f62-4549-ac4e-ed90e238b05d  (resume=False)
+# --- output ---
+
+# --- TIMEOUT after 600s ---

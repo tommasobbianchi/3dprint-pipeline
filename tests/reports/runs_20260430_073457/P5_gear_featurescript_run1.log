@@ -1,0 +1,6 @@
+# Command: claude --print --model sonnet --mcp-config /tmp/3dpp_bench/mcp_bench.json --allowedTools mcp__onshape__* --session-id 5fc278cc-822b-4887-a60f-e296bf09d704 <prompt>
+# Prompt: 'Use the onshape MCP tools. Target document_id=6003910ddd44aad0b3997402, workspace_id=e2cb5def5a78ac411873b343, element_id=e96befcc0f0740b0b2f4a457.\n\nTask: Generate an involute spur gear: 30 teeth, module 1.0 mm, pressure angle 20°, face width 6 mm, bore 5 mm. Use FeatureScript if the standard Onshape gear feature is not available.'
+# Session ID: 5fc278cc-822b-4887-a60f-e296bf09d704  (resume=False)
+# --- output ---
+
+# --- TIMEOUT after 600s ---

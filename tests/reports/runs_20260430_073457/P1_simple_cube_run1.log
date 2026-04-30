@@ -1,0 +1,16 @@
+# Command: claude --print --model sonnet --mcp-config /tmp/3dpp_bench/mcp_bench.json --allowedTools mcp__onshape__* --session-id a603f8d1-c877-4f32-be97-2165c2d5958e <prompt>
+# Prompt: 'Use the onshape MCP tools. Target document_id=6003910ddd44aad0b3997402, workspace_id=e2cb5def5a78ac411873b343, element_id=c77d700760c18cd5145cd9ff.\n\nTask: In the current Onshape Part Studio, create a 30 mm cube centered at the origin, then cut a 10 mm diameter hole through it along the Z axis.'
+# Session ID: a603f8d1-c877-4f32-be97-2165c2d5958e  (resume=False)
+# --- output ---
+Done. The Part Studio now contains:
+
+| Check | Result |
+|---|---|
+| Cube size | 30 × 30 × 30 mm, bbox ±15 mm all axes |
+| Centered at origin | centroid (0, 0, 0) ✓ |
+| Hole diameter | 10 mm (r = 5 mm cylinder face) |
+| Hole axis | Z-axis, through the full depth |
+| Volume | 24 643 mm³ = 27 000 − π·5²·30 ✓ |
+| All features | OK (no errors) |
+
+The top view confirms the hole is perfectly centered, and the isometric view shows it punches cleanly through the cube along Z.

@@ -1,0 +1,24 @@
+# Command: claude --print --model sonnet --mcp-config /tmp/3dpp_bench/mcp_bench.json --allowedTools mcp__onshape__* --session-id bb15c0c4-a79d-4d18-9940-ccd4b50e3dac <prompt>
+# Prompt: 'Use the onshape MCP tools. Target document_id=6003910ddd44aad0b3997402, workspace_id=e2cb5def5a78ac411873b343, element_id=1a0872fec72c965be614325a.\n\nTask: Create an L-shaped bracket: 60 mm × 40 mm × 4 mm thick. Add four M3 through-holes (Ø3.4 mm) at the four corners of the larger flange, 5 mm in from the edges.'
+# Session ID: bb15c0c4-a79d-4d18-9940-ccd4b50e3dac  (resume=False)
+# --- output ---
+All features OK, no suspect geometry. The bracket matches the spec exactly.
+
+**Summary of what was built:**
+
+| Check | Result |
+|---|---|
+| Base flange | 60 × 40 × 4 mm ✓ |
+| Vertical wall | 4 mm thick × 30 mm tall ✓ |
+| Bounding box | 60.00 × 40.00 × 34.00 mm ✓ |
+| M3 holes | 4 × Ø3.4 mm, 5 mm from each edge ✓ |
+| Volume delta | −145.3 mm³ = 4 × π × 1.7² × 4 (analytically correct) ✓ |
+| Feature tree | 4 features, all OK, no errors ✓ |
+
+**Feature tree:**
+1. `L-Profile` — sketch (Front plane, 6-line closed L-shape)
+2. `L-Bracket Body` — extrude 40 mm (creates the 3D L-section)
+3. `M3 Holes` — sketch (Top plane, 4 circles Ø3.4)
+4. `M3 Through-Holes` — extrude REMOVE 4 mm
+
+The two holes on the wall-side edge (X=5) naturally clip the very corner of the 4 mm wall — unavoidable at 5 mm edge distance with 4 mm wall thickness — which is standard practice for this bracket geometry.
